@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Veri Girişi - Tatlı Takip</title>
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --input: #334155;
+            --border: #475569;
+            --text: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .branch-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .branch-icon {
+            font-size: 32px;
+        }
+
+        .branch-details h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .branch-manager {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        .date-info {
+            text-align: right;
+        }
+
+        .date-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .date-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: var(--input);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+            transform: translateY(-2px);
+        }
+
+        /* Entries Grid */
+        .entries-container {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .entry-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .entry-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.1);
+        }
+
+        .entry-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dessert-emoji {
+            font-size: 40px;
+        }
+
+        .dessert-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .entry-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .number-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .number-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        }
+
+        .number-input.error {
+            border-color: var(--danger);
+        }
+
+        .calculated-value {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+            border-color: var(--success);
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: var(--danger);
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Notes */
+        .notes-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .notes-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            resize: vertical;
+            min-height: 100px;
+            transition: all 0.2s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        }
+
+        /* Save Button */
+        .save-section {
+            position: sticky;
+            bottom: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-save:active {
+            transform: translateY(-2px);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--input);
+            color: var(--text);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-table th {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .history-table td {
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-tertiary);
+            font-size: 16px;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .date-info {
+                text-align: left;
+            }
+
+            .entry-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .history-table {
+                font-size: 12px;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-top">
+                <div class="branch-info">
+                    <span class="branch-icon">🏪</span>
+                    <div class="branch-details">
+                        <h1 id="branchName">Yükleniyor...</h1>
+                        <p class="branch-manager" id="managerName"></p>
+                    </div>
+                </div>
+                <div class="date-info">
+                    <div class="date-icon">📅</div>
+                    <div class="date-text" id="currentDate"></div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="showHistory()">
+                    <span>📜</span>
+                    <span>Geçmiş Veriler</span>
+                </button>
+                <button class="btn btn-secondary" onclick="goHome()">
+                    <span>🏠</span>
+                    <span>Ana Sayfa</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Entries -->
+        <div class="entries-container" id="entriesContainer">
+            <!-- Dinamik olarak yüklenecek -->
+        </div>
+
+        <!-- Notes -->
+        <div class="notes-section">
+            <label class="notes-label">📝 Notlar (Opsiyonel)</label>
+            <textarea id="notesInput" placeholder="Bugüne ait notlarınızı buraya yazabilirsiniz..."></textarea>
+        </div>
+
+        <!-- Save Button -->
+        <div class="save-section">
+            <button class="btn-save" onclick="saveAllEntries()">
+                <span>💾 Tüm Verileri Kaydet</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📜 Geçmiş Veriler (Son 7 Gün)</h3>
+                <button class="close-btn" onclick="closeHistory()">&times;</button>
+            </div>
+            <div id="historyContent">
+                <!-- Dinamik olarak yüklenecek -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="js/supabase-client.js"></script>
+
+    <script>
+        let branchId = null;
+        let branchName = null;
+        let desserts = [];
+        let todayDate = getTodayDate();
+        let entryData = {};
+
+        // Sayfa yüklenince
+        document.addEventListener('DOMContentLoaded', async () => {
+            // URL'den branch_id al
+            const urlParams = new URLSearchParams(window.location.search);
+            branchId = urlParams.get('branch_id');
+
+            if (!branchId) {
+                showToast('Şube seçilmedi!', 'error');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+                return;
+            }
+
+            // localStorage'dan bilgileri al
+            branchName = localStorage.getItem('branchName');
+            const managerName = localStorage.getItem('managerName');
+
+            // Header'ı güncelle
+            document.getElementById('branchName').textContent = branchName || 'Şube';
+            if (managerName) {
+                document.getElementById('managerName').textContent = `Müdür: ${managerName}`;
+            }
+            document.getElementById('currentDate').textContent = formatDateTurkish(todayDate);
+
+            // Verileri yükle
+            await loadData();
+        });
+
+        // Verileri yükle
+        async function loadData() {
+            toggleLoading(true);
+            
+            // Aktif tatlıları çek
+            desserts = await getActiveDesserts();
+            
+            // Bugünkü verileri çek
+            const todayEntries = await getDailyEntriesByBranch(branchId, todayDate);
+            
+            toggleLoading(false);
+
+            // Entry data'yı doldur
+            todayEntries.forEach(entry => {
+                entryData[entry.dessert_id] = {
+                    received: entry.received_amount || 0,
+                    remaining: entry.remaining_amount || 0,
+                    waste: entry.waste_amount || 0,
+                    notes: entry.notes || ''
+                };
+            });
+
+            // UI'ı oluştur
+            renderEntries();
+            
+            // Notları doldur (varsa)
+            if (todayEntries.length > 0 && todayEntries[0].notes) {
+                document.getElementById('notesInput').value = todayEntries[0].notes;
+            }
+        }
+
+        // Entry kartlarını oluştur
+        function renderEntries() {
+            const container = document.getElementById('entriesContainer');
+            container.innerHTML = '';
+
+            desserts.forEach((dessert, index) => {
+                const data = entryData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
+                const sold = calculateSold(data.received, data.remaining, data.waste);
+
+                const card = document.createElement('div');
+                card.className = 'entry-card';
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.innerHTML = `
+                    <div class="entry-header">
+                        <span class="dessert-emoji">${dessert.emoji}</span>
+                        <span class="dessert-name">${dessert.name}</span>
+                    </div>
+                    <div class="entry-inputs">
+                        <div class="input-group">
+                            <label class="input-label">Gelen Miktar</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="number" 
+                                    class="number-input" 
+                                    min="0" 
+                                    value="${data.received}"
+                                    data-dessert="${dessert.id}"
+                                    data-field="received"
+                                    onchange="updateEntry(this)"
+                                />
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Kalan Miktar</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="number" 
+                                    class="number-input" 
+                                    min="0" 
+                                    value="${data.remaining}"
+                                    data-dessert="${dessert.id}"
+                                    data-field="remaining"
+                                    onchange="updateEntry(this)"
+                                />
+                                <div class="error-message" id="error-${dessert.id}"></div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Zayiat</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="number" 
+                                    class="number-input" 
+                                    min="0" 
+                                    value="${data.waste}"
+                                    data-dessert="${dessert.id}"
+                                    data-field="waste"
+                                    onchange="updateEntry(this)"
+                                />
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Satılan (Otomatik)</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="number" 
+                                    class="number-input calculated-value" 
+                                    value="${sold}"
+                                    id="sold-${dessert.id}"
+                                    readonly
+                                />
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Entry güncelle
+        function updateEntry(input) {
+            const dessertId = input.dataset.dessert;
+            const field = input.dataset.field;
+            const value = parseInt(input.value) || 0;
+
+            // Negatif değer kontrolü
+            if (value < 0) {
+                input.value = 0;
+                return;
+            }
+
+            // Entry data'yı güncelle
+            if (!entryData[dessertId]) {
+                entryData[dessertId] = { received: 0, remaining: 0, waste: 0 };
+            }
+            entryData[dessertId][field] = value;
+
+            // Validation
+            const data = entryData[dessertId];
+            const errorElement = document.getElementById(`error-${dessertId}`);
+            const remainingInput = input.parentElement.parentElement.parentElement.querySelector('[data-field="remaining"]');
+
+            if (data.remaining + data.waste > data.received) {
+                errorElement.textContent = 'Kalan + Zayiat, Gelen miktardan fazla olamaz!';
+                errorElement.classList.add('show');
+                if (remainingInput) {
+                    remainingInput.classList.add('error');
+                }
+            } else {
+                errorElement.classList.remove('show');
+                if (remainingInput) {
+                    remainingInput.classList.remove('error');
+                }
+            }
+
+            // Satılan'ı güncelle
+            const sold = calculateSold(data.received, data.remaining, data.waste);
+            document.getElementById(`sold-${dessertId}`).value = sold;
+        }
+
+        // Satılan hesapla
+        function calculateSold(received, remaining, waste) {
+            const sold = received - remaining - waste;
+            return sold >= 0 ? sold : 0;
+        }
+
+        // Tüm verileri kaydet
+        async function saveAllEntries() {
+            // Validation
+            let hasError = false;
+            for (const dessertId in entryData) {
+                const data = entryData[dessertId];
+                if (data.remaining + data.waste > data.received) {
+                    hasError = true;
+                    break;
+                }
+            }
+
+            if (hasError) {
+                showToast('Lütfen hataları düzeltin!', 'error');
+                return;
+            }
+
+            const notes = document.getElementById('notesInput').value.trim();
+
+            toggleLoading(true);
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Her tatlı için kaydet
+            for (const dessert of desserts) {
+                const data = entryData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
+                
+                const result = await saveDailyEntry(
+                    branchId,
+                    dessert.id,
+                    todayDate,
+                    data.received,
+                    data.remaining,
+                    data.waste,
+                    notes
+                );
+
+                if (result.success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            }
+
+            toggleLoading(false);
+
+            if (errorCount === 0) {
+                showToast('✅ Tüm veriler başarıyla kaydedildi!', 'success');
+            } else {
+                showToast(`⚠️ ${successCount} kayıt başarılı, ${errorCount} hata!`, 'error');
+            }
+        }
+
+        // Geçmiş verileri göster
+        async function showHistory() {
+            toggleLoading(true);
+            const historyData = await getLastSevenDays(branchId);
+            toggleLoading(false);
+
+            const content = document.getElementById('historyContent');
+            
+            if (historyData.length === 0) {
+                content.innerHTML = '<div class="no-data">📭 Henüz geçmiş veri bulunmuyor.</div>';
+            } else {
+                // Tarihe göre grupla
+                const groupedByDate = {};
+                historyData.forEach(entry => {
+                    if (!groupedByDate[entry.entry_date]) {
+                        groupedByDate[entry.entry_date] = [];
+                    }
+                    groupedByDate[entry.entry_date].push(entry);
+                });
+
+                let html = '';
+                Object.keys(groupedByDate).sort().reverse().forEach(date => {
+                    const entries = groupedByDate[date];
+                    const totalReceived = entries.reduce((sum, e) => sum + (e.received_amount || 0), 0);
+                    const totalSold = entries.reduce((sum, e) => sum + (e.sold_amount || 0), 0);
+                    const totalWaste = entries.reduce((sum, e) => sum + (e.waste_amount || 0), 0);
+
+                    html += `
+                        <div style="margin-bottom: 32px;">
+                            <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--primary);">
+                                📅 ${formatDateTurkish(date)}
+                            </h4>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                                <div style="background: var(--input); padding: 12px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px;">Gelen</div>
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--text);">${totalReceived}</div>
+                                </div>
+                                <div style="background: var(--input); padding: 12px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px;">Satılan</div>
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--success);">${totalSold}</div>
+                                </div>
+                                <div style="background: var(--input); padding: 12px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px;">Zayiat</div>
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--danger);">${totalWaste}</div>
+                                </div>
+                            </div>
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tatlı</th>
+                                        <th>Gelen</th>
+                                        <th>Kalan</th>
+                                        <th>Zayiat</th>
+                                        <th>Satılan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${entries.map(e => `
+                                        <tr>
+                                            <td>${e.desserts.emoji} ${e.desserts.name}</td>
+                                            <td>${e.received_amount || 0}</td>
+                                            <td>${e.remaining_amount || 0}</td>
+                                            <td>${e.waste_amount || 0}</td>
+                                            <td style="color: var(--success); font-weight: 600;">${e.sold_amount || 0}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+
+                content.innerHTML = html;
+            }
+
+            document.getElementById('historyModal').classList.add('active');
+        }
+
+        // Modal kapat
+        function closeHistory() {
+            document.getElementById('historyModal').classList.remove('active');
+        }
+
+        // Ana sayfaya dön
+        function goHome() {
+            if (confirm('Ana sayfaya dönmek istediğinize emin misiniz? Kaydedilmemiş veriler kaybolabilir.')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Modal dışına tıklayınca kapat
+        document.getElementById('historyModal').addEventListener('click', (e) => {
+            if (e.target.id === 'historyModal') {
+                closeHistory();
+            }
+        });
+    </script>
+</body>
+</html>

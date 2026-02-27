@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Admin Dashboard - Tatlı Takip</title>
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --input: #334155;
+            --border: #475569;
+            --text: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon {
+            font-size: 48px;
+        }
+
+        .header-text h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            color: var(--text-tertiary);
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            padding: 12px 24px;
+            background: var(--input);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-logout:hover {
+            background: var(--border);
+            transform: translateY(-2px);
+        }
+
+        /* Date Filter */
+        .filter-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+        .filter-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: var(--input);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary), transparent);
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .stat-progress {
+            height: 6px;
+            background: var(--input);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .stat-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #16a34a);
+            transition: width 1s ease-out;
+        }
+
+        .stat-footer {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .content-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .data-table th:hover {
+            color: var(--primary);
+        }
+
+        .data-table td {
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .data-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .branch-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .number-cell {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--danger);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        /* Stock Grid */
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .stock-card {
+            background: linear-gradient(135deg, var(--input), var(--card));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stock-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stock-emoji {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .stock-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .stock-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stock-label {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        /* No Data */
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-tertiary);
+        }
+
+        .no-data-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .no-data-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .no-data-subtitle {
+            font-size: 14px;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes counterUp {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filter-buttons {
+                flex-direction: column;
+            }
+
+            .filter-btn {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .data-table {
+                font-size: 12px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 10px 8px;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .stock-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <div class="header-left">
+                    <span class="header-icon">👔</span>
+                    <div class="header-text">
+                        <h1>Genel Müdür Paneli</h1>
+                        <p class="header-subtitle" id="adminName">Hoş Geldiniz</p>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">
+                    <span>🚪</span>
+                    <span>Çıkış</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Date Filter -->
+        <div class="filter-section">
+            <div class="filter-title">📅 Tarih Filtresi</div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="setFilter('today')">Bugün</button>
+                <button class="filter-btn" onclick="setFilter('week')">Bu Hafta</button>
+                <button class="filter-btn" onclick="setFilter('month')">Bu Ay</button>
+                <button class="filter-btn" onclick="setFilter('all')">Tümü</button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-label">Toplam Dağıtım</div>
+                <div class="stat-value" id="totalDistribution">0</div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" id="distProgress" style="width: 0%;"></div>
+                </div>
+                <div class="stat-footer">Hedef: 2500 adet</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-label">Toplam Satış</div>
+                <div class="stat-value positive" id="totalSales">0</div>
+                <div class="stat-footer" id="salesPercentage">%0 satış oranı</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">Mevcut Stok</div>
+                <div class="stat-value" id="totalStock">0</div>
+                <div class="stat-footer">Tüm şubeler toplamı</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-label">Toplam Zayiat</div>
+                <div class="stat-value negative" id="totalWaste">0</div>
+                <div class="stat-footer" id="wastePercentage">%0 zayiat oranı</div>
+            </div>
+        </div>
+
+        <!-- Branch Table -->
+        <div class="content-card">
+            <div class="card-header">
+                <h3 class="card-title">🏪 Şube Bazlı Veriler</h3>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Şube</th>
+                            <th onclick="sortTable(1)">Gelen</th>
+                            <th onclick="sortTable(2)">Satılan</th>
+                            <th onclick="sortTable(3)">Kalan</th>
+                            <th onclick="sortTable(4)">Zayiat</th>
+                            <th onclick="sortTable(5)">Satış %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="branchTableBody">
+                        <!-- Dinamik olarak yüklenecek -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px; margin-bottom: 32px;">
+            <!-- Dessert Chart -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3 class="card-title">🍰 Tatlı Bazlı Satışlar</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dessertChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Waste Chart -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3 class="card-title">⚠️ Şube Bazlı Zayiat</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="wasteChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Stock -->
+        <div class="content-card">
+            <div class="card-header">
+                <h3 class="card-title">📊 Mevcut Stok Durumu</h3>
+            </div>
+            <div class="stock-grid" id="stockGrid">
+                <!-- Dinamik olarak yüklenecek -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="js/supabase-client.js"></script>
+
+    <script>
+        let currentFilter = 'today';
+        let allData = [];
+        let dessertChart = null;
+        let wasteChart = null;
+        const DAILY_TARGET = 2500;
+
+        // Sayfa yüklenince
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Admin adını göster
+            const adminName = localStorage.getItem('adminName');
+            if (adminName) {
+                document.getElementById('adminName').textContent = `Hoş Geldiniz, ${adminName}`;
+            }
+
+            // Verileri yükle
+            await loadData();
+        });
+
+        // Filtreyi değiştir
+        async function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Butonları güncelle
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Verileri yükle
+            await loadData();
+        }
+
+        // Tarih aralığını hesapla
+        function getDateRange() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            let startDate = todayStr;
+            
+            if (currentFilter === 'today') {
+                startDate = todayStr;
+            } else if (currentFilter === 'week') {
+                const weekAgo = new Date(today);
+                weekAgo.setDate(today.getDate() - 7);
+                startDate = weekAgo.toISOString().split('T')[0];
+            } else if (currentFilter === 'month') {
+                const monthAgo = new Date(today);
+                monthAgo.setMonth(today.getMonth() - 1);
+                startDate = monthAgo.toISOString().split('T')[0];
+            } else if (currentFilter === 'all') {
+                startDate = '2020-01-01'; // Çok eski bir tarih
+            }
+            
+            return { startDate, endDate: todayStr };
+        }
+
+        // Verileri yükle
+        async function loadData() {
+            toggleLoading(true);
+            
+            const { startDate, endDate } = getDateRange();
+            allData = await getDailyEntriesDateRange(startDate, endDate);
+            
+            toggleLoading(false);
+
+            if (allData.length === 0) {
+                showNoData();
+                return;
+            }
+
+            // İstatistikleri güncelle
+            updateStats();
+            
+            // Tabloyu güncelle
+            updateBranchTable();
+            
+            // Grafikleri güncelle
+            updateCharts();
+            
+            // Stok kartlarını güncelle
+            await updateStockCards();
+        }
+
+        // İstatistikleri güncelle
+        function updateStats() {
+            const totalDistribution = allData.reduce((sum, entry) => sum + (entry.received_amount || 0), 0);
+            const totalSales = allData.reduce((sum, entry) => sum + (entry.sold_amount || 0), 0);
+            const totalStock = allData.reduce((sum, entry) => sum + (entry.remaining_amount || 0), 0);
+            const totalWaste = allData.reduce((sum, entry) => sum + (entry.waste_amount || 0), 0);
+
+            // Animasyonlu sayaç
+            animateCounter('totalDistribution', totalDistribution);
+            animateCounter('totalSales', totalSales);
+            animateCounter('totalStock', totalStock);
+            animateCounter('totalWaste', totalWaste);
+
+            // Progress bar
+            const progressPercent = Math.min((totalDistribution / DAILY_TARGET) * 100, 100);
+            document.getElementById('distProgress').style.width = `${progressPercent}%`;
+
+            // Yüzdeler
+            const salesPercent = totalDistribution > 0 ? ((totalSales / totalDistribution) * 100).toFixed(1) : 0;
+            const wastePercent = totalDistribution > 0 ? ((totalWaste / totalDistribution) * 100).toFixed(1) : 0;
+            
+            document.getElementById('salesPercentage').textContent = `%${salesPercent} satış oranı`;
+            document.getElementById('wastePercentage').textContent = `%${wastePercent} zayiat oranı`;
+        }
+
+        // Sayaç animasyonu
+        function animateCounter(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            const duration = 1000;
+            const step = targetValue / (duration / 16);
+            let current = 0;
+
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= targetValue) {
+                    element.textContent = Math.round(targetValue).toLocaleString('tr-TR');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.round(current).toLocaleString('tr-TR');
+                }
+            }, 16);
+        }
+
+        // Şube tablosunu güncelle
+        function updateBranchTable() {
+            // Şubeye göre grupla
+            const branchData = {};
+            
+            allData.forEach(entry => {
+                const branchId = entry.branches.id;
+                const branchName = entry.branches.name;
+                
+                if (!branchData[branchId]) {
+                    branchData[branchId] = {
+                        name: branchName,
+                        received: 0,
+                        sold: 0,
+                        remaining: 0,
+                        waste: 0
+                    };
+                }
+                
+                branchData[branchId].received += entry.received_amount || 0;
+                branchData[branchId].sold += entry.sold_amount || 0;
+                branchData[branchId].remaining += entry.remaining_amount || 0;
+                branchData[branchId].waste += entry.waste_amount || 0;
+            });
+
+            const tbody = document.getElementById('branchTableBody');
+            tbody.innerHTML = '';
+
+            Object.values(branchData).forEach((branch, index) => {
+                const salesPercent = branch.received > 0 ? ((branch.sold / branch.received) * 100).toFixed(1) : 0;
+                
+                const row = document.createElement('tr');
+                row.style.animation = `fadeIn 0.6s ease-out ${index * 0.1}s both`;
+                row.innerHTML = `
+                    <td class="branch-name">🏪 ${branch.name}</td>
+                    <td class="number-cell">${branch.received.toLocaleString('tr-TR')}</td>
+                    <td class="number-cell positive">${branch.sold.toLocaleString('tr-TR')}</td>
+                    <td class="number-cell">${branch.remaining.toLocaleString('tr-TR')}</td>
+                    <td class="number-cell negative">${branch.waste.toLocaleString('tr-TR')}</td>
+                    <td class="number-cell">${salesPercent}%</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Grafikleri güncelle
+        function updateCharts() {
+            updateDessertChart();
+            updateWasteChart();
+        }
+
+        // Tatlı grafiği
+        function updateDessertChart() {
+            // Tatlıya göre grupla
+            const dessertData = {};
+            
+            allData.forEach(entry => {
+                const dessertId = entry.desserts.id;
+                const dessertName = entry.desserts.name;
+                const emoji = entry.desserts.emoji;
+                
+                if (!dessertData[dessertId]) {
+                    dessertData[dessertId] = {
+                        name: `${emoji} ${dessertName}`,
+                        sold: 0
+                    };
+                }
+                
+                dessertData[dessertId].sold += entry.sold_amount || 0;
+            });
+
+            const labels = Object.values(dessertData).map(d => d.name);
+            const data = Object.values(dessertData).map(d => d.sold);
+
+            const ctx = document.getElementById('dessertChart');
+            
+            if (dessertChart) {
+                dessertChart.destroy();
+            }
+
+            dessertChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Satılan Adet',
+                        data: data,
+                        backgroundColor: [
+                            '#f59e0b', '#8b5cf6', '#3b82f6', '#22c55e',
+                            '#ef4444', '#ec4899', '#14b8a6', '#f97316', '#6366f1'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#475569',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#cbd5e1' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#cbd5e1' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Zayiat grafiği
+        function updateWasteChart() {
+            // Şubeye göre zayiat grupla
+            const wasteData = {};
+            
+            allData.forEach(entry => {
+                const branchName = entry.branches.name;
+                
+                if (!wasteData[branchName]) {
+                    wasteData[branchName] = 0;
+                }
+                
+                wasteData[branchName] += entry.waste_amount || 0;
+            });
+
+            const labels = Object.keys(wasteData);
+            const data = Object.values(wasteData);
+
+            const ctx = document.getElementById('wasteChart');
+            
+            if (wasteChart) {
+                wasteChart.destroy();
+            }
+
+            wasteChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#ef4444', '#f97316', '#f59e0b', '#22c55e',
+                            '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#cbd5e1' }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#475569',
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        // Stok kartlarını güncelle
+        async function updateStockCards() {
+            const stockData = await getCurrentStock();
+            
+            const grid = document.getElementById('stockGrid');
+            grid.innerHTML = '';
+
+            if (stockData.length === 0) {
+                grid.innerHTML = '<div class="no-data">📭 Bugün için stok verisi yok.</div>';
+                return;
+            }
+
+            stockData.forEach((stock, index) => {
+                const card = document.createElement('div');
+                card.className = 'stock-card';
+                card.style.animation = `fadeIn 0.6s ease-out ${index * 0.05}s both`;
+                card.innerHTML = `
+                    <div class="stock-emoji">${stock.emoji}</div>
+                    <div class="stock-name">${stock.dessertName}</div>
+                    <div class="stock-amount">${stock.totalRemaining}</div>
+                    <div class="stock-label">adet kaldı</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Veri yoksa göster
+        function showNoData() {
+            document.getElementById('totalDistribution').textContent = '0';
+            document.getElementById('totalSales').textContent = '0';
+            document.getElementById('totalStock').textContent = '0';
+            document.getElementById('totalWaste').textContent = '0';
+            document.getElementById('distProgress').style.width = '0%';
+            document.getElementById('salesPercentage').textContent = '%0 satış oranı';
+            document.getElementById('wastePercentage').textContent = '%0 zayiat oranı';
+            
+            document.getElementById('branchTableBody').innerHTML = `
+                <tr>
+                    <td colspan="6" class="no-data">
+                        <div class="no-data-icon">📭</div>
+                        <div class="no-data-text">Veri Bulunamadı</div>
+                        <div class="no-data-subtitle">Seçilen tarih aralığında veri bulunmamaktadır.</div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Tablo sıralama
+        function sortTable(columnIndex) {
+            const table = document.querySelector('.data-table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].textContent;
+                const bText = b.cells[columnIndex].textContent;
+
+                // Sayısal değerleri temizle
+                const aValue = parseFloat(aText.replace(/[^0-9.-]/g, '')) || 0;
+                const bValue = parseFloat(bText.replace(/[^0-9.-]/g, '')) || 0;
+
+                return bValue - aValue; // Büyükten küçüğe
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Çıkış yap
+        function logout() {
+            if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+                localStorage.removeItem('adminName');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
