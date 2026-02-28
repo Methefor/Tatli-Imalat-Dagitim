@@ -1,22 +1,28 @@
-// Supabase Bağlantı Bilgileri
-const supabaseUrl = 'https://upokyqmllarooeglyrfg.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwb2t5cW1sbGFyb29lZ2x5cmZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDQ0NzMsImV4cCI6MjA4Nzc4MDQ3M30.fVvOXGQyqSzG_3BAigdIO4kOhS71P4xheHde1sziamM'
+// ====================================================================
+// SUPABASE CLIENT - TATLI İMALAT VE DAĞITIM TAKİP SİSTEMİ
+// ====================================================================
 
-// Supabase Client Oluştur (tek seferlik — çift yüklemeye karşı korumalı)
-if (typeof window.supabaseClient === 'undefined') {
-    window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey)
+// Supabase bağlantı bilgileri
+const SUPABASE_URL = 'https://upokyqmllarooeglyrfg.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwb2t5cW1sbGFyb29lZ2x5cmZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDQ0NzMsImV4cCI6MjA4Nzc4MDQ3M30.fVvOXGQyqSzG_3BAigdIO4kOhS71P4xheHde1sziamM'
+
+// Supabase client oluştur (global scope'ta bir kez)
+let supabaseClient;
+if (!window.supabaseInstance) {
+    window.supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 }
-const supabase = window.supabaseClient
+supabaseClient = window.supabaseInstance
+
+// ====================================================================
+// AUTHENTICATION FUNCTIONS
+// ====================================================================
 
 /**
  * Şube şifre kontrolü
- * @param {string} branchName - Şube adı
- * @param {string} password - Şifre
- * @returns {Promise<{success: boolean, branchId?: string, error?: string}>}
  */
 async function checkBranchPassword(branchName, password) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('branches')
             .select('id, name, password, manager_name')
             .eq('name', branchName)
@@ -45,13 +51,10 @@ async function checkBranchPassword(branchName, password) {
 
 /**
  * Admin şifre kontrolü
- * @param {string} username - Kullanıcı adı
- * @param {string} password - Şifre
- * @returns {Promise<{success: boolean, error?: string}>}
  */
 async function checkAdminPassword(username, password) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('admins')
             .select('id, username, name')
             .eq('username', username)
@@ -76,13 +79,16 @@ async function checkAdminPassword(username, password) {
     }
 }
 
+// ====================================================================
+// DATA FETCH FUNCTIONS
+// ====================================================================
+
 /**
  * Tüm şubeleri çek
- * @returns {Promise<Array>}
  */
 async function getBranches() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('branches')
             .select('*')
             .order('name', { ascending: true })
@@ -96,12 +102,11 @@ async function getBranches() {
 }
 
 /**
- * Aktif tatlıları çek (is_active=true, display_order sıralı)
- * @returns {Promise<Array>}
+ * Aktif tatlıları çek
  */
 async function getActiveDesserts() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('desserts')
             .select('*')
             .eq('is_active', true)
@@ -116,20 +121,11 @@ async function getActiveDesserts() {
 }
 
 /**
- * Günlük veri kaydet (INSERT veya UPDATE)
- * @param {string} branchId - Şube ID
- * @param {string} dessertId - Tatlı ID
- * @param {string} date - Tarih (YYYY-MM-DD)
- * @param {number} received - Gelen miktar
- * @param {number} remaining - Kalan miktar
- * @param {number} waste - Zayiat
- * @param {string} notes - Notlar
- * @returns {Promise<{success: boolean, error?: string}>}
+ * Günlük veri kaydet
  */
 async function saveDailyEntry(branchId, dessertId, date, received, remaining, waste, notes = '') {
     try {
-        // Önce bugün için kayıt var mı kontrol et
-        const { data: existing, error: checkError } = await supabase
+        const { data: existing, error: checkError } = await supabaseClient
             .from('daily_entries')
             .select('id')
             .eq('branch_id', branchId)
@@ -138,7 +134,6 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
             .single()
 
         if (checkError && checkError.code !== 'PGRST116') {
-            // PGRST116 = not found, bu normal
             throw checkError
         }
 
@@ -154,16 +149,14 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
         }
 
         if (existing) {
-            // UPDATE
-            const { error: updateError } = await supabase
+            const { error: updateError } = await supabaseClient
                 .from('daily_entries')
                 .update(entryData)
                 .eq('id', existing.id)
 
             if (updateError) throw updateError
         } else {
-            // INSERT
-            const { error: insertError } = await supabase
+            const { error: insertError } = await supabaseClient
                 .from('daily_entries')
                 .insert([entryData])
 
@@ -179,13 +172,10 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
 
 /**
  * Şube ve tarih bazlı günlük verileri çek
- * @param {string} branchId - Şube ID
- * @param {string} date - Tarih (YYYY-MM-DD)
- * @returns {Promise<Array>}
  */
 async function getDailyEntriesByBranch(branchId, date) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('daily_entries')
             .select(`
                 *,
@@ -209,13 +199,11 @@ async function getDailyEntriesByBranch(branchId, date) {
 }
 
 /**
- * Tarih bazlı tüm günlük verileri çek (tüm şubeler)
- * @param {string} date - Tarih (YYYY-MM-DD)
- * @returns {Promise<Array>}
+ * Tarih bazlı tüm günlük verileri çek
  */
 async function getAllDailyEntriesByDate(date) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('daily_entries')
             .select(`
                 *,
@@ -243,13 +231,10 @@ async function getAllDailyEntriesByDate(date) {
 
 /**
  * Tarih aralığında günlük verileri çek
- * @param {string} startDate - Başlangıç tarihi (YYYY-MM-DD)
- * @param {string} endDate - Bitiş tarihi (YYYY-MM-DD)
- * @returns {Promise<Array>}
  */
 async function getDailyEntriesDateRange(startDate, endDate) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('daily_entries')
             .select(`
                 *,
@@ -279,8 +264,6 @@ async function getDailyEntriesDateRange(startDate, endDate) {
 
 /**
  * Şube bazlı son 7 günlük verileri çek
- * @param {string} branchId - Şube ID
- * @returns {Promise<Array>}
  */
 async function getLastSevenDays(branchId) {
     try {
@@ -288,7 +271,7 @@ async function getLastSevenDays(branchId) {
         const sevenDaysAgo = new Date(today)
         sevenDaysAgo.setDate(today.getDate() - 7)
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('daily_entries')
             .select(`
                 *,
@@ -311,14 +294,13 @@ async function getLastSevenDays(branchId) {
 }
 
 /**
- * Mevcut stok - Tüm şubelerin güncel stoğu (her tatlı için)
- * @returns {Promise<Array>}
+ * Mevcut stok
  */
 async function getCurrentStock() {
     try {
         const today = new Date().toISOString().split('T')[0]
         
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('daily_entries')
             .select(`
                 remaining_amount,
@@ -337,7 +319,6 @@ async function getCurrentStock() {
 
         if (error) throw error
 
-        // Tatlı bazlı grupla
         const stockByDessert = {}
         
         if (data) {
@@ -356,7 +337,6 @@ async function getCurrentStock() {
             })
         }
 
-        // Array'e çevir ve sırala
         return Object.values(stockByDessert).sort((a, b) => a.displayOrder - b.displayOrder)
     } catch (err) {
         console.error('Stok çekme hatası:', err)
@@ -364,18 +344,18 @@ async function getCurrentStock() {
     }
 }
 
+// ====================================================================
+// UI HELPER FUNCTIONS
+// ====================================================================
+
 /**
  * Toast bildirimi göster
- * @param {string} message - Mesaj
- * @param {string} type - success, error, info
  */
 function showToast(message, type = 'success') {
-    // Toast elementi oluştur
     const toast = document.createElement('div')
     toast.className = `toast toast-${type}`
     toast.textContent = message
     
-    // Style
     toast.style.cssText = `
         position: fixed;
         top: 20px;
@@ -399,7 +379,6 @@ function showToast(message, type = 'success') {
 
     document.body.appendChild(toast)
 
-    // 3 saniye sonra kaldır
     setTimeout(() => {
         toast.style.animation = 'slideOut 0.3s ease-out'
         setTimeout(() => toast.remove(), 300)
@@ -408,7 +387,6 @@ function showToast(message, type = 'success') {
 
 /**
  * Loading spinner göster/gizle
- * @param {boolean} show - Göster/gizle
  */
 function toggleLoading(show) {
     let spinner = document.getElementById('loading-spinner')
@@ -451,8 +429,6 @@ function toggleLoading(show) {
 
 /**
  * Tarih formatla (Türkçe)
- * @param {string} dateString - YYYY-MM-DD
- * @returns {string} - 27 Şubat 2026, Perşembe
  */
 function formatDateTurkish(dateString) {
     const date = new Date(dateString)
@@ -469,16 +445,18 @@ function formatDateTurkish(dateString) {
 }
 
 /**
- * Bugünün tarihini al (YYYY-MM-DD)
- * @returns {string}
+ * Bugünün tarihini al
  */
 function getTodayDate() {
     return new Date().toISOString().split('T')[0]
 }
 
-// CSS Animasyonları
-const style = document.createElement('style')
-style.textContent = `
+// ====================================================================
+// CSS ANIMATIONS
+// ====================================================================
+
+const styleElement = document.createElement('style')
+styleElement.textContent = `
     @keyframes slideIn {
         from {
             transform: translateX(100%);
@@ -527,4 +505,6 @@ style.textContent = `
         }
     }
 `
-document.head.appendChild(style)
+document.head.appendChild(styleElement)
+
+console.log('✅ Supabase Client yüklendi')
