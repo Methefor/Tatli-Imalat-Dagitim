@@ -2,8 +2,11 @@
 const supabaseUrl = 'https://upokyqmllarooeglyrfg.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwb2t5cW1sbGFyb29lZ2x5cmZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDQ0NzMsImV4cCI6MjA4Nzc4MDQ3M30.fVvOXGQyqSzG_3BAigdIO4kOhS71P4xheHde1sziamM'
 
-// Supabase Client Oluştur
-const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey)
+// Supabase Client Oluştur (tek seferlik — çift yüklemeye karşı korumalı)
+if (typeof window.supabaseClient === 'undefined') {
+    window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey)
+}
+const supabase = window.supabaseClient
 
 /**
  * Şube şifre kontrolü
