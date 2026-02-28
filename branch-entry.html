@@ -42,18 +42,36 @@
             line-height: 1.6;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* ─── BREADCRUMB ─── */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+            padding: 0 4px;
         }
+
+        .breadcrumb a {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover { color: var(--primary); }
+        .breadcrumb .sep { opacity: 0.5; }
+        .breadcrumb .current { color: var(--text-secondary); font-weight: 600; }
 
         /* ─── HEADER ─── */
         header {
             background: linear-gradient(145deg, #1e293b, #162032);
             border: 1px solid rgba(245, 158, 11, 0.2);
             border-radius: 20px;
-            padding: 22px 24px;
-            margin-bottom: 20px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             opacity: 0;
         }
@@ -63,43 +81,28 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 14px;
-            margin-bottom: 18px;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
-        .branch-info {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .branch-icon { font-size: 36px; line-height: 1; }
+        .branch-info { display: flex; align-items: center; gap: 12px; }
+        .branch-icon { font-size: 34px; line-height: 1; }
 
         .branch-details h1 {
-            font-size: 22px;
+            font-size: 21px;
             font-weight: 800;
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: -0.3px;
         }
 
-        .branch-manager {
-            font-size: 13px;
-            color: var(--text-tertiary);
-            font-weight: 500;
-            margin-top: 2px;
-        }
+        .branch-manager { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
 
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
         .btn {
-            padding: 9px 16px;
+            padding: 8px 14px;
             border: none;
             border-radius: 10px;
             font-size: 13px;
@@ -117,30 +120,76 @@
             border: 1px solid var(--border);
         }
 
-        .btn-secondary:hover {
-            background: var(--border);
-            transform: translateY(-2px);
+        .btn-secondary:hover { background: var(--border); transform: translateY(-2px); }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
+
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+
+        /* ─── MODE SELECTOR ─── */
+        .mode-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 9px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input);
+            color: var(--text-tertiary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        }
+
+        .mode-btn:not(.active):hover {
+            border-color: var(--text-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .mode-desc {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .mode-desc strong { color: var(--primary); }
 
         /* ─── DATE SELECTOR ─── */
         .date-selector {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .date-nav-btn {
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
             background: var(--input);
             border: 1px solid var(--border);
             border-radius: 10px;
             color: var(--text);
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
             flex-shrink: 0;
@@ -153,29 +202,26 @@
             transform: scale(1.08);
         }
 
-        .date-nav-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
+        .date-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         #entryDate {
-            padding: 9px 14px;
+            padding: 8px 12px;
             background: var(--input);
             border: 1px solid var(--border);
             border-radius: 10px;
             color: var(--text);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             outline: none;
             cursor: pointer;
-            transition: border-color 0.2s;
             font-family: inherit;
+            transition: border-color 0.2s;
         }
 
         #entryDate:focus { border-color: var(--primary); }
 
         .date-display {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-secondary);
             white-space: nowrap;
@@ -184,10 +230,10 @@
         .past-pill {
             font-size: 11px;
             font-weight: 700;
-            background: rgba(245, 158, 11, 0.12);
+            background: rgba(245, 158, 11, 0.1);
             border: 1px solid rgba(245, 158, 11, 0.3);
             color: var(--primary);
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 20px;
             display: none;
         }
@@ -195,12 +241,12 @@
         .past-pill.visible { display: inline-block; }
 
         .btn-today {
-            padding: 8px 14px;
-            background: rgba(245, 158, 11, 0.12);
+            padding: 7px 12px;
+            background: rgba(245, 158, 11, 0.1);
             border: 1px solid rgba(245, 158, 11, 0.35);
             border-radius: 10px;
             color: var(--primary);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -208,29 +254,29 @@
             display: none;
         }
 
-        .btn-today:hover { background: rgba(245, 158, 11, 0.25); }
+        .btn-today:hover { background: rgba(245, 158, 11, 0.22); }
         .btn-today.visible { display: block; }
 
         /* ─── ENTRIES GRID ─── */
         .entries-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 18px;
+            gap: 14px;
+            margin-bottom: 16px;
         }
 
         /* ─── SKELETON ─── */
         .skeleton-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 18px;
+            gap: 14px;
+            margin-bottom: 16px;
         }
 
         .skeleton-card {
             background: var(--card);
             border-radius: 16px;
-            height: 155px;
+            height: 165px;
             position: relative;
             overflow: hidden;
         }
@@ -243,10 +289,7 @@
             animation: shimmer 1.6s infinite;
         }
 
-        @keyframes shimmer {
-            from { transform: translateX(-100%); }
-            to   { transform: translateX(100%);  }
-        }
+        @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 
         /* ─── EMPTY STATE ─── */
         .empty-state {
@@ -275,56 +318,51 @@
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
         }
 
-        .entry-card.has-error {
-            border-color: rgba(239, 68, 68, 0.6) !important;
-        }
+        .entry-card.has-error { border-color: rgba(239, 68, 68, 0.6) !important; }
 
-        /* Card header row */
         .card-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
-            padding: 14px 16px;
+            padding: 13px 15px;
             border-bottom: 1px solid rgba(71, 85, 105, 0.35);
             background: rgba(0, 0, 0, 0.12);
-        }
-
-        .dessert-info {
-            display: flex;
-            align-items: center;
             gap: 10px;
         }
 
-        .dessert-emoji { font-size: 28px; line-height: 1; }
+        .dessert-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .dessert-top { display: flex; align-items: center; gap: 9px; }
+        .dessert-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; }
+        .dessert-name { font-size: 14px; font-weight: 700; color: var(--text); }
 
-        .dessert-name {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text);
+        /* Current values badge */
+        .current-info {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+            line-height: 1.5;
         }
+
+        .current-info strong { color: var(--text-secondary); }
+        .current-info.hidden { display: none; }
 
         /* Sold badge */
         .sold-badge {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            flex-shrink: 0;
         }
 
-        .sold-label {
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-        }
+        .sold-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--text-tertiary); text-transform: uppercase; }
 
         .sold-value {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
             color: var(--success);
             line-height: 1.1;
             font-variant-numeric: tabular-nums;
-            min-width: 36px;
+            min-width: 34px;
             text-align: right;
             transition: color 0.2s;
         }
@@ -341,7 +379,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 14px 8px 16px;
+            padding: 12px 6px 14px;
             border-right: 1px solid rgba(71, 85, 105, 0.2);
             cursor: text;
             transition: background 0.15s;
@@ -357,12 +395,18 @@
         .input-box:hover.remaining { background: rgba(59,  130, 246, 0.12); }
         .input-box:hover.waste     { background: rgba(239,  68,  68, 0.12); }
 
+        /* Incremental mode: GELEN box glows */
+        .incremental-mode .input-box.received {
+            background: rgba(245, 158, 11, 0.12);
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+        }
+
         .input-box-label {
             font-size: 9px;
             font-weight: 700;
             letter-spacing: 1.2px;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .input-box.received  .input-box-label { color: #f59e0b; }
@@ -375,7 +419,7 @@
             border: none;
             border-bottom: 2px solid transparent;
             color: var(--text);
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
             font-variant-numeric: tabular-nums;
             text-align: center;
@@ -392,9 +436,19 @@
         .input-box.remaining .number-input:focus { border-bottom-color: #60a5fa; }
         .input-box.waste     .number-input:focus { border-bottom-color: #f87171; }
 
-        /* Error row */
+        /* Incremental: additive tag */
+        .additive-tag {
+            font-size: 9px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .incremental-mode .input-box.received .additive-tag { display: block; }
+
         .error-row {
-            padding: 6px 16px 10px;
+            padding: 5px 14px 8px;
             font-size: 11px;
             color: var(--danger);
             font-weight: 600;
@@ -408,51 +462,30 @@
             background: linear-gradient(145deg, #1e293b, #162032);
             border: 1px solid rgba(71, 85, 105, 0.4);
             border-radius: 16px;
-            padding: 18px 20px;
-            margin-bottom: 18px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
             transition: border-color 0.25s;
         }
 
-        .notes-section:focus-within {
-            border-color: rgba(245, 158, 11, 0.5);
-        }
+        .notes-section:focus-within { border-color: rgba(245, 158, 11, 0.5); }
 
-        .notes-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .notes-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .char-counter {
-            font-size: 12px;
-            color: var(--text-tertiary);
-            font-variant-numeric: tabular-nums;
-            transition: color 0.2s;
-        }
-
+        .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .notes-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .char-counter { font-size: 11px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
         .char-counter.warning { color: var(--primary); }
 
         textarea {
             width: 100%;
-            padding: 10px 0;
+            padding: 8px 0;
             background: transparent;
             border: none;
             border-top: 1px solid rgba(71, 85, 105, 0.4);
             color: var(--text);
-            font-size: 14px;
+            font-size: 13px;
             font-family: inherit;
             outline: none;
             resize: none;
-            min-height: 72px;
+            min-height: 64px;
             overflow: hidden;
             line-height: 1.6;
         }
@@ -460,20 +493,16 @@
         textarea::placeholder { color: var(--text-tertiary); }
 
         /* ─── SAVE BUTTON ─── */
-        .save-section {
-            position: sticky;
-            bottom: 16px;
-            z-index: 10;
-        }
+        .save-section { position: sticky; bottom: 14px; z-index: 10; }
 
         .btn-save {
             width: 100%;
-            padding: 20px;
+            padding: 18px;
             background: linear-gradient(135deg, #22c55e, #16a34a);
             color: white;
             border: none;
             border-radius: 16px;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
@@ -482,19 +511,14 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            letter-spacing: -0.2px;
         }
 
-        .btn-save:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 14px 40px rgba(34, 197, 94, 0.5);
-        }
-
+        .btn-save:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(34, 197, 94, 0.5); }
         .btn-save:active:not(:disabled) { transform: translateY(-1px); }
         .btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-save.saved { background: linear-gradient(135deg, #16a34a, #15803d); }
 
-        /* ─── HISTORY MODAL ─── */
+        /* ─── MODALS BASE ─── */
         .modal {
             display: none;
             position: fixed;
@@ -513,13 +537,15 @@
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 28px;
+            padding: 26px;
             max-width: 820px;
             width: 100%;
             max-height: 88vh;
             overflow-y: auto;
             animation: slideUpModal 0.3s ease-out;
         }
+
+        .modal-content.narrow { max-width: 480px; }
 
         @keyframes slideUpModal {
             from { transform: translateY(24px); opacity: 0; }
@@ -530,21 +556,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
             border-bottom: 1px solid var(--border);
         }
 
-        .modal-title { font-size: 20px; font-weight: 700; }
+        .modal-title { font-size: 18px; font-weight: 700; }
 
         .close-btn {
             background: var(--input);
             border: none;
-            font-size: 18px;
+            font-size: 16px;
             color: var(--text-tertiary);
             cursor: pointer;
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -554,70 +580,181 @@
 
         .close-btn:hover { background: var(--border); color: var(--text); }
 
-        .history-table {
+        /* ─── CONFIRM MODAL ─── */
+        .confirm-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            margin-bottom: 24px;
         }
 
-        .history-table th,
-        .history-table td {
-            padding: 10px 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(71, 85, 105, 0.35);
-        }
-
-        .history-table th {
+        .confirm-table th {
             font-size: 11px;
             font-weight: 700;
             color: var(--text-tertiary);
             text-transform: uppercase;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
             letter-spacing: 0.5px;
         }
 
+        .confirm-table td {
+            padding: 10px 10px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .confirm-table tr:last-child td { border-bottom: none; }
+
+        .confirm-table .plus { color: var(--primary); font-weight: 700; }
+        .confirm-table .total { color: var(--text); font-weight: 800; font-size: 16px; }
+        .confirm-table .equals { color: var(--text-tertiary); }
+
+        .confirm-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-confirm-ok {
+            flex: 1;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-confirm-ok:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(34,197,94,0.35); }
+
+        .btn-confirm-cancel {
+            flex: 1;
+            padding: 13px;
+            background: var(--input);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-confirm-cancel:hover { background: var(--border); }
+
+        /* ─── HISTORY MODAL ─── */
+        .history-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 7px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--input);
+            color: var(--text-tertiary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.5);
+            color: var(--primary);
+        }
+
+        .filter-btn:hover:not(.active) { border-color: var(--text-tertiary); color: var(--text-secondary); }
+
+        .history-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            padding: 12px 10px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .summary-card.recv  { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); }
+        .summary-card.rem   { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.25); }
+        .summary-card.sold  { background: rgba(34,197,94,0.08);   border: 1px solid rgba(34,197,94,0.25); }
+        .summary-card.waste { background: rgba(239,68,68,0.08);   border: 1px solid rgba(239,68,68,0.25); }
+
+        .summary-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .summary-card.recv  .summary-label { color: #f59e0b; }
+        .summary-card.rem   .summary-label { color: #60a5fa; }
+        .summary-card.sold  .summary-label { color: #4ade80; }
+        .summary-card.waste .summary-label { color: #f87171; }
+
+        .summary-value { font-size: 22px; font-weight: 800; color: var(--text); }
+
+        .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        .history-table th,
+        .history-table td { padding: 9px 11px; text-align: left; border-bottom: 1px solid rgba(71, 85, 105, 0.3); }
+
+        .history-table th { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
         .history-table tr:hover td { background: rgba(255,255,255,0.02); }
 
-        .no-data {
-            text-align: center;
-            padding: 48px;
+        .no-data { text-align: center; padding: 48px; color: var(--text-tertiary); font-size: 15px; }
+
+        /* ─── KEYBOARD HINTS ─── */
+        .kbd-hint {
+            font-size: 10px;
+            background: rgba(71, 85, 105, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-family: monospace;
             color: var(--text-tertiary);
-            font-size: 15px;
+            vertical-align: middle;
         }
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 1024px) {
-            .entries-grid,
-            .skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+            .entries-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+            .history-summary { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 768px) {
             body { padding: 12px; }
-
-            .entries-grid,
-            .skeleton-grid { grid-template-columns: 1fr; }
-
+            .entries-grid, .skeleton-grid { grid-template-columns: 1fr; }
             .header-top { flex-direction: column; align-items: flex-start; }
-
             .date-display { display: none; }
+            .history-summary { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 500px) {
-            /* Mobilde input kutucukları dikey */
-            .card-inputs {
-                grid-template-columns: 1fr;
-            }
-
+            .card-inputs { grid-template-columns: 1fr; }
             .input-box { border-right: none; border-bottom: 1px solid rgba(71, 85, 105, 0.2); }
             .input-box:last-child { border-bottom: none; }
-
-            .number-input { font-size: 22px; }
+            .number-input { font-size: 20px; }
+            .confirm-table { font-size: 12px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
 
-        <!-- ─── Header ─── -->
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb" id="breadcrumb">
+            <a href="index.html">🏠 Ana Sayfa</a>
+            <span class="sep">›</span>
+            <span class="current" id="breadcrumbBranch">Şube</span>
+        </nav>
+
+        <!-- Header -->
         <header id="pageHeader">
             <div class="header-top">
                 <div class="branch-info">
@@ -628,27 +765,40 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="showHistory()">
+                    <button class="btn btn-secondary" onclick="showHistory()" title="Ctrl+H">
                         <span>📜</span><span>Geçmiş</span>
                     </button>
-                    <button class="btn btn-secondary" onclick="goHome()">
-                        <span>🏠</span><span>Ana Sayfa</span>
+                    <button class="btn btn-danger" onclick="confirmLogout()" title="Ctrl+Q">
+                        <span>🚪</span><span>Çıkış</span>
                     </button>
                 </div>
             </div>
 
+            <!-- Mod Seçici -->
+            <div class="mode-selector">
+                <button class="mode-btn active" id="modeIncremental" onclick="setMode('incremental')">
+                    ➕ Yeni Teslimat Ekle
+                </button>
+                <button class="mode-btn" id="modeTotal" onclick="setMode('total')">
+                    📝 Toplam Değer Gir
+                </button>
+            </div>
+            <p class="mode-desc" id="modeDesc">
+                <strong>Artımsal mod:</strong> GELEN mevcut değere eklenir. Yeni teslimat geldiğinde kullanın.
+            </p>
+
             <!-- Tarih Seçici -->
-            <div class="date-selector">
-                <button class="date-nav-btn" id="prevDayBtn" onclick="changeDate(-1)" title="Önceki gün">◀</button>
+            <div class="date-selector" style="margin-top:12px">
+                <button class="date-nav-btn" id="prevDayBtn" onclick="changeDate(-1)" title="← Önceki">◀</button>
                 <input type="date" id="entryDate" onchange="onDateChange()">
-                <button class="date-nav-btn" id="nextDayBtn" onclick="changeDate(1)" title="Sonraki gün">▶</button>
+                <button class="date-nav-btn" id="nextDayBtn" onclick="changeDate(1)" title="→ Sonraki">▶</button>
                 <span class="date-display" id="dateDisplay"></span>
-                <span class="past-pill" id="pastPill">📅 Geçmiş Kayıt</span>
-                <button class="btn-today" id="todayBtn" onclick="goToToday()">⏎ Bugüne Dön</button>
+                <span class="past-pill" id="pastPill">📅 Geçmiş</span>
+                <button class="btn-today" id="todayBtn" onclick="goToToday()">⏎ Bugün</button>
             </div>
         </header>
 
-        <!-- Skeleton Loader -->
+        <!-- Skeleton -->
         <div class="skeleton-grid" id="skeletonLoader">
             <div class="skeleton-card"></div>
             <div class="skeleton-card"></div>
@@ -686,19 +836,61 @@
             <button class="btn-save" id="saveBtn" onclick="saveAllEntries()">
                 <span id="saveBtnIcon">💾</span>
                 <span id="saveBtnText">Tüm Verileri Kaydet</span>
+                <span class="kbd-hint">Ctrl+S</span>
             </button>
         </div>
 
     </div><!-- /container -->
 
-    <!-- Geçmiş Modal -->
+    <!-- Onay Modalı -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content narrow">
+            <div class="modal-header">
+                <h3 class="modal-title">✅ Kaydetmeden Önce Kontrol Et</h3>
+                <button class="close-btn" onclick="closeConfirm(false)">✕</button>
+            </div>
+            <div id="confirmContent"></div>
+            <div class="confirm-btns">
+                <button class="btn-confirm-cancel" onclick="closeConfirm(false)">✗ İptal</button>
+                <button class="btn-confirm-ok" onclick="closeConfirm(true)">✓ Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geçmiş Modalı -->
     <div class="modal" id="historyModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">📜 Geçmiş Veriler (Son 7 Gün)</h3>
+                <h3 class="modal-title">📜 Geçmiş Veriler</h3>
                 <button class="close-btn" onclick="closeHistory()">✕</button>
             </div>
+
+            <div class="history-filters">
+                <button class="filter-btn active" data-filter="week" onclick="applyFilter('week')">Bu Hafta</button>
+                <button class="filter-btn" data-filter="month" onclick="applyFilter('month')">Bu Ay</button>
+                <button class="filter-btn" data-filter="today" onclick="applyFilter('today')">Yalnız Bugün</button>
+            </div>
+
+            <div class="history-summary" id="historySummary"></div>
             <div id="historyContent"></div>
+        </div>
+    </div>
+
+    <!-- Çıkış Onay Modalı -->
+    <div class="modal" id="logoutModal">
+        <div class="modal-content narrow">
+            <div class="modal-header">
+                <h3 class="modal-title">🚪 Çıkış</h3>
+                <button class="close-btn" onclick="closeLogout()">✕</button>
+            </div>
+            <p style="margin-bottom:24px;color:var(--text-secondary)">
+                Çıkış yapmak istediğinize emin misiniz?<br>
+                <span style="font-size:12px;color:var(--text-tertiary)">Kaydedilmemiş veriler kaybolabilir.</span>
+            </p>
+            <div class="confirm-btns">
+                <button class="btn-confirm-cancel" onclick="closeLogout()">Hayır, Kal</button>
+                <button class="btn-confirm-ok" onclick="doLogout()" style="background:linear-gradient(135deg,#ef4444,#dc2626)">Evet, Çık</button>
+            </div>
         </div>
     </div>
 
@@ -712,7 +904,15 @@
         let desserts      = [];
         let selectedDate  = getTodayDate();
         const todayDate   = getTodayDate();
-        let entryData     = {};
+
+        // savedData: what's currently in DB for selectedDate
+        let savedData  = {};
+        // entryData: what the user has typed in inputs
+        let entryData  = {};
+
+        let entryMode         = 'incremental'; // 'incremental' | 'total'
+        let confirmResolve    = null;
+        let currentHistFilter = 'week';
 
         const branchEmojis = {
             'Rumeli İskelesi': '🌊',
@@ -737,30 +937,99 @@
             branchNameStr     = localStorage.getItem('branchName') || 'Şube';
             const managerName = localStorage.getItem('managerName');
 
-            document.getElementById('branchNameEl').textContent  = branchNameStr;
-            document.getElementById('branchEmoji').textContent   = branchEmojis[branchNameStr] || '🏪';
+            document.getElementById('branchNameEl').textContent      = branchNameStr;
+            document.getElementById('branchEmoji').textContent        = branchEmojis[branchNameStr] || '🏪';
+            document.getElementById('breadcrumbBranch').textContent   = branchNameStr;
             if (managerName) {
                 document.getElementById('managerNameEl').textContent = `Müdür: ${managerName}`;
             }
 
-            const dateInput = document.getElementById('entryDate');
-            dateInput.value = selectedDate;
-            dateInput.max   = todayDate;
+            const dateInput  = document.getElementById('entryDate');
+            dateInput.value  = selectedDate;
+            dateInput.max    = todayDate;
             updateDateDisplay();
 
-            // Header animasyonu
             anime({
-                targets: '#pageHeader',
+                targets: '#pageHeader, .breadcrumb',
                 opacity: [0, 1],
-                translateY: [-28, 0],
-                duration: 650,
+                translateY: [-20, 0],
+                delay: anime.stagger(80),
+                duration: 600,
                 easing: 'easeOutExpo',
             });
 
             await loadData(selectedDate);
         });
 
-        // ─── Tarih Yönetimi ───
+        // ─── Mode ───
+        const modeDescs = {
+            incremental: '<strong>Artımsal mod:</strong> GELEN mevcut değere eklenir. Yeni teslimat geldiğinde kullanın.',
+            total:       '<strong>Toplam mod:</strong> Girilen değer doğrudan kaydedilir. Düzeltme yapmak için kullanın.',
+        };
+
+        function setMode(mode) {
+            entryMode = mode;
+            document.getElementById('modeIncremental').classList.toggle('active', mode === 'incremental');
+            document.getElementById('modeTotal').classList.toggle('active', mode === 'total');
+            document.getElementById('modeDesc').innerHTML = modeDescs[mode];
+
+            // Grid class for visual cue
+            const grid = document.getElementById('entriesGrid');
+            grid.classList.toggle('incremental-mode', mode === 'incremental');
+
+            // Update inputs based on mode
+            refreshInputsForMode();
+
+            // Update save button text
+            document.getElementById('saveBtnText').textContent =
+                mode === 'incremental' ? 'Yeni Teslimatı Ekle' : 'Toplam Değeri Kaydet';
+            document.getElementById('saveBtnIcon').textContent =
+                mode === 'incremental' ? '➕' : '💾';
+        }
+
+        function refreshInputsForMode() {
+            desserts.forEach(dessert => {
+                const receivedInput = document.querySelector(
+                    `input[data-dessert="${dessert.id}"][data-field="received"]`
+                );
+                const remainingInput = document.querySelector(
+                    `input[data-dessert="${dessert.id}"][data-field="remaining"]`
+                );
+                const wasteInput = document.querySelector(
+                    `input[data-dessert="${dessert.id}"][data-field="waste"]`
+                );
+
+                if (!receivedInput) return;
+
+                const saved = savedData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
+
+                if (entryMode === 'incremental') {
+                    receivedInput.value  = 0;
+                    remainingInput.value = saved.remaining;
+                    wasteInput.value     = saved.waste;
+                    receivedInput.placeholder  = 'Yeni gelen';
+                    remainingInput.placeholder = 'Güncel kalan';
+                    wasteInput.placeholder     = 'Güncel zayiat';
+                } else {
+                    receivedInput.value  = saved.received;
+                    remainingInput.value = saved.remaining;
+                    wasteInput.value     = saved.waste;
+                    receivedInput.placeholder  = 'Toplam gelen';
+                    remainingInput.placeholder = 'Toplam kalan';
+                    wasteInput.placeholder     = 'Toplam zayiat';
+                }
+
+                entryData[dessert.id] = {
+                    received:  parseInt(receivedInput.value)  || 0,
+                    remaining: parseInt(remainingInput.value) || 0,
+                    waste:     parseInt(wasteInput.value)     || 0,
+                };
+
+                updateSoldBadge(dessert.id);
+            });
+        }
+
+        // ─── Date ───
         function updateDateDisplay() {
             document.getElementById('dateDisplay').textContent = formatDateTurkish(selectedDate);
             const isToday = selectedDate === todayDate;
@@ -773,10 +1042,7 @@
             const d = new Date(selectedDate + 'T00:00:00');
             d.setDate(d.getDate() + delta);
             const next = d.toISOString().split('T')[0];
-            if (next > todayDate) {
-                showToast('Gelecek tarihe veri girişi yapılamaz!', 'error');
-                return;
-            }
+            if (next > todayDate) { showToast('Gelecek tarihe veri girişi yapılamaz!', 'error'); return; }
             selectedDate = next;
             document.getElementById('entryDate').value = selectedDate;
             updateDateDisplay();
@@ -803,27 +1069,25 @@
             loadData(selectedDate);
         }
 
-        // ─── Veri Yükleme ───
+        // ─── Load Data ───
         async function loadData(date) {
+            savedData = {};
             entryData = {};
 
-            // Skeleton göster
             document.getElementById('skeletonLoader').style.display = 'grid';
             document.getElementById('entriesGrid').style.display    = 'none';
             document.getElementById('emptyState').style.display     = 'none';
             document.getElementById('notesSection').style.display   = 'none';
             document.getElementById('saveSection').style.display    = 'none';
 
-            // Tatlılar yoksa çek
             if (desserts.length === 0) {
                 desserts = await getActiveDesserts();
             }
 
-            // O günün kayıtları
             const entries = await getDailyEntriesByBranch(branchId, date);
 
             entries.forEach(e => {
-                entryData[e.dessert_id] = {
+                savedData[e.dessert_id] = {
                     received:  e.received_amount  || 0,
                     remaining: e.remaining_amount || 0,
                     waste:     e.waste_amount     || 0,
@@ -835,7 +1099,6 @@
             document.getElementById('notesInput').value = notesVal;
             onNotesInput();
 
-            // Skeleton gizle
             document.getElementById('skeletonLoader').style.display = 'none';
 
             if (desserts.length === 0) {
@@ -849,14 +1112,13 @@
             document.getElementById('notesSection').style.display = 'block';
             document.getElementById('saveSection').style.display  = 'block';
 
-            // Kart animasyonu
             anime({
                 targets: '.entry-card',
                 opacity:    [0, 1],
-                translateY: [18, 0],
-                scale:      [0.96, 1],
-                delay: anime.stagger(55, { start: 80 }),
-                duration: 380,
+                translateY: [16, 0],
+                scale:      [0.97, 1],
+                delay: anime.stagger(50, { start: 80 }),
+                duration: 360,
                 easing: 'easeOutBack',
             });
         }
@@ -865,10 +1127,33 @@
         function renderEntries() {
             const grid = document.getElementById('entriesGrid');
             grid.innerHTML = '';
+            grid.classList.toggle('incremental-mode', entryMode === 'incremental');
 
             desserts.forEach(dessert => {
-                const data = entryData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
-                const sold = calcSold(data.received, data.remaining, data.waste);
+                const saved = savedData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
+
+                // Initial entry data
+                const initReceived  = entryMode === 'incremental' ? 0         : saved.received;
+                const initRemaining = saved.remaining;
+                const initWaste     = saved.waste;
+
+                entryData[dessert.id] = {
+                    received:  initReceived,
+                    remaining: initRemaining,
+                    waste:     initWaste,
+                };
+
+                const totalReceived = entryMode === 'incremental'
+                    ? saved.received + initReceived
+                    : initReceived;
+                const sold = totalReceived - initRemaining - initWaste;
+
+                const hasSavedData  = saved.received > 0 || saved.remaining > 0 || saved.waste > 0;
+                const currentInfoHtml = hasSavedData
+                    ? `Kayıtlı: <strong>${saved.received}</strong> geldi,
+                       <strong>${saved.remaining}</strong> kaldı,
+                       <strong>${saved.waste}</strong> zayiat`
+                    : 'Henüz kayıt yok';
 
                 const card = document.createElement('div');
                 card.className = 'entry-card';
@@ -877,8 +1162,11 @@
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="dessert-info">
-                            <span class="dessert-emoji">${dessert.emoji || '🍰'}</span>
-                            <span class="dessert-name">${dessert.name}</span>
+                            <div class="dessert-top">
+                                <span class="dessert-emoji">${dessert.emoji || '🍰'}</span>
+                                <span class="dessert-name">${dessert.name}</span>
+                            </div>
+                            <div class="current-info" id="info-${dessert.id}">${currentInfoHtml}</div>
                         </div>
                         <div class="sold-badge">
                             <span class="sold-label">Satılan</span>
@@ -890,28 +1178,31 @@
                         <div class="input-box received" onclick="this.querySelector('input').focus()">
                             <span class="input-box-label">Gelen</span>
                             <input type="number" class="number-input" min="0"
-                                value="${data.received}"
+                                value="${initReceived}"
+                                placeholder="${entryMode === 'incremental' ? 'Yeni gelen' : 'Toplam gelen'}"
                                 data-dessert="${dessert.id}" data-field="received"
                                 oninput="updateEntry(this)" onfocus="this.select()">
+                            <span class="additive-tag">+ ekle</span>
                         </div>
                         <div class="input-box remaining" onclick="this.querySelector('input').focus()">
                             <span class="input-box-label">Kalan</span>
                             <input type="number" class="number-input" min="0"
-                                value="${data.remaining}"
+                                value="${initRemaining}"
+                                placeholder="Kalan"
                                 data-dessert="${dessert.id}" data-field="remaining"
                                 oninput="updateEntry(this)" onfocus="this.select()">
                         </div>
                         <div class="input-box waste" onclick="this.querySelector('input').focus()">
                             <span class="input-box-label">Zayiat</span>
                             <input type="number" class="number-input" min="0"
-                                value="${data.waste}"
+                                value="${initWaste}"
+                                placeholder="Zayiat"
                                 data-dessert="${dessert.id}" data-field="waste"
                                 oninput="updateEntry(this)" onfocus="this.select()">
                         </div>
                     </div>
-
                     <div class="error-row" id="error-${dessert.id}">
-                        ⚠ Kalan + Zayiat, Gelen miktardan fazla olamaz!
+                        ⚠ Kalan + Zayiat, toplam Gelenden fazla olamaz!
                     </div>
                 `;
 
@@ -919,7 +1210,7 @@
             });
         }
 
-        // ─── Entry Güncelleme ───
+        // ─── Entry Update ───
         function updateEntry(input) {
             const dessertId = input.dataset.dessert;
             const field     = input.dataset.field;
@@ -931,79 +1222,122 @@
             }
             entryData[dessertId][field] = value;
 
+            updateSoldBadge(dessertId);
+
+            // Validation
             const data  = entryData[dessertId];
-            const sold  = calcSold(data.received, data.remaining, data.waste);
-            const isErr = (data.remaining + data.waste) > data.received && data.received > 0;
+            const saved = savedData[dessertId] || { received: 0, remaining: 0, waste: 0 };
+            const totalRecv = entryMode === 'incremental'
+                ? saved.received + data.received
+                : data.received;
+            const isErr = totalRecv > 0 && (data.remaining + data.waste) > totalRecv;
 
-            // Satılan badge güncelle
-            const soldEl = document.getElementById(`sold-${dessertId}`);
-            soldEl.textContent = sold;
-            soldEl.classList.toggle('negative', sold < 0);
-
-            anime({
-                targets: `#sold-${dessertId}`,
-                scale: [1.35, 1],
-                duration: 240,
-                easing: 'easeOutBack',
-            });
-
-            // Hata toggle
             document.getElementById(`error-${dessertId}`).classList.toggle('show', isErr);
             document.getElementById(`card-${dessertId}`).classList.toggle('has-error', isErr);
         }
 
-        function calcSold(received, remaining, waste) {
-            return received - remaining - waste;
+        function updateSoldBadge(dessertId) {
+            const data  = entryData[dessertId] || { received: 0, remaining: 0, waste: 0 };
+            const saved = savedData[dessertId]  || { received: 0, remaining: 0, waste: 0 };
+            const totalRecv = entryMode === 'incremental'
+                ? saved.received + data.received
+                : data.received;
+            const sold = totalRecv - data.remaining - data.waste;
+
+            const soldEl = document.getElementById(`sold-${dessertId}`);
+            if (!soldEl) return;
+            soldEl.textContent = sold;
+            soldEl.classList.toggle('negative', sold < 0);
+            anime({ targets: `#sold-${dessertId}`, scale: [1.35, 1], duration: 230, easing: 'easeOutBack' });
         }
 
-        // ─── Notlar ───
+        // ─── Notes ───
         function onNotesInput() {
-            const ta      = document.getElementById('notesInput');
-            const counter = document.getElementById('charCounter');
-            const len     = ta.value.length;
-            counter.textContent = `${len} / 500`;
-            counter.classList.toggle('warning', len > 400);
+            const ta  = document.getElementById('notesInput');
+            const ctr = document.getElementById('charCounter');
+            const len = ta.value.length;
+            ctr.textContent = `${len} / 500`;
+            ctr.classList.toggle('warning', len > 400);
             ta.style.height = 'auto';
             ta.style.height = ta.scrollHeight + 'px';
         }
 
-        // ─── Kaydet ───
+        // ─── Save ───
         async function saveAllEntries() {
-            // Validation
-            const errIds = Object.keys(entryData).filter(id => {
-                const d = entryData[id];
-                return d.received > 0 && (d.remaining + d.waste) > d.received;
-            });
+            // Check errors
+            const errIds = desserts.filter(d => {
+                const data  = entryData[d.id]  || { received: 0, remaining: 0, waste: 0 };
+                const saved = savedData[d.id]  || { received: 0, remaining: 0, waste: 0 };
+                const totalRecv = entryMode === 'incremental'
+                    ? saved.received + data.received : data.received;
+                return totalRecv > 0 && (data.remaining + data.waste) > totalRecv;
+            }).map(d => d.id);
 
             if (errIds.length > 0) {
-                showToast('Lütfen kırmızı işaretli hataları düzeltin!', 'error');
-                anime({
-                    targets: errIds.map(id => `#card-${id}`),
-                    translateX: [-8, 8, -6, 6, -3, 3, 0],
-                    duration: 500,
-                    easing: 'easeInOutSine',
-                });
+                showToast('Kırmızı hataları düzeltin!', 'error');
+                anime({ targets: errIds.map(id => `#card-${id}`), translateX: [-8,8,-6,6,-3,3,0], duration: 500, easing: 'easeInOutSine' });
                 return;
             }
 
+            // Check if anything changed
+            const hasChanges = desserts.some(d => {
+                const data = entryData[d.id] || { received: 0, remaining: 0, waste: 0 };
+                if (entryMode === 'incremental') return data.received > 0 || data.remaining !== (savedData[d.id]?.remaining || 0) || data.waste !== (savedData[d.id]?.waste || 0);
+                return true;
+            });
+
+            if (!hasChanges) {
+                showToast('Değişiklik yok, kaydedilecek bir şey bulunamadı.', 'info');
+                return;
+            }
+
+            // Build confirmation items
+            const confirmItems = desserts.map(d => {
+                const data  = entryData[d.id]  || { received: 0, remaining: 0, waste: 0 };
+                const saved = savedData[d.id]  || { received: 0, remaining: 0, waste: 0 };
+                return {
+                    dessert:       d,
+                    savedReceived: saved.received,
+                    newReceived:   data.received,
+                    totalReceived: entryMode === 'incremental' ? saved.received + data.received : data.received,
+                    remaining:     data.remaining,
+                    waste:         data.waste,
+                };
+            }).filter(item =>
+                entryMode === 'incremental'
+                    ? (item.newReceived > 0 || item.remaining !== (savedData[item.dessert.id]?.remaining || 0) || item.waste !== (savedData[item.dessert.id]?.waste || 0))
+                    : true
+            );
+
+            // Show confirm modal
+            const ok = await showConfirmDialog(confirmItems);
+            if (!ok) return;
+
+            // Execute save
             const btn   = document.getElementById('saveBtn');
             const icon  = document.getElementById('saveBtnIcon');
             const txtEl = document.getElementById('saveBtnText');
             const notes = document.getElementById('notesInput').value.trim();
 
-            btn.disabled      = true;
+            btn.disabled = true;
             icon.textContent  = '⏳';
             txtEl.textContent = 'Kaydediliyor...';
 
-            let ok = 0, fail = 0;
+            let ok2 = 0, fail = 0;
 
             for (const dessert of desserts) {
-                const data   = entryData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
+                const data  = entryData[dessert.id]  || { received: 0, remaining: 0, waste: 0 };
+                const saved = savedData[dessert.id]  || { received: 0, remaining: 0, waste: 0 };
+
+                const finalReceived = entryMode === 'incremental'
+                    ? saved.received + data.received
+                    : data.received;
+
                 const result = await saveDailyEntry(
                     branchId, dessert.id, selectedDate,
-                    data.received, data.remaining, data.waste, notes
+                    finalReceived, data.remaining, data.waste, notes
                 );
-                result.success ? ok++ : fail++;
+                result.success ? ok2++ : fail++;
             }
 
             btn.disabled = false;
@@ -1012,124 +1346,264 @@
                 icon.textContent  = '✅';
                 txtEl.textContent = 'Kaydedildi!';
                 btn.classList.add('saved');
-                anime({
-                    targets: '#saveBtn',
-                    scale: [1, 1.03, 1],
-                    duration: 600,
-                    easing: 'easeInOutSine',
-                });
+                anime({ targets: '#saveBtn', scale: [1, 1.03, 1], duration: 600, easing: 'easeInOutSine' });
                 showToast('Tüm veriler başarıyla kaydedildi!', 'success');
-                setTimeout(() => {
-                    icon.textContent  = '💾';
-                    txtEl.textContent = 'Tüm Verileri Kaydet';
-                    btn.classList.remove('saved');
-                }, 3000);
+
+                // Refresh savedData
+                await loadData(selectedDate);
             } else {
                 icon.textContent  = '⚠️';
-                txtEl.textContent = `${ok} başarılı, ${fail} hata`;
-                showToast(`${ok} kayıt başarılı, ${fail} hata oluştu!`, 'error');
+                txtEl.textContent = `${ok2} başarılı, ${fail} hata`;
+                showToast(`${ok2} kayıt başarılı, ${fail} hata oluştu!`, 'error');
                 setTimeout(() => {
-                    icon.textContent  = '💾';
-                    txtEl.textContent = 'Tüm Verileri Kaydet';
+                    icon.textContent  = entryMode === 'incremental' ? '➕' : '💾';
+                    txtEl.textContent = entryMode === 'incremental' ? 'Yeni Teslimatı Ekle' : 'Toplam Değeri Kaydet';
                 }, 3000);
             }
         }
 
-        // ─── Geçmiş Modal ───
-        async function showHistory() {
-            toggleLoading(true);
-            const historyData = await getLastSevenDays(branchId);
-            toggleLoading(false);
+        // ─── Confirm Dialog ───
+        function showConfirmDialog(items) {
+            return new Promise(resolve => {
+                confirmResolve = resolve;
+                const content = document.getElementById('confirmContent');
 
-            const content = document.getElementById('historyContent');
-
-            if (historyData.length === 0) {
-                content.innerHTML = '<div class="no-data">📭 Henüz geçmiş veri bulunmuyor.</div>';
-            } else {
-                const grouped = {};
-                historyData.forEach(e => {
-                    if (!grouped[e.entry_date]) grouped[e.entry_date] = [];
-                    grouped[e.entry_date].push(e);
-                });
-
-                let html = '';
-                Object.keys(grouped).sort().reverse().forEach(date => {
-                    const entries       = grouped[date];
-                    const totalReceived  = entries.reduce((s, e) => s + (e.received_amount  || 0), 0);
-                    const totalRemaining = entries.reduce((s, e) => s + (e.remaining_amount || 0), 0);
-                    const totalWaste     = entries.reduce((s, e) => s + (e.waste_amount     || 0), 0);
-                    const totalSold      = totalReceived - totalRemaining - totalWaste;
-                    const isToday        = date === todayDate;
-
-                    html += `
-                        <div style="margin-bottom:32px">
-                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-                                <span style="font-size:15px;font-weight:700;color:var(--primary)">${formatDateTurkish(date)}</span>
-                                ${isToday ? `<span style="font-size:10px;background:rgba(245,158,11,0.15);color:var(--primary);padding:2px 10px;border-radius:20px;font-weight:700">BUGÜN</span>` : ''}
-                            </div>
-                            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
-                                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);padding:12px;border-radius:12px;text-align:center">
-                                    <div style="font-size:10px;color:#f59e0b;font-weight:700;text-transform:uppercase;margin-bottom:6px">Gelen</div>
-                                    <div style="font-size:22px;font-weight:800">${totalReceived}</div>
-                                </div>
-                                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);padding:12px;border-radius:12px;text-align:center">
-                                    <div style="font-size:10px;color:#60a5fa;font-weight:700;text-transform:uppercase;margin-bottom:6px">Kalan</div>
-                                    <div style="font-size:22px;font-weight:800">${totalRemaining}</div>
-                                </div>
-                                <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);padding:12px;border-radius:12px;text-align:center">
-                                    <div style="font-size:10px;color:#4ade80;font-weight:700;text-transform:uppercase;margin-bottom:6px">Satılan</div>
-                                    <div style="font-size:22px;font-weight:800;color:var(--success)">${totalSold}</div>
-                                </div>
-                                <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);padding:12px;border-radius:12px;text-align:center">
-                                    <div style="font-size:10px;color:#f87171;font-weight:700;text-transform:uppercase;margin-bottom:6px">Zayiat</div>
-                                    <div style="font-size:22px;font-weight:800;color:var(--danger)">${totalWaste}</div>
-                                </div>
-                            </div>
-                            <table class="history-table">
-                                <thead>
-                                    <tr>
-                                        <th>Tatlı</th>
-                                        <th>Gelen</th>
-                                        <th>Kalan</th>
-                                        <th>Zayiat</th>
-                                        <th>Satılan</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${entries.map(e => {
-                                        const s = (e.received_amount||0) - (e.remaining_amount||0) - (e.waste_amount||0);
-                                        return `<tr>
-                                            <td>${e.desserts.emoji} ${e.desserts.name}</td>
-                                            <td>${e.received_amount  || 0}</td>
-                                            <td>${e.remaining_amount || 0}</td>
-                                            <td>${e.waste_amount     || 0}</td>
-                                            <td style="color:var(--success);font-weight:700">${s}</td>
-                                        </tr>`;
-                                    }).join('')}
-                                </tbody>
-                            </table>
-                        </div>
+                let rows = '';
+                items.forEach(item => {
+                    const sold = item.totalReceived - item.remaining - item.waste;
+                    rows += `
+                        <tr>
+                            <td>${item.dessert.emoji} <strong>${item.dessert.name}</strong></td>
+                            <td>
+                                ${entryMode === 'incremental' && item.newReceived > 0
+                                    ? `${item.savedReceived} <span class="plus">+${item.newReceived}</span> = <span class="total">${item.totalReceived}</span>`
+                                    : `<span class="total">${item.totalReceived}</span>`
+                                }
+                            </td>
+                            <td>${item.remaining}</td>
+                            <td>${item.waste}</td>
+                            <td style="color:var(--success);font-weight:700">${sold >= 0 ? sold : '⚠'}</td>
+                        </tr>
                     `;
                 });
 
-                content.innerHTML = html;
+                content.innerHTML = `
+                    <table class="confirm-table" style="margin-bottom:20px">
+                        <thead>
+                            <tr>
+                                <th>Tatlı</th>
+                                <th>Gelen</th>
+                                <th>Kalan</th>
+                                <th>Zayiat</th>
+                                <th>Satılan</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+
+                document.getElementById('confirmModal').classList.add('active');
+            });
+        }
+
+        function closeConfirm(result) {
+            document.getElementById('confirmModal').classList.remove('active');
+            if (confirmResolve) { confirmResolve(result); confirmResolve = null; }
+        }
+
+        // ─── History ───
+        async function showHistory() {
+            document.getElementById('historyModal').classList.add('active');
+            await loadHistory(currentHistFilter);
+        }
+
+        async function applyFilter(filter) {
+            currentHistFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            await loadHistory(filter);
+        }
+
+        async function loadHistory(filter) {
+            document.getElementById('historySummary').innerHTML =
+                '<div style="color:var(--text-tertiary);font-size:13px;padding:8px 0">Yükleniyor...</div>';
+            document.getElementById('historyContent').innerHTML = '';
+
+            const today = todayDate;
+            let startDate;
+
+            if (filter === 'today') {
+                startDate = today;
+            } else if (filter === 'week') {
+                const d = new Date(today + 'T00:00:00');
+                d.setDate(d.getDate() - 7);
+                startDate = d.toISOString().split('T')[0];
+            } else if (filter === 'month') {
+                const d = new Date(today + 'T00:00:00');
+                d.setDate(d.getDate() - 30);
+                startDate = d.toISOString().split('T')[0];
             }
 
-            document.getElementById('historyModal').classList.add('active');
+            toggleLoading(true);
+            const allData = await getDailyEntriesDateRange(startDate, today);
+            toggleLoading(false);
+
+            // Filter by this branch
+            const historyData = allData.filter(e => e.branch_id === branchId);
+
+            if (historyData.length === 0) {
+                document.getElementById('historySummary').innerHTML = '';
+                document.getElementById('historyContent').innerHTML =
+                    '<div class="no-data">📭 Bu aralıkta veri bulunamadı.</div>';
+                return;
+            }
+
+            // Totals
+            const totRecv  = historyData.reduce((s, e) => s + (e.received_amount  || 0), 0);
+            const totRem   = historyData.reduce((s, e) => s + (e.remaining_amount || 0), 0);
+            const totWaste = historyData.reduce((s, e) => s + (e.waste_amount     || 0), 0);
+            const totSold  = totRecv - totRem - totWaste;
+
+            document.getElementById('historySummary').innerHTML = `
+                <div class="summary-card recv">
+                    <div class="summary-label">Toplam Gelen</div>
+                    <div class="summary-value">${totRecv}</div>
+                </div>
+                <div class="summary-card rem">
+                    <div class="summary-label">Toplam Kalan</div>
+                    <div class="summary-value">${totRem}</div>
+                </div>
+                <div class="summary-card sold">
+                    <div class="summary-label">Toplam Satılan</div>
+                    <div class="summary-value">${totSold}</div>
+                </div>
+                <div class="summary-card waste">
+                    <div class="summary-label">Toplam Zayiat</div>
+                    <div class="summary-value">${totWaste}</div>
+                </div>
+            `;
+
+            // Group by date
+            const grouped = {};
+            historyData.forEach(e => {
+                if (!grouped[e.entry_date]) grouped[e.entry_date] = [];
+                grouped[e.entry_date].push(e);
+            });
+
+            let html = '';
+            Object.keys(grouped).sort().reverse().forEach(date => {
+                const entries    = grouped[date];
+                const dRecv  = entries.reduce((s, e) => s + (e.received_amount  || 0), 0);
+                const dRem   = entries.reduce((s, e) => s + (e.remaining_amount || 0), 0);
+                const dWaste = entries.reduce((s, e) => s + (e.waste_amount     || 0), 0);
+                const dSold  = dRecv - dRem - dWaste;
+                const isToday = date === todayDate;
+
+                html += `
+                    <div style="margin-bottom:28px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                            <span style="font-size:14px;font-weight:700;color:var(--primary)">${formatDateTurkish(date)}</span>
+                            ${isToday ? `<span style="font-size:10px;background:rgba(245,158,11,0.15);color:var(--primary);padding:2px 8px;border-radius:20px;font-weight:700">BUGÜN</span>` : ''}
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+                            <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);padding:10px;border-radius:10px;text-align:center">
+                                <div style="font-size:10px;color:#f59e0b;font-weight:700;text-transform:uppercase;margin-bottom:4px">Gelen</div>
+                                <div style="font-size:20px;font-weight:800">${dRecv}</div>
+                            </div>
+                            <div style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);padding:10px;border-radius:10px;text-align:center">
+                                <div style="font-size:10px;color:#60a5fa;font-weight:700;text-transform:uppercase;margin-bottom:4px">Kalan</div>
+                                <div style="font-size:20px;font-weight:800">${dRem}</div>
+                            </div>
+                            <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.2);padding:10px;border-radius:10px;text-align:center">
+                                <div style="font-size:10px;color:#4ade80;font-weight:700;text-transform:uppercase;margin-bottom:4px">Satılan</div>
+                                <div style="font-size:20px;font-weight:800;color:var(--success)">${dSold}</div>
+                            </div>
+                            <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);padding:10px;border-radius:10px;text-align:center">
+                                <div style="font-size:10px;color:#f87171;font-weight:700;text-transform:uppercase;margin-bottom:4px">Zayiat</div>
+                                <div style="font-size:20px;font-weight:800;color:var(--danger)">${dWaste}</div>
+                            </div>
+                        </div>
+                        <table class="history-table">
+                            <thead>
+                                <tr><th>Tatlı</th><th>Gelen</th><th>Kalan</th><th>Zayiat</th><th>Satılan</th></tr>
+                            </thead>
+                            <tbody>
+                                ${entries.map(e => {
+                                    const s = (e.received_amount||0) - (e.remaining_amount||0) - (e.waste_amount||0);
+                                    return `<tr>
+                                        <td>${e.desserts.emoji} ${e.desserts.name}</td>
+                                        <td>${e.received_amount  || 0}</td>
+                                        <td>${e.remaining_amount || 0}</td>
+                                        <td>${e.waste_amount     || 0}</td>
+                                        <td style="color:var(--success);font-weight:700">${s}</td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+
+            document.getElementById('historyContent').innerHTML = html;
         }
 
         function closeHistory() {
             document.getElementById('historyModal').classList.remove('active');
         }
 
-        function goHome() {
-            if (confirm('Ana sayfaya dönmek istediğinize emin misiniz? Kaydedilmemiş veriler kaybolabilir.')) {
-                window.location.href = 'index.html';
-            }
+        // ─── Logout ───
+        function confirmLogout() {
+            document.getElementById('logoutModal').classList.add('active');
         }
 
-        document.getElementById('historyModal').addEventListener('click', e => {
-            if (e.target.id === 'historyModal') closeHistory();
+        function closeLogout() {
+            document.getElementById('logoutModal').classList.remove('active');
+        }
+
+        function doLogout() {
+            localStorage.removeItem('branchId');
+            localStorage.removeItem('branchName');
+            localStorage.removeItem('managerName');
+            window.location.href = 'index.html';
+        }
+
+        // ─── Keyboard Shortcuts ───
+        document.addEventListener('keydown', e => {
+            // Ctrl+S: save anywhere
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveAllEntries();
+                return;
+            }
+
+            // Esc: close any open modal
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+                if (confirmResolve) { confirmResolve(false); confirmResolve = null; }
+                return;
+            }
+
+            // Skip shortcuts while typing
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.key === 'ArrowLeft')  changeDate(-1);
+            if (e.key === 'ArrowRight') changeDate(1);
+            if (e.ctrlKey && e.key === 'h') { e.preventDefault(); showHistory(); }
+            if (e.ctrlKey && e.key === 'q') { e.preventDefault(); confirmLogout(); }
+        });
+
+        // Close modals on backdrop click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', e => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    if (modal.id === 'confirmModal' && confirmResolve) {
+                        confirmResolve(false);
+                        confirmResolve = null;
+                    }
+                }
+            });
         });
     </script>
 </body>
