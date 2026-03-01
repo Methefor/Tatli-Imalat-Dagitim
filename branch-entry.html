@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Veri Girişi - Tatlı Takip</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Anime.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary:        #f59e0b;
+            --primary-dark:   #d97706;
+            --primary-light:  #fbbf24;
+            --bg:             #0f172a;
+            --card:           #1e293b;
+            --card2:          #162032;
+            --input:          #334155;
+            --border:         #475569;
+            --text:           #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary:  #94a3b8;
+            --success:        #22c55e;
+            --success-dark:   #16a34a;
+            --danger:         #ef4444;
+            --info:           #3b82f6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(160deg, #0f172a 0%, #182035 50%, #0f172a 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* ─── BREADCRUMB ─── */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+
+        .breadcrumb a {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover { color: var(--primary); }
+        .breadcrumb .sep { opacity: 0.5; }
+        .breadcrumb .current { color: var(--text-secondary); font-weight: 600; }
+
+        /* ─── HEADER ─── */
+        header {
+            background: linear-gradient(145deg, #1e293b, #162032);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .branch-info { display: flex; align-items: center; gap: 12px; }
+        .branch-icon { font-size: 34px; line-height: 1; }
+
+        .branch-details h1 {
+            font-size: 21px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .branch-manager { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-secondary {
+            background: var(--input);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background: var(--border); transform: translateY(-2px); }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+
+        /* ─── MODE SELECTOR ─── */
+        .mode-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 9px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input);
+            color: var(--text-tertiary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        }
+
+        .mode-btn:not(.active):hover {
+            border-color: var(--text-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .mode-desc {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .mode-desc strong { color: var(--primary); }
+
+        /* ─── DATE SELECTOR ─── */
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .date-nav-btn {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .date-nav-btn:hover:not(:disabled) {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #000;
+            transform: scale(1.08);
+        }
+
+        .date-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        #entryDate {
+            padding: 8px 12px;
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        #entryDate:focus { border-color: var(--primary); }
+
+        .date-display {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .past-pill {
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: none;
+        }
+
+        .past-pill.visible { display: inline-block; }
+
+        .btn-today {
+            padding: 7px 12px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 10px;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: none;
+        }
+
+        .btn-today:hover { background: rgba(245, 158, 11, 0.22); }
+        .btn-today.visible { display: block; }
+
+        /* ─── ENTRIES GRID ─── */
+        .entries-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* ─── SKELETON ─── */
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .skeleton-card {
+            background: var(--card);
+            border-radius: 16px;
+            height: 165px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+            animation: shimmer 1.6s infinite;
+        }
+
+        @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+        /* ─── EMPTY STATE ─── */
+        .empty-state {
+            text-align: center;
+            padding: 64px 20px;
+            color: var(--text-tertiary);
+            display: none;
+        }
+
+        .empty-state .empty-icon { font-size: 64px; opacity: 0.4; margin-bottom: 16px; }
+        .empty-state p { font-size: 16px; font-weight: 500; }
+
+        /* ─── ENTRY CARD ─── */
+        .entry-card {
+            background: linear-gradient(145deg, #1e293b, #162032);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+
+        .entry-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .entry-card.has-error { border-color: rgba(239, 68, 68, 0.6) !important; }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 13px 15px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.35);
+            background: rgba(0, 0, 0, 0.12);
+            gap: 10px;
+        }
+
+        .dessert-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .dessert-top { display: flex; align-items: center; gap: 9px; }
+        .dessert-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; }
+        .dessert-name { font-size: 14px; font-weight: 700; color: var(--text); }
+
+        /* Current values badge */
+        .current-info {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+            line-height: 1.5;
+        }
+
+        .current-info strong { color: var(--text-secondary); }
+        .current-info.hidden { display: none; }
+
+        /* Sold badge */
+        .sold-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+
+        .sold-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--text-tertiary); text-transform: uppercase; }
+
+        .sold-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--success);
+            line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+            min-width: 34px;
+            text-align: right;
+            transition: color 0.2s;
+        }
+
+        .sold-value.negative { color: var(--danger); }
+
+        /* ─── INPUT BOXES ─── */
+        .card-inputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 6px 14px;
+            border-right: 1px solid rgba(71, 85, 105, 0.2);
+            cursor: text;
+            transition: background 0.15s;
+        }
+
+        .input-box:last-child { border-right: none; }
+
+        .input-box.received  { background: rgba(245, 158, 11, 0.06); }
+        .input-box.remaining { background: rgba(59,  130, 246, 0.06); }
+        .input-box.waste     { background: rgba(239,  68,  68, 0.06); }
+
+        .input-box:hover.received  { background: rgba(245, 158, 11, 0.12); }
+        .input-box:hover.remaining { background: rgba(59,  130, 246, 0.12); }
+        .input-box:hover.waste     { background: rgba(239,  68,  68, 0.12); }
+
+        /* Incremental mode: GELEN box glows */
+        .incremental-mode .input-box.received {
+            background: rgba(245, 158, 11, 0.12);
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .input-box-label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .input-box.received  .input-box-label { color: #f59e0b; }
+        .input-box.remaining .input-box-label { color: #60a5fa; }
+        .input-box.waste     .input-box-label { color: #f87171; }
+
+        .number-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text);
+            font-size: 24px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            outline: none;
+            padding: 0;
+            transition: border-color 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        .number-input::-webkit-outer-spin-button,
+        .number-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        .input-box.received  .number-input:focus { border-bottom-color: #f59e0b; }
+        .input-box.remaining .number-input:focus { border-bottom-color: #60a5fa; }
+        .input-box.waste     .number-input:focus { border-bottom-color: #f87171; }
+
+        /* Incremental: additive tag */
+        .additive-tag {
+            font-size: 9px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .incremental-mode .input-box.received .additive-tag { display: block; }
+
+        .error-row {
+            padding: 5px 14px 8px;
+            font-size: 11px;
+            color: var(--danger);
+            font-weight: 600;
+            display: none;
+        }
+
+        .error-row.show { display: block; }
+
+        /* ─── NOTES ─── */
+        .notes-section {
+            background: linear-gradient(145deg, #1e293b, #162032);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+            transition: border-color 0.25s;
+        }
+
+        .notes-section:focus-within { border-color: rgba(245, 158, 11, 0.5); }
+
+        .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .notes-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .char-counter { font-size: 11px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+        .char-counter.warning { color: var(--primary); }
+
+        textarea {
+            width: 100%;
+            padding: 8px 0;
+            background: transparent;
+            border: none;
+            border-top: 1px solid rgba(71, 85, 105, 0.4);
+            color: var(--text);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            resize: none;
+            min-height: 64px;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        textarea::placeholder { color: var(--text-tertiary); }
+
+        /* ─── SAVE BUTTON ─── */
+        .save-section { position: sticky; bottom: 14px; z-index: 10; }
+
+        .btn-save {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 28px rgba(34, 197, 94, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-save:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(34, 197, 94, 0.5); }
+        .btn-save:active:not(:disabled) { transform: translateY(-1px); }
+        .btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-save.saved { background: linear-gradient(135deg, #16a34a, #15803d); }
+
+        /* ─── MODALS BASE ─── */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 26px;
+            max-width: 820px;
+            width: 100%;
+            max-height: 88vh;
+            overflow-y: auto;
+            animation: slideUpModal 0.3s ease-out;
+        }
+
+        .modal-content.narrow { max-width: 480px; }
+
+        @keyframes slideUpModal {
+            from { transform: translateY(24px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title { font-size: 18px; font-weight: 700; }
+
+        .close-btn {
+            background: var(--input);
+            border: none;
+            font-size: 16px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover { background: var(--border); color: var(--text); }
+
+        /* ─── CONFIRM MODAL ─── */
+        .confirm-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        .confirm-table th {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            letter-spacing: 0.5px;
+        }
+
+        .confirm-table td {
+            padding: 10px 10px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .confirm-table tr:last-child td { border-bottom: none; }
+
+        .confirm-table .plus { color: var(--primary); font-weight: 700; }
+        .confirm-table .total { color: var(--text); font-weight: 800; font-size: 16px; }
+        .confirm-table .equals { color: var(--text-tertiary); }
+
+        .confirm-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-confirm-ok {
+            flex: 1;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-confirm-ok:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(34,197,94,0.35); }
+
+        .btn-confirm-cancel {
+            flex: 1;
+            padding: 13px;
+            background: var(--input);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-confirm-cancel:hover { background: var(--border); }
+
+        /* ─── HISTORY MODAL ─── */
+        .history-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 7px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--input);
+            color: var(--text-tertiary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.5);
+            color: var(--primary);
+        }
+
+        .filter-btn:hover:not(.active) { border-color: var(--text-tertiary); color: var(--text-secondary); }
+
+        .history-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            padding: 12px 10px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .summary-card.recv  { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); }
+        .summary-card.rem   { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.25); }
+        .summary-card.sold  { background: rgba(34,197,94,0.08);   border: 1px solid rgba(34,197,94,0.25); }
+        .summary-card.waste { background: rgba(239,68,68,0.08);   border: 1px solid rgba(239,68,68,0.25); }
+
+        .summary-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .summary-card.recv  .summary-label { color: #f59e0b; }
+        .summary-card.rem   .summary-label { color: #60a5fa; }
+        .summary-card.sold  .summary-label { color: #4ade80; }
+        .summary-card.waste .summary-label { color: #f87171; }
+
+        .summary-value { font-size: 22px; font-weight: 800; color: var(--text); }
+
+        .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        .history-table th,
+        .history-table td { padding: 9px 11px; text-align: left; border-bottom: 1px solid rgba(71, 85, 105, 0.3); }
+
+        .history-table th { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .history-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .no-data { text-align: center; padding: 48px; color: var(--text-tertiary); font-size: 15px; }
+
+        /* ─── HELP BUTTON ─── */
+        .btn-help {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-help:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
+        }
+
+        /* ─── HELP BACKDROP ─── */
+        .help-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* ─── HELP CARD ─── */
+        .help-card {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            overflow-y: auto;
+            animation: slideUpHelp 0.4s ease-out;
+        }
+
+        @keyframes slideUpHelp {
+            from { transform: translate(-50%, calc(-50% + 30px)); opacity: 0; }
+            to   { transform: translate(-50%, -50%); opacity: 1; }
+        }
+
+        .help-header {
+            padding: 22px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: #1e293b;
+            z-index: 10;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .help-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .close-help {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            font-size: 22px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+
+        .close-help:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+
+        .help-content { padding: 24px; }
+
+        .help-step {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 24px;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 18px;
+        }
+
+        .step-content h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .step-content p {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .step-content ul {
+            margin: 8px 0;
+            padding-left: 18px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .step-content li { margin-bottom: 4px; }
+
+        .help-example {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(245, 158, 11, 0.08);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .help-tip {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .help-warning {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(239, 68, 68, 0.08);
+            border-radius: 8px;
+            border-left: 3px solid #ef4444;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .help-formula {
+            margin-top: 10px;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .help-formula code {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: #22c55e;
+        }
+
+        .help-shortcuts {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .help-shortcuts h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .help-shortcuts ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .help-shortcuts li {
+            padding: 6px 0;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        kbd {
+            display: inline-block;
+            padding: 3px 7px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        /* ─── KEYBOARD HINTS ─── */
+        .kbd-hint {
+            font-size: 10px;
+            background: rgba(71, 85, 105, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-family: monospace;
+            color: var(--text-tertiary);
+            vertical-align: middle;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 1024px) {
+            .entries-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+            .history-summary { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .entries-grid, .skeleton-grid { grid-template-columns: 1fr; }
+            .header-top { flex-direction: column; align-items: flex-start; }
+            .date-display { display: none; }
+            .history-summary { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+            .card-inputs { grid-template-columns: 1fr; }
+            .input-box { border-right: none; border-bottom: 1px solid rgba(71, 85, 105, 0.2); }
+            .input-box:last-child { border-bottom: none; }
+            .number-input { font-size: 20px; }
+            .confirm-table { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb" id="breadcrumb">
+            <a href="index.html">🏠 Ana Sayfa</a>
+            <span class="sep">›</span>
+            <span class="current" id="breadcrumbBranch">Şube</span>
+        </nav>
+
+        <!-- Header -->
+        <header id="pageHeader">
+            <div class="header-top">
+                <div class="branch-info">
+                    <span class="branch-icon" id="branchEmoji">🏪</span>
+                    <div class="branch-details">
+                        <h1 id="branchNameEl">Yükleniyor...</h1>
+                        <p class="branch-manager" id="managerNameEl"></p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-help" onclick="toggleHelpCard()" title="Nasıl Kullanılır?">
+                        <span>❓</span><span>Nasıl Kullanılır?</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="showHistory()" title="Ctrl+H">
+                        <span>📜</span><span>Geçmiş</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="confirmLogout()" title="Ctrl+Q">
+                        <span>🚪</span><span>Çıkış</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mod Seçici -->
+            <div class="mode-selector">
+                <button class="mode-btn active" id="modeIncremental" onclick="setMode('incremental')">
+                    ➕ Yeni Teslimat Ekle
+                </button>
+                <button class="mode-btn" id="modeTotal" onclick="setMode('total')">
+                    📝 Toplam Değer Gir
+                </button>
+            </div>
+            <p class="mode-desc" id="modeDesc">
+                <strong>Artımsal mod:</strong> GELEN mevcut değere eklenir. Yeni teslimat geldiğinde kullanın.
+            </p>
+
+            <!-- Tarih Seçici -->
+            <div class="date-selector" style="margin-top:12px">
+                <button class="date-nav-btn" id="prevDayBtn" onclick="changeDate(-1)" title="← Önceki">◀</button>
+                <input type="date" id="entryDate" onchange="onDateChange()">
+                <button class="date-nav-btn" id="nextDayBtn" onclick="changeDate(1)" title="→ Sonraki">▶</button>
+                <span class="date-display" id="dateDisplay"></span>
+                <span class="past-pill" id="pastPill">📅 Geçmiş</span>
+                <button class="btn-today" id="todayBtn" onclick="goToToday()">⏎ Bugün</button>
+            </div>
+        </header>
+
+        <!-- Skeleton -->
+        <div class="skeleton-grid" id="skeletonLoader">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+        </div>
+
+        <!-- Entries Grid -->
+        <div class="entries-grid" id="entriesGrid" style="display:none"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+            <div class="empty-icon">🍽️</div>
+            <p>Aktif tatlı bulunamadı. Lütfen yöneticiye başvurun.</p>
+        </div>
+
+        <!-- Notlar -->
+        <div class="notes-section" id="notesSection" style="display:none">
+            <div class="notes-header">
+                <span class="notes-label">📝 Günlük Notlar</span>
+                <span class="char-counter" id="charCounter">0 / 500</span>
+            </div>
+            <textarea
+                id="notesInput"
+                placeholder="Bugüne ait notlarınızı buraya yazın..."
+                maxlength="500"
+                oninput="onNotesInput()"
+            ></textarea>
+        </div>
+
+        <!-- Kaydet -->
+        <div class="save-section" id="saveSection" style="display:none">
+            <button class="btn-save" id="saveBtn" onclick="saveAllEntries()">
+                <span id="saveBtnIcon">💾</span>
+                <span id="saveBtnText">Tüm Verileri Kaydet</span>
+                <span class="kbd-hint">Ctrl+S</span>
+            </button>
+        </div>
+
+    </div><!-- /container -->
+
+    <!-- Yardım Backdrop -->
+    <div class="help-backdrop" id="helpBackdrop" style="display: none;" onclick="toggleHelpCard()"></div>
+
+    <!-- Yardım Kartı -->
+    <div class="help-card" id="helpCard" style="display: none;">
+        <div class="help-header">
+            <h3>📚 Kullanım Kılavuzu</h3>
+            <button class="close-help" onclick="toggleHelpCard()">✕</button>
+        </div>
+
+        <div class="help-content">
+            <div class="help-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>📦 Gelen Tatlıları Girin</h4>
+                    <p>Teslimat geldiğinde <strong>GELEN</strong> kısmına miktarı yazın.</p>
+                    <ul>
+                        <li>✅ <strong>Artırarak ekle modu:</strong> Her teslimat için ayrı ayrı ekleyin</li>
+                        <li>📝 <strong>Toplam değer modu:</strong> Günün toplam teslimatını tek seferde girin</li>
+                    </ul>
+                    <div class="help-example">
+                        <strong>Örnek:</strong> Sabah 50, öğlen 30 geldi → Artırarak modda iki kere ekleyin (50, sonra 30) veya toplam modda 80 yazın.
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>📊 Kalan Stoku Girin</h4>
+                    <p><strong>Gün sonunda</strong> rafta kalan ürünleri sayın ve <strong>KALAN</strong> kısmına yazın.</p>
+                    <div class="help-tip">
+                        💡 <strong>İpucu:</strong> Gün içinde sürekli güncellemeyin, en doğru sonuç için gün sonunda bir kere girin.
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>⚠️ Zayiatı Girin (Ay Sonu)</h4>
+                    <p>Bozulan, dökülen veya atılan tatlıları <strong>ZAYİAT</strong> kısmına yazın.</p>
+                    <div class="help-warning">
+                        ⚠️ <strong>Dikkat:</strong> Zayiat genellikle ay sonunda girilir. Gün içinde bozulma yoksa bu alanı boş bırakın.
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>✅ Satılan Otomatik Hesaplanır</h4>
+                    <p><strong>SATILAN</strong> değeri elle girilmez — sistem otomatik olarak hesaplar:</p>
+                    <div class="help-formula">
+                        <code>Satılan = Gelen − Kalan − Zayiat</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-shortcuts">
+                <h4>⌨️ Klavye Kısayolları</h4>
+                <ul>
+                    <li><kbd>Ctrl</kbd> + <kbd>S</kbd> &nbsp;→ Kaydet</li>
+                    <li><kbd>Ctrl</kbd> + <kbd>H</kbd> &nbsp;→ Geçmiş</li>
+                    <li><kbd>Ctrl</kbd> + <kbd>Q</kbd> &nbsp;→ Çıkış</li>
+                    <li><kbd>←</kbd> / <kbd>→</kbd> &nbsp;→ Önceki / Sonraki gün</li>
+                    <li><kbd>Esc</kbd> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Pencereyi kapat</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onay Modalı -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content narrow">
+            <div class="modal-header">
+                <h3 class="modal-title">✅ Kaydetmeden Önce Kontrol Et</h3>
+                <button class="close-btn" onclick="closeConfirm(false)">✕</button>
+            </div>
+            <div id="confirmContent"></div>
+            <div class="confirm-btns">
+                <button class="btn-confirm-cancel" onclick="closeConfirm(false)">✗ İptal</button>
+                <button class="btn-confirm-ok" onclick="closeConfirm(true)">✓ Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geçmiş Modalı -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📜 Geçmiş Veriler</h3>
+                <button class="close-btn" onclick="closeHistory()">✕</button>
+            </div>
+
+            <div class="history-filters">
+                <button class="filter-btn active" data-filter="week" onclick="applyFilter('week')">Bu Hafta</button>
+                <button class="filter-btn" data-filter="month" onclick="applyFilter('month')">Bu Ay</button>
+                <button class="filter-btn" data-filter="today" onclick="applyFilter('today')">Yalnız Bugün</button>
+            </div>
+
+            <div class="history-summary" id="historySummary"></div>
+            <div id="historyContent"></div>
+        </div>
+    </div>
+
+    <!-- Çıkış Onay Modalı -->
+    <div class="modal" id="logoutModal">
+        <div class="modal-content narrow">
+            <div class="modal-header">
+                <h3 class="modal-title">🚪 Çıkış</h3>
+                <button class="close-btn" onclick="closeLogout()">✕</button>
+            </div>
+            <p style="margin-bottom:24px;color:var(--text-secondary)">
+                Çıkış yapmak istediğinize emin misiniz?<br>
+                <span style="font-size:12px;color:var(--text-tertiary)">Kaydedilmemiş veriler kaybolabilir.</span>
+            </p>
+            <div class="confirm-btns">
+                <button class="btn-confirm-cancel" onclick="closeLogout()">Hayır, Kal</button>
+                <button class="btn-confirm-ok" onclick="doLogout()" style="background:linear-gradient(135deg,#ef4444,#dc2626)">Evet, Çık</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="supabase-client.js"></script>
+
+    <script>
+        // ─── State ───
+        let branchId      = null;
+        let branchNameStr = null;
+        let desserts      = [];
+        let selectedDate  = getTodayDate();
+        const todayDate   = getTodayDate();
+
+        // savedData: what's currently in DB for selectedDate
+        let savedData  = {};
+        // entryData: what the user has typed in inputs
+        let entryData  = {};
+
+        let entryMode         = 'incremental'; // 'incremental' | 'total'
+        let confirmResolve    = null;
+        let currentHistFilter = 'week';
+
+        const branchEmojis = {
+            'Rumeli İskelesi': '🌊',
+            'Yahya Kemal':     '📚',
+            'TunaBoyu':        '🏞️',
+            'Sahil':           '🏖️',
+            'Vagon':           '🚂',
+            'Millet Bahçesi':  '🌳',
+        };
+
+        // ─── Init ───
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            branchId = params.get('branch_id');
+
+            if (!branchId) {
+                showToast('Şube seçilmedi!', 'error');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+                return;
+            }
+
+            branchNameStr     = localStorage.getItem('branchName') || 'Şube';
+            const managerName = localStorage.getItem('managerName');
+
+            document.getElementById('branchNameEl').textContent      = branchNameStr;
+            document.getElementById('branchEmoji').textContent        = branchEmojis[branchNameStr] || '🏪';
+            document.getElementById('breadcrumbBranch').textContent   = branchNameStr;
+            if (managerName) {
+                document.getElementById('managerNameEl').textContent = `Müdür: ${managerName}`;
+            }
+
+            const dateInput  = document.getElementById('entryDate');
+            dateInput.value  = selectedDate;
+            dateInput.max    = todayDate;
+            updateDateDisplay();
+
+            anime({
+                targets: '#pageHeader, .breadcrumb',
+                opacity: [0, 1],
+                translateY: [-20, 0],
+                delay: anime.stagger(80),
+                duration: 600,
+                easing: 'easeOutExpo',
+            });
+
+            await loadData(selectedDate);
+        });
+
+        // ─── Mode ───
+        const modeDescs = {
+            incremental: '<strong>Artımsal mod:</strong> GELEN mevcut değere eklenir. Yeni teslimat geldiğinde kullanın.',
+            total:       '<strong>Toplam mod:</strong> Girilen değer doğrudan kaydedilir. Düzeltme yapmak için kullanın.',
+        };
+
+        function setMode(mode) {
+            entryMode = mode;
+            document.getElementById('modeIncremental').classList.toggle('active', mode === 'incremental');
+            document.getElementById('modeTotal').classList.toggle('active', mode === 'total');
+            document.getElementById('modeDesc').innerHTML = modeDescs[mode];
+
+            // Grid class for visual cue
+            const grid = document.getElementById('entriesGrid');
+            grid.classList.toggle('incremental-mode', mode === 'incremental');
+
+            // Update inputs based on mode
+            refreshInputsForMode();
+
+            // Update save button text
+            document.getElementById('saveBtnText').textContent =
+                mode === 'incremental' ? 'Yeni Teslimatı Ekle' : 'Toplam Değeri Kaydet';
+            document.getElementById('saveBtnIcon').textContent =
+                mode === 'incremental' ? '➕' : '💾';
+        }
+
+        function refreshInputsForMode() {
+            desserts.forEach(dessert => {
+                const receivedInput = document.querySelector(
+                    `input[data-dessert="${dessert.id}"][data-field="received"]`
+                );
+                const remainingInput = document.querySelector(
+                    `input[data-dessert="${dessert.id}"][data-field="remaining"]`
+                );
+                const wasteInput = document.querySelector(
+                    `input[data-dessert="${dessert.id}"][data-field="waste"]`
+                );
+
+                if (!receivedInput) return;
+
+                const saved = savedData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
+
+                if (entryMode === 'incremental') {
+                    receivedInput.value  = 0;
+                    remainingInput.value = saved.remaining;
+                    wasteInput.value     = saved.waste;
+                    receivedInput.placeholder  = 'Yeni gelen';
+                    remainingInput.placeholder = 'Güncel kalan';
+                    wasteInput.placeholder     = 'Güncel zayiat';
+                } else {
+                    receivedInput.value  = saved.received;
+                    remainingInput.value = saved.remaining;
+                    wasteInput.value     = saved.waste;
+                    receivedInput.placeholder  = 'Toplam gelen';
+                    remainingInput.placeholder = 'Toplam kalan';
+                    wasteInput.placeholder     = 'Toplam zayiat';
+                }
+
+                entryData[dessert.id] = {
+                    received:  parseInt(receivedInput.value)  || 0,
+                    remaining: parseInt(remainingInput.value) || 0,
+                    waste:     parseInt(wasteInput.value)     || 0,
+                };
+
+                updateSoldBadge(dessert.id);
+            });
+        }
+
+        // ─── Date ───
+        function updateDateDisplay() {
+            document.getElementById('dateDisplay').textContent = formatDateTurkish(selectedDate);
+            const isToday = selectedDate === todayDate;
+            document.getElementById('todayBtn').classList.toggle('visible', !isToday);
+            document.getElementById('pastPill').classList.toggle('visible', !isToday);
+            document.getElementById('nextDayBtn').disabled = (selectedDate >= todayDate);
+        }
+
+        function changeDate(delta) {
+            const d = new Date(selectedDate + 'T00:00:00');
+            d.setDate(d.getDate() + delta);
+            const next = d.toISOString().split('T')[0];
+            if (next > todayDate) { showToast('Gelecek tarihe veri girişi yapılamaz!', 'error'); return; }
+            selectedDate = next;
+            document.getElementById('entryDate').value = selectedDate;
+            updateDateDisplay();
+            loadData(selectedDate);
+        }
+
+        function onDateChange() {
+            const val = document.getElementById('entryDate').value;
+            if (!val) return;
+            if (val > todayDate) {
+                showToast('Gelecek tarihe veri girişi yapılamaz!', 'error');
+                document.getElementById('entryDate').value = selectedDate;
+                return;
+            }
+            selectedDate = val;
+            updateDateDisplay();
+            loadData(selectedDate);
+        }
+
+        function goToToday() {
+            selectedDate = todayDate;
+            document.getElementById('entryDate').value = selectedDate;
+            updateDateDisplay();
+            loadData(selectedDate);
+        }
+
+        // ─── Load Data ───
+        async function loadData(date) {
+            savedData = {};
+            entryData = {};
+
+            document.getElementById('skeletonLoader').style.display = 'grid';
+            document.getElementById('entriesGrid').style.display    = 'none';
+            document.getElementById('emptyState').style.display     = 'none';
+            document.getElementById('notesSection').style.display   = 'none';
+            document.getElementById('saveSection').style.display    = 'none';
+
+            if (desserts.length === 0) {
+                desserts = await getActiveDesserts();
+            }
+
+            const entries = await getDailyEntriesByBranch(branchId, date);
+
+            entries.forEach(e => {
+                savedData[e.dessert_id] = {
+                    received:  e.received_amount  || 0,
+                    remaining: e.remaining_amount || 0,
+                    waste:     e.waste_amount     || 0,
+                };
+            });
+
+            // Notlar
+            const notesVal = (entries.length > 0 && entries[0].notes) ? entries[0].notes : '';
+            document.getElementById('notesInput').value = notesVal;
+            onNotesInput();
+
+            document.getElementById('skeletonLoader').style.display = 'none';
+
+            if (desserts.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+
+            renderEntries();
+
+            document.getElementById('entriesGrid').style.display  = 'grid';
+            document.getElementById('notesSection').style.display = 'block';
+            document.getElementById('saveSection').style.display  = 'block';
+
+            anime({
+                targets: '.entry-card',
+                opacity:    [0, 1],
+                translateY: [16, 0],
+                scale:      [0.97, 1],
+                delay: anime.stagger(50, { start: 80 }),
+                duration: 360,
+                easing: 'easeOutBack',
+            });
+        }
+
+        // ─── Render ───
+        function renderEntries() {
+            const grid = document.getElementById('entriesGrid');
+            grid.innerHTML = '';
+            grid.classList.toggle('incremental-mode', entryMode === 'incremental');
+
+            desserts.forEach(dessert => {
+                const saved = savedData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
+
+                // Initial entry data
+                const initReceived  = entryMode === 'incremental' ? 0         : saved.received;
+                const initRemaining = saved.remaining;
+                const initWaste     = saved.waste;
+
+                entryData[dessert.id] = {
+                    received:  initReceived,
+                    remaining: initRemaining,
+                    waste:     initWaste,
+                };
+
+                const totalReceived = entryMode === 'incremental'
+                    ? saved.received + initReceived
+                    : initReceived;
+                const sold = totalReceived - initRemaining - initWaste;
+
+                const hasSavedData  = saved.received > 0 || saved.remaining > 0 || saved.waste > 0;
+                const currentInfoHtml = hasSavedData
+                    ? `Kayıtlı: <strong>${saved.received}</strong> geldi,
+                       <strong>${saved.remaining}</strong> kaldı,
+                       <strong>${saved.waste}</strong> zayiat`
+                    : 'Henüz kayıt yok';
+
+                const card = document.createElement('div');
+                card.className = 'entry-card';
+                card.id = `card-${dessert.id}`;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="dessert-info">
+                            <div class="dessert-top">
+                                <span class="dessert-emoji">${dessert.emoji || '🍰'}</span>
+                                <span class="dessert-name">${dessert.name}</span>
+                            </div>
+                            <div class="current-info" id="info-${dessert.id}">${currentInfoHtml}</div>
+                        </div>
+                        <div class="sold-badge">
+                            <span class="sold-label">Satılan</span>
+                            <span class="sold-value${sold < 0 ? ' negative' : ''}" id="sold-${dessert.id}">${sold}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-inputs">
+                        <div class="input-box received" onclick="this.querySelector('input').focus()">
+                            <span class="input-box-label">Gelen</span>
+                            <input type="number" class="number-input" min="0"
+                                value="${initReceived}"
+                                placeholder="${entryMode === 'incremental' ? 'Yeni gelen' : 'Toplam gelen'}"
+                                data-dessert="${dessert.id}" data-field="received"
+                                oninput="updateEntry(this)" onfocus="this.select()">
+                            <span class="additive-tag">+ ekle</span>
+                        </div>
+                        <div class="input-box remaining" onclick="this.querySelector('input').focus()">
+                            <span class="input-box-label">Kalan</span>
+                            <input type="number" class="number-input" min="0"
+                                value="${initRemaining}"
+                                placeholder="Kalan"
+                                data-dessert="${dessert.id}" data-field="remaining"
+                                oninput="updateEntry(this)" onfocus="this.select()">
+                        </div>
+                        <div class="input-box waste" onclick="this.querySelector('input').focus()">
+                            <span class="input-box-label">Zayiat</span>
+                            <input type="number" class="number-input" min="0"
+                                value="${initWaste}"
+                                placeholder="Zayiat"
+                                data-dessert="${dessert.id}" data-field="waste"
+                                oninput="updateEntry(this)" onfocus="this.select()">
+                        </div>
+                    </div>
+                    <div class="error-row" id="error-${dessert.id}">
+                        ⚠ Kalan + Zayiat, toplam Gelenden fazla olamaz!
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // ─── Entry Update ───
+        function updateEntry(input) {
+            const dessertId = input.dataset.dessert;
+            const field     = input.dataset.field;
+            let value       = parseInt(input.value) || 0;
+            if (value < 0) { value = 0; input.value = 0; }
+
+            if (!entryData[dessertId]) {
+                entryData[dessertId] = { received: 0, remaining: 0, waste: 0 };
+            }
+            entryData[dessertId][field] = value;
+
+            updateSoldBadge(dessertId);
+
+            // Validation
+            const data  = entryData[dessertId];
+            const saved = savedData[dessertId] || { received: 0, remaining: 0, waste: 0 };
+            const totalRecv = entryMode === 'incremental'
+                ? saved.received + data.received
+                : data.received;
+            const isErr = totalRecv > 0 && (data.remaining + data.waste) > totalRecv;
+
+            document.getElementById(`error-${dessertId}`).classList.toggle('show', isErr);
+            document.getElementById(`card-${dessertId}`).classList.toggle('has-error', isErr);
+        }
+
+        function updateSoldBadge(dessertId) {
+            const data  = entryData[dessertId] || { received: 0, remaining: 0, waste: 0 };
+            const saved = savedData[dessertId]  || { received: 0, remaining: 0, waste: 0 };
+            const totalRecv = entryMode === 'incremental'
+                ? saved.received + data.received
+                : data.received;
+            const sold = totalRecv - data.remaining - data.waste;
+
+            const soldEl = document.getElementById(`sold-${dessertId}`);
+            if (!soldEl) return;
+            soldEl.textContent = sold;
+            soldEl.classList.toggle('negative', sold < 0);
+            anime({ targets: `#sold-${dessertId}`, scale: [1.35, 1], duration: 230, easing: 'easeOutBack' });
+        }
+
+        // ─── Notes ───
+        function onNotesInput() {
+            const ta  = document.getElementById('notesInput');
+            const ctr = document.getElementById('charCounter');
+            const len = ta.value.length;
+            ctr.textContent = `${len} / 500`;
+            ctr.classList.toggle('warning', len > 400);
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+        }
+
+        // ─── Save ───
+        async function saveAllEntries() {
+            // Check errors
+            const errIds = desserts.filter(d => {
+                const data  = entryData[d.id]  || { received: 0, remaining: 0, waste: 0 };
+                const saved = savedData[d.id]  || { received: 0, remaining: 0, waste: 0 };
+                const totalRecv = entryMode === 'incremental'
+                    ? saved.received + data.received : data.received;
+                return totalRecv > 0 && (data.remaining + data.waste) > totalRecv;
+            }).map(d => d.id);
+
+            if (errIds.length > 0) {
+                showToast('Kırmızı hataları düzeltin!', 'error');
+                anime({ targets: errIds.map(id => `#card-${id}`), translateX: [-8,8,-6,6,-3,3,0], duration: 500, easing: 'easeInOutSine' });
+                return;
+            }
+
+            // Check if anything changed
+            const hasChanges = desserts.some(d => {
+                const data = entryData[d.id] || { received: 0, remaining: 0, waste: 0 };
+                if (entryMode === 'incremental') return data.received > 0 || data.remaining !== (savedData[d.id]?.remaining || 0) || data.waste !== (savedData[d.id]?.waste || 0);
+                return true;
+            });
+
+            if (!hasChanges) {
+                showToast('Değişiklik yok, kaydedilecek bir şey bulunamadı.', 'info');
+                return;
+            }
+
+            // Build confirmation items
+            const confirmItems = desserts.map(d => {
+                const data  = entryData[d.id]  || { received: 0, remaining: 0, waste: 0 };
+                const saved = savedData[d.id]  || { received: 0, remaining: 0, waste: 0 };
+                return {
+                    dessert:       d,
+                    savedReceived: saved.received,
+                    newReceived:   data.received,
+                    totalReceived: entryMode === 'incremental' ? saved.received + data.received : data.received,
+                    remaining:     data.remaining,
+                    waste:         data.waste,
+                };
+            }).filter(item =>
+                entryMode === 'incremental'
+                    ? (item.newReceived > 0 || item.remaining !== (savedData[item.dessert.id]?.remaining || 0) || item.waste !== (savedData[item.dessert.id]?.waste || 0))
+                    : true
+            );
+
+            // Show confirm modal
+            const ok = await showConfirmDialog(confirmItems);
+            if (!ok) return;
+
+            // Execute save
+            const btn   = document.getElementById('saveBtn');
+            const icon  = document.getElementById('saveBtnIcon');
+            const txtEl = document.getElementById('saveBtnText');
+            const notes = document.getElementById('notesInput').value.trim();
+
+            btn.disabled = true;
+            icon.textContent  = '⏳';
+            txtEl.textContent = 'Kaydediliyor...';
+
+            let ok2 = 0, fail = 0;
+
+            for (const dessert of desserts) {
+                const data  = entryData[dessert.id]  || { received: 0, remaining: 0, waste: 0 };
+                const saved = savedData[dessert.id]  || { received: 0, remaining: 0, waste: 0 };
+
+                const finalReceived = entryMode === 'incremental'
+                    ? saved.received + data.received
+                    : data.received;
+
+                const result = await saveDailyEntry(
+                    branchId, dessert.id, selectedDate,
+                    finalReceived, data.remaining, data.waste, notes
+                );
+                result.success ? ok2++ : fail++;
+            }
+
+            btn.disabled = false;
+
+            if (fail === 0) {
+                icon.textContent  = '✅';
+                txtEl.textContent = 'Kaydedildi!';
+                btn.classList.add('saved');
+                anime({ targets: '#saveBtn', scale: [1, 1.03, 1], duration: 600, easing: 'easeInOutSine' });
+                showToast('Tüm veriler başarıyla kaydedildi!', 'success');
+
+                // Refresh savedData
+                await loadData(selectedDate);
+            } else {
+                icon.textContent  = '⚠️';
+                txtEl.textContent = `${ok2} başarılı, ${fail} hata`;
+                showToast(`${ok2} kayıt başarılı, ${fail} hata oluştu!`, 'error');
+                setTimeout(() => {
+                    icon.textContent  = entryMode === 'incremental' ? '➕' : '💾';
+                    txtEl.textContent = entryMode === 'incremental' ? 'Yeni Teslimatı Ekle' : 'Toplam Değeri Kaydet';
+                }, 3000);
+            }
+        }
+
+        // ─── Confirm Dialog ───
+        function showConfirmDialog(items) {
+            return new Promise(resolve => {
+                confirmResolve = resolve;
+                const content = document.getElementById('confirmContent');
+
+                let rows = '';
+                items.forEach(item => {
+                    const sold = item.totalReceived - item.remaining - item.waste;
+                    rows += `
+                        <tr>
+                            <td>${item.dessert.emoji} <strong>${item.dessert.name}</strong></td>
+                            <td>
+                                ${entryMode === 'incremental' && item.newReceived > 0
+                                    ? `${item.savedReceived} <span class="plus">+${item.newReceived}</span> = <span class="total">${item.totalReceived}</span>`
+                                    : `<span class="total">${item.totalReceived}</span>`
+                                }
+                            </td>
+                            <td>${item.remaining}</td>
+                            <td>${item.waste}</td>
+                            <td style="color:var(--success);font-weight:700">${sold >= 0 ? sold : '⚠'}</td>
+                        </tr>
+                    `;
+                });
+
+                content.innerHTML = `
+                    <table class="confirm-table" style="margin-bottom:20px">
+                        <thead>
+                            <tr>
+                                <th>Tatlı</th>
+                                <th>Gelen</th>
+                                <th>Kalan</th>
+                                <th>Zayiat</th>
+                                <th>Satılan</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+
+                document.getElementById('confirmModal').classList.add('active');
+            });
+        }
+
+        function closeConfirm(result) {
+            document.getElementById('confirmModal').classList.remove('active');
+            if (confirmResolve) { confirmResolve(result); confirmResolve = null; }
+        }
+
+        // ─── History ───
+        async function showHistory() {
+            document.getElementById('historyModal').classList.add('active');
+            await loadHistory(currentHistFilter);
+        }
+
+        async function applyFilter(filter) {
+            currentHistFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            await loadHistory(filter);
+        }
+
+        async function loadHistory(filter) {
+            document.getElementById('historySummary').innerHTML =
+                '<div style="color:var(--text-tertiary);font-size:13px;padding:8px 0">Yükleniyor...</div>';
+            document.getElementById('historyContent').innerHTML = '';
+
+            const today = todayDate;
+            let startDate;
+
+            if (filter === 'today') {
+                startDate = today;
+            } else if (filter === 'week') {
+                const d = new Date(today + 'T00:00:00');
+                d.setDate(d.getDate() - 7);
+                startDate = d.toISOString().split('T')[0];
+            } else if (filter === 'month') {
+                const d = new Date(today + 'T00:00:00');
+                d.setDate(d.getDate() - 30);
+                startDate = d.toISOString().split('T')[0];
+            }
+
+            toggleLoading(true);
+            const allData = await getDailyEntriesDateRange(startDate, today);
+            toggleLoading(false);
+
+            // Filter by this branch
+            const historyData = allData.filter(e => e.branch_id === branchId);
+
+            if (historyData.length === 0) {
+                document.getElementById('historySummary').innerHTML = '';
+                document.getElementById('historyContent').innerHTML =
+                    '<div class="no-data">📭 Bu aralıkta veri bulunamadı.</div>';
+                return;
+            }
+
+            // Totals
+            const totRecv  = historyData.reduce((s, e) => s + (e.received_amount  || 0), 0);
+            const totRem   = historyData.reduce((s, e) => s + (e.remaining_amount || 0), 0);
+            const totWaste = historyData.reduce((s, e) => s + (e.waste_amount     || 0), 0);
+            const totSold  = totRecv - totRem - totWaste;
+
+            document.getElementById('historySummary').innerHTML = `
+                <div class="summary-card recv">
+                    <div class="summary-label">Toplam Gelen</div>
+                    <div class="summary-value">${totRecv}</div>
+                </div>
+                <div class="summary-card rem">
+                    <div class="summary-label">Toplam Kalan</div>
+                    <div class="summary-value">${totRem}</div>
+                </div>
+                <div class="summary-card sold">
+                    <div class="summary-label">Toplam Satılan</div>
+                    <div class="summary-value">${totSold}</div>
+                </div>
+                <div class="summary-card waste">
+                    <div class="summary-label">Toplam Zayiat</div>
+                    <div class="summary-value">${totWaste}</div>
+                </div>
+            `;
+
+            // Group by date
+            const grouped = {};
+            historyData.forEach(e => {
+                if (!grouped[e.entry_date]) grouped[e.entry_date] = [];
+                grouped[e.entry_date].push(e);
+            });
+
+            let html = '';
+            Object.keys(grouped).sort().reverse().forEach(date => {
+                const entries    = grouped[date];
+                const dRecv  = entries.reduce((s, e) => s + (e.received_amount  || 0), 0);
+                const dRem   = entries.reduce((s, e) => s + (e.remaining_amount || 0), 0);
+                const dWaste = entries.reduce((s, e) => s + (e.waste_amount     || 0), 0);
+                const dSold  = dRecv - dRem - dWaste;
+                const isToday = date === todayDate;
+
+                html += `
+                    <div style="margin-bottom:28px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                            <span style="font-size:14px;font-weight:700;color:var(--primary)">${formatDateTurkish(date)}</span>
+                            ${isToday ? `<span style="font-size:10px;background:rgba(245,158,11,0.15);color:var(--primary);padding:2px 8px;border-radius:20px;font-weight:700">BUGÜN</span>` : ''}
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+                            <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);padding:10px;border-radius:10px;text-align:center">
+                                <div style="font-size:10px;color:#f59e0b;font-weight:700;text-transform:uppercase;margin-bottom:4px">Gelen</div>
+                                <div style="font-size:20px;font-weight:800">${dRecv}</div>
+                            </div>
+                            <div style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);padding:10px;border-radius:10px;text-align:center">
+                                <div style="font-size:10px;color:#60a5fa;font-weight:700;text-transform:uppercase;margin-bottom:4px">Kalan</div>
+                                <div style="font-size:20px;font-weight:800">${dRem}</div>
+                            </div>
+                            <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.2);padding:10px;border-radius:10px;text-align:center">
+                                <div style="font-size:10px;color:#4ade80;font-weight:700;text-transform:uppercase;margin-bottom:4px">Satılan</div>
+                                <div style="font-size:20px;font-weight:800;color:var(--success)">${dSold}</div>
+                            </div>
+                            <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);padding:10px;border-radius:10px;text-align:center">
+                                <div style="font-size:10px;color:#f87171;font-weight:700;text-transform:uppercase;margin-bottom:4px">Zayiat</div>
+                                <div style="font-size:20px;font-weight:800;color:var(--danger)">${dWaste}</div>
+                            </div>
+                        </div>
+                        <table class="history-table">
+                            <thead>
+                                <tr><th>Tatlı</th><th>Gelen</th><th>Kalan</th><th>Zayiat</th><th>Satılan</th></tr>
+                            </thead>
+                            <tbody>
+                                ${entries.map(e => {
+                                    const s = (e.received_amount||0) - (e.remaining_amount||0) - (e.waste_amount||0);
+                                    return `<tr>
+                                        <td>${e.desserts.emoji} ${e.desserts.name}</td>
+                                        <td>${e.received_amount  || 0}</td>
+                                        <td>${e.remaining_amount || 0}</td>
+                                        <td>${e.waste_amount     || 0}</td>
+                                        <td style="color:var(--success);font-weight:700">${s}</td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+
+            document.getElementById('historyContent').innerHTML = html;
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').classList.remove('active');
+        }
+
+        // ─── Logout ───
+        function confirmLogout() {
+            document.getElementById('logoutModal').classList.add('active');
+        }
+
+        function closeLogout() {
+            document.getElementById('logoutModal').classList.remove('active');
+        }
+
+        function doLogout() {
+            localStorage.removeItem('branchId');
+            localStorage.removeItem('branchName');
+            localStorage.removeItem('managerName');
+            window.location.href = 'index.html';
+        }
+
+        // ─── Yardım Kartı ───
+        function toggleHelpCard() {
+            const card     = document.getElementById('helpCard');
+            const backdrop = document.getElementById('helpBackdrop');
+            const isHidden = card.style.display === 'none';
+
+            card.style.display     = isHidden ? 'block' : 'none';
+            backdrop.style.display = isHidden ? 'block' : 'none';
+            document.body.style.overflow = isHidden ? 'hidden' : 'auto';
+        }
+
+        // İlk defa giriyorsa yardım kartını göster
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('hasSeenHelp')) {
+                setTimeout(() => {
+                    toggleHelpCard();
+                    localStorage.setItem('hasSeenHelp', 'true');
+                }, 1200);
+            }
+        });
+
+        // ─── Keyboard Shortcuts ───
+        document.addEventListener('keydown', e => {
+            // Ctrl+S: save anywhere
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveAllEntries();
+                return;
+            }
+
+            // Esc: close help card or any open modal
+            if (e.key === 'Escape') {
+                const helpCard = document.getElementById('helpCard');
+                if (helpCard.style.display !== 'none') {
+                    toggleHelpCard();
+                    return;
+                }
+                document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+                if (confirmResolve) { confirmResolve(false); confirmResolve = null; }
+                return;
+            }
+
+            // Skip shortcuts while typing
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.key === 'ArrowLeft')  changeDate(-1);
+            if (e.key === 'ArrowRight') changeDate(1);
+            if (e.ctrlKey && e.key === 'h') { e.preventDefault(); showHistory(); }
+            if (e.ctrlKey && e.key === 'q') { e.preventDefault(); confirmLogout(); }
+        });
+
+        // Close modals on backdrop click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', e => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    if (modal.id === 'confirmModal' && confirmResolve) {
+                        confirmResolve(false);
+                        confirmResolve = null;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
