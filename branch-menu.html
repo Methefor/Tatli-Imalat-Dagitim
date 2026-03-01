@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 Müdür Menü</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1020, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        /* Header kartı */
+        .header-card {
+            text-align: center;
+            margin-bottom: 36px;
+            padding: 28px 24px;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 24px;
+        }
+
+        .branch-emoji {
+            font-size: 56px;
+            margin-bottom: 14px;
+            display: block;
+            filter: drop-shadow(0 4px 12px rgba(245,158,11,0.4));
+        }
+
+        .branch-name {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .panel-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        /* Tarih badge */
+        .date-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Menü butonları */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 22px 28px;
+            border: none;
+            border-radius: 18px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s;
+            touch-action: manipulation;
+        }
+
+        .menu-btn-icon {
+            font-size: 30px;
+            flex-shrink: 0;
+        }
+
+        .menu-btn-text {
+            text-align: left;
+        }
+
+        .menu-btn-desc {
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.75;
+            margin-top: 2px;
+        }
+
+        .btn-gelen {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.12));
+            border: 1.5px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-gelen:hover {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.2));
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-kalan {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.12));
+            border: 1.5px solid rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-kalan:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2));
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-subem {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1));
+            border: 1.5px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-subem:hover {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(22, 163, 74, 0.15));
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(34, 197, 94, 0.2);
+        }
+
+        .menu-btn:active { transform: translateY(0); }
+
+        /* Çıkış butonu */
+        .logout-btn {
+            width: 100%;
+            padding: 14px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: 14px;
+            color: var(--danger);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            margin-top: 8px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Şube header -->
+        <div class="header-card">
+            <span class="branch-emoji" id="branchEmoji">🏪</span>
+            <h1 class="branch-name" id="branchNameText">Şube</h1>
+            <p class="panel-label">Müdür Paneli</p>
+            <span class="date-badge" id="todayDate">—</span>
+        </div>
+
+        <!-- Ana butonlar -->
+        <div class="menu-buttons">
+
+            <button class="menu-btn btn-gelen" onclick="window.location.href='gelen-tatlilar.html'">
+                <span class="menu-btn-icon">📦</span>
+                <div class="menu-btn-text">
+                    <div>Gelen Tatlılar</div>
+                    <div class="menu-btn-desc">Bugün gelen ürünleri girin</div>
+                </div>
+            </button>
+
+            <button class="menu-btn btn-kalan" onclick="window.location.href='kalan-tatlilar.html'">
+                <span class="menu-btn-icon">📊</span>
+                <div class="menu-btn-text">
+                    <div>Kalan Tatlılar</div>
+                    <div class="menu-btn-desc">Günün sonunda kalan ürünleri girin</div>
+                </div>
+            </button>
+
+            <button class="menu-btn btn-subem" onclick="window.location.href='subem.html'">
+                <span class="menu-btn-icon">🏪</span>
+                <div class="menu-btn-text">
+                    <div>Şubem</div>
+                    <div class="menu-btn-desc">Günlük özet ve istatistikler</div>
+                </div>
+            </button>
+
+        </div>
+
+        <button class="logout-btn" onclick="logout()">🚪 Çıkış Yap</button>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script src="supabase-client.js"></script>
+    <script>
+        const branchId   = localStorage.getItem('branchId');
+        const branchName = localStorage.getItem('branchName');
+
+        if (!branchId) window.location.href = 'index.html';
+
+        const emojis = {
+            'Rumeli İskelesi': '🌊',
+            'Yahya Kemal':     '📚',
+            'TunaBoyu':        '🏞️',
+            'Sahil':           '🏖️',
+            'Vagon':           '🚂',
+            'Millet Bahçesi':  '🌳',
+        };
+
+        document.getElementById('branchNameText').textContent = branchName;
+        document.getElementById('branchEmoji').textContent = emojis[branchName] || '🏪';
+        document.getElementById('todayDate').textContent = formatDateTurkish(getTodayDate());
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏪 Şubem</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #f59e0b;
+            --success: #22c55e;
+            --info: #3b82f6;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1020, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px 16px 40px;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            touch-action: manipulation;
+        }
+
+        .back-btn:hover { background: rgba(255, 255, 255, 0.14); }
+
+        .header-info { flex: 1; }
+
+        .header-info h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .header-info p {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* İstatistik kartları */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 18px 14px;
+            text-align: center;
+        }
+
+        .stat-icon { font-size: 26px; margin-bottom: 8px; }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .stat-gelen .stat-value  { color: var(--primary); }
+        .stat-kalan .stat-value  { color: var(--info); }
+        .stat-satilan .stat-value { color: var(--success); }
+
+        /* Tatlı özet tablosu */
+        .summary-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .summary-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .col-right { text-align: center; min-width: 52px; }
+
+        .dessert-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 8px;
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            align-items: center;
+        }
+
+        .dessert-row:last-child { border-bottom: none; }
+
+        .row-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .row-emoji { font-size: 22px; }
+
+        .row-value {
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            min-width: 52px;
+        }
+
+        .val-gelen   { color: var(--primary); }
+        .val-kalan   { color: var(--info); }
+        .val-satilan { color: var(--success); }
+
+        /* Boş durum */
+        .empty-state {
+            padding: 48px 20px;
+            text-align: center;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state small {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        /* Yenile butonu */
+        .refresh-btn {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .refresh-btn:hover { background: rgba(255, 255, 255, 0.10); color: white; }
+
+        /* Skeleton */
+        .skeleton {
+            background: rgba(255,255,255,0.06);
+            border-radius: 8px;
+            animation: shimmer 1.4s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .stat-card { padding: 14px 8px; }
+            .stat-icon { font-size: 22px; }
+            .stat-value { font-size: 22px; }
+            .stat-label { font-size: 11px; }
+
+            .summary-header { padding: 12px 14px; font-size: 11px; }
+            .dessert-row { padding: 12px 14px; gap: 6px; }
+            .row-name { font-size: 14px; gap: 8px; }
+            .row-emoji { font-size: 20px; }
+            .row-value { font-size: 15px; min-width: 42px; }
+            .col-right { min-width: 42px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='branch-menu.html'">← Geri</button>
+            <div class="header-info">
+                <h1>🏪 Şubem</h1>
+                <p id="branchLabel">Yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- İstatistikler -->
+        <div class="stats-grid">
+            <div class="stat-card stat-gelen">
+                <div class="stat-icon">📦</div>
+                <div class="stat-value" id="totalGelen">—</div>
+                <div class="stat-label">Gelen</div>
+            </div>
+            <div class="stat-card stat-kalan">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="totalKalan">—</div>
+                <div class="stat-label">Kalan</div>
+            </div>
+            <div class="stat-card stat-satilan">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="totalSatilan">—</div>
+                <div class="stat-label">Satılan</div>
+            </div>
+        </div>
+
+        <!-- Tatlı özet tablosu -->
+        <div class="summary-card" id="summaryCard">
+            <div class="summary-header">
+                <span>Tatlı</span>
+                <span class="col-right" style="color:#f59e0b;">Gelen</span>
+                <span class="col-right" style="color:#3b82f6;">Kalan</span>
+                <span class="col-right" style="color:#22c55e;">Satılan</span>
+            </div>
+            <!-- Skeleton satırlar -->
+            <div class="dessert-row">
+                <div class="skeleton" style="height:20px;border-radius:6px;"></div>
+                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
+                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
+                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
+            </div>
+            <div class="dessert-row">
+                <div class="skeleton" style="height:20px;border-radius:6px;"></div>
+                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
+                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
+                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
+            </div>
+        </div>
+
+        <!-- Yenile -->
+        <button class="refresh-btn" onclick="loadData()">🔄 Yenile</button>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script src="supabase-client.js"></script>
+    <script>
+        const branchId   = localStorage.getItem('branchId');
+        const branchName = localStorage.getItem('branchName');
+        const today      = getTodayDate();
+
+        if (!branchId) window.location.href = 'index.html';
+
+        document.getElementById('branchLabel').textContent = branchName + ' · ' + formatDateTurkish(today);
+
+        async function loadData() {
+            const [activeDesserts, entries] = await Promise.all([
+                getActiveDesserts(),
+                getDailyEntriesByBranch(branchId, today)
+            ]);
+
+            if (!activeDesserts) {
+                showEmptyState('Veriler yüklenemedi.');
+                return;
+            }
+
+            let totalGelen = 0, totalKalan = 0, totalSatilan = 0;
+            const rows = [];
+
+            activeDesserts.forEach(dessert => {
+                const entry    = (entries || []).find(e => e.dessert_id === dessert.id);
+                const gelen    = entry?.received_amount  ?? 0;
+                const kalan    = entry?.remaining_amount ?? 0;
+                const satilan  = Math.max(0, gelen - kalan);
+
+                totalGelen   += gelen;
+                totalKalan   += kalan;
+                totalSatilan += satilan;
+
+                rows.push({ dessert, gelen, kalan, satilan });
+            });
+
+            // Stats güncelle
+            document.getElementById('totalGelen').textContent   = totalGelen;
+            document.getElementById('totalKalan').textContent   = totalKalan;
+            document.getElementById('totalSatilan').textContent = totalSatilan;
+
+            // Tablo güncelle
+            const card = document.getElementById('summaryCard');
+            card.innerHTML = `
+                <div class="summary-header">
+                    <span>Tatlı</span>
+                    <span class="col-right" style="color:#f59e0b;">Gelen</span>
+                    <span class="col-right" style="color:#3b82f6;">Kalan</span>
+                    <span class="col-right" style="color:#22c55e;">Satılan</span>
+                </div>
+            `;
+
+            if (rows.length === 0) {
+                card.innerHTML += `
+                    <div class="empty-state">
+                        <span class="empty-icon">📭</span>
+                        <p>Henüz veri girilmemiş</p>
+                        <small>Gelen Tatlılar veya Kalan Tatlılar bölümünden veri girin</small>
+                    </div>
+                `;
+                return;
+            }
+
+            rows.forEach(({ dessert, gelen, kalan, satilan }) => {
+                const row = document.createElement('div');
+                row.className = 'dessert-row';
+                row.innerHTML = `
+                    <div class="row-name">
+                        <span class="row-emoji">${dessert.emoji || '🍰'}</span>
+                        <span>${dessert.name}</span>
+                    </div>
+                    <span class="row-value val-gelen">${gelen}</span>
+                    <span class="row-value val-kalan">${kalan}</span>
+                    <span class="row-value val-satilan">${satilan}</span>
+                `;
+                card.appendChild(row);
+            });
+        }
+
+        function showEmptyState(msg) {
+            document.getElementById('totalGelen').textContent   = '—';
+            document.getElementById('totalKalan').textContent   = '—';
+            document.getElementById('totalSatilan').textContent = '—';
+
+            document.getElementById('summaryCard').innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">⚠️</span>
+                    <p>${msg}</p>
+                </div>
+            `;
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

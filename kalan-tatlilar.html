@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Kalan Tatlılar</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1020, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px 16px 40px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .back-btn {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            touch-action: manipulation;
+        }
+
+        .back-btn:hover { background: rgba(255, 255, 255, 0.14); }
+
+        .header-info { flex: 1; }
+
+        .header-info h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .header-info p {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* Tatlı listesi kartı */
+        .dessert-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 8px 20px;
+            margin-bottom: 20px;
+        }
+
+        .dessert-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            gap: 12px;
+        }
+
+        .dessert-item:last-child { border-bottom: none; }
+
+        .dessert-emoji { font-size: 30px; flex-shrink: 0; }
+
+        .dessert-name {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Gelen bilgisi (küçük) */
+        .gelen-badge {
+            font-size: 12px;
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 20px;
+            padding: 3px 10px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .dessert-dots {
+            flex: 1;
+            border-bottom: 2px dotted rgba(255, 255, 255, 0.12);
+            height: 1px;
+        }
+
+        .dessert-input {
+            width: 76px;
+            padding: 10px 8px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .dessert-input:focus {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Uyarı (kalan > gelen) */
+        .dessert-input.over-limit {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        /* Toplam */
+        .total-section {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.08));
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .total-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* Kaydet butonu */
+        .save-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s;
+            touch-action: manipulation;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+        }
+
+        .save-btn:active { transform: translateY(0); }
+
+        /* Skeleton */
+        .skeleton {
+            background: rgba(255,255,255,0.06);
+            border-radius: 8px;
+            animation: shimmer 1.4s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        /* Loading overlay */
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 16, 32, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #loadingOverlay.active { display: flex; }
+
+        .spinner {
+            width: 44px; height: 44px;
+            border: 4px solid rgba(255,255,255,0.15);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 480px) {
+            .dessert-emoji { font-size: 26px; }
+            .dessert-name { font-size: 14px; }
+            .gelen-badge { font-size: 11px; padding: 3px 8px; }
+            .dessert-input { width: 66px; font-size: 16px; }
+            .total-value { font-size: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='branch-menu.html'">← Geri</button>
+            <div class="header-info">
+                <h1>📊 Kalan Tatlılar</h1>
+                <p id="branchLabel">Şube yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Tatlı Listesi -->
+        <div class="dessert-card" id="dessertList">
+            <div class="dessert-item">
+                <div class="skeleton" style="width:30px;height:30px;border-radius:6px;"></div>
+                <div class="skeleton" style="flex:1;height:18px;border-radius:6px;"></div>
+                <div class="skeleton" style="width:76px;height:40px;border-radius:12px;"></div>
+            </div>
+            <div class="dessert-item">
+                <div class="skeleton" style="width:30px;height:30px;border-radius:6px;"></div>
+                <div class="skeleton" style="flex:1;height:18px;border-radius:6px;"></div>
+                <div class="skeleton" style="width:76px;height:40px;border-radius:12px;"></div>
+            </div>
+        </div>
+
+        <!-- Toplam -->
+        <div class="total-section">
+            <span class="total-label">TOPLAM KALAN</span>
+            <span class="total-value" id="totalValue">0</span>
+        </div>
+
+        <!-- Kaydet -->
+        <button class="save-btn" onclick="saveKalanData()">💾 Kaydet</button>
+    </div>
+
+    <div id="loadingOverlay"><div class="spinner"></div></div>
+    <div id="toastContainer"></div>
+
+    <script src="supabase-client.js"></script>
+    <script>
+        const branchId   = localStorage.getItem('branchId');
+        const branchName = localStorage.getItem('branchName');
+        const today      = getTodayDate();
+
+        if (!branchId) window.location.href = 'index.html';
+
+        document.getElementById('branchLabel').textContent = branchName + ' · ' + formatDateTurkish(today);
+
+        // Toplamı hesapla
+        function updateTotal() {
+            let total = 0;
+            document.querySelectorAll('.dessert-input').forEach(inp => {
+                const val   = parseInt(inp.value) || 0;
+                const gelen = parseInt(inp.dataset.received) || 0;
+                total += val;
+                // Kalan > gelen ise uyar
+                inp.classList.toggle('over-limit', val > gelen && gelen > 0);
+            });
+            document.getElementById('totalValue').textContent = total;
+        }
+
+        // Tatlıları yükle
+        async function loadDesserts() {
+            const [activeDesserts, existing] = await Promise.all([
+                getActiveDesserts(),
+                getDailyEntriesByBranch(branchId, today)
+            ]);
+
+            const list = document.getElementById('dessertList');
+            list.innerHTML = '';
+
+            if (!activeDesserts || activeDesserts.length === 0) {
+                list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-tertiary);">Tatlı bulunamadı.</div>';
+                return;
+            }
+
+            activeDesserts.forEach(dessert => {
+                const entry        = (existing || []).find(e => e.dessert_id === dessert.id);
+                const gelenAmount  = entry?.received_amount  ?? 0;
+                const kalanAmount  = entry?.remaining_amount ?? 0;
+                const wasteAmount  = entry?.waste_amount     ?? 0;
+
+                const item = document.createElement('div');
+                item.className = 'dessert-item';
+                item.innerHTML = `
+                    <span class="dessert-emoji">${dessert.emoji || '🍰'}</span>
+                    <span class="dessert-name">${dessert.name}</span>
+                    ${gelenAmount > 0 ? `<span class="gelen-badge">G: ${gelenAmount}</span>` : ''}
+                    <div class="dessert-dots"></div>
+                    <input type="number"
+                           class="dessert-input"
+                           value="${kalanAmount}"
+                           min="0"
+                           data-id="${dessert.id}"
+                           data-received="${gelenAmount}"
+                           data-waste="${wasteAmount}"
+                           inputmode="numeric"
+                           oninput="updateTotal()">
+                `;
+                list.appendChild(item);
+            });
+
+            updateTotal();
+        }
+
+        // Verileri kaydet
+        async function saveKalanData() {
+            const inputs = document.querySelectorAll('.dessert-input');
+            if (inputs.length === 0) return;
+
+            // Kalan > gelen kontrolü
+            let hasOverLimit = false;
+            inputs.forEach(inp => {
+                if (inp.classList.contains('over-limit')) hasOverLimit = true;
+            });
+
+            if (hasOverLimit) {
+                showToast('Uyarı: Kalan miktar gelen miktardan fazla!', 'error');
+                // Devam ettir (engelleme değil sadece uyarı)
+            }
+
+            toggleLoading(true);
+            let successCount = 0;
+
+            for (const input of inputs) {
+                const dessertId   = input.dataset.id;
+                const kalanAmount = parseInt(input.value) || 0;
+                const gelenAmount = parseInt(input.dataset.received) || 0;
+                const wasteAmount = parseInt(input.dataset.waste) || 0;
+
+                const result = await saveDailyEntry(
+                    branchId,
+                    dessertId,
+                    today,
+                    gelenAmount,
+                    kalanAmount,
+                    wasteAmount,
+                    ''
+                );
+
+                if (result.success) successCount++;
+            }
+
+            toggleLoading(false);
+
+            if (successCount > 0) {
+                showToast(`✅ ${successCount} tatlı kaydedildi!`, 'success');
+                setTimeout(() => window.location.href = 'branch-menu.html', 1400);
+            } else {
+                showToast('❌ Kayıt başarısız!', 'error');
+            }
+        }
+
+        loadDesserts();
+    </script>
+</body>
+</html>
