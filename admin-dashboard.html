@@ -89,6 +89,44 @@
             font-size: 14px;
         }
 
+        /* Welcome mesajı */
+        .welcome-message {
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .welcome-text {
+            display: block;
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24, #f97316, #f59e0b);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientSlide 4s ease infinite;
+        }
+
+        .welcome-subtext {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.3s forwards;
+        }
+
+        @keyframes gradientSlide {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
         /* Canlı güncelleme göstergesi */
         .live-badge {
             display: inline-flex;
@@ -492,9 +530,11 @@
                 <div class="header-left">
                     <span class="header-icon">👔</span>
                     <div class="header-text">
-                        <h1>Genel Müdür Paneli</h1>
-                        <p class="header-subtitle" id="adminName">Hoş Geldiniz</p>
-                        <div class="live-badge">
+                        <h2 class="welcome-message">
+                            <span class="welcome-text">Mutlukent Tatlı İmalat ve Dağıtım</span>
+                            <span class="welcome-subtext">Takip Sistemine Hoş Geldiniz</span>
+                        </h2>
+                        <div class="live-badge" style="margin-top:10px">
                             <span class="live-dot"></span>
                             <span id="liveStatus">Canlı &mdash; her 30 sn güncellenir</span>
                         </div>
@@ -624,12 +664,6 @@
 
         // Sayfa yüklenince
         document.addEventListener('DOMContentLoaded', async () => {
-            // Admin adını göster
-            const adminName = localStorage.getItem('adminName');
-            if (adminName) {
-                document.getElementById('adminName').textContent = `Hoş Geldiniz, ${adminName}`;
-            }
-
             // Verileri yükle
             await loadData();
 

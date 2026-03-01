@@ -944,6 +944,11 @@
             vertical-align: middle;
         }
 
+        /* ─── TOUCH-FRIENDLY ─── */
+        .btn, .mode-btn, .filter-btn, .date-nav-btn, .btn-today, .btn-help {
+            touch-action: manipulation;
+        }
+
         /* ─── RESPONSIVE ─── */
         @media (max-width: 1024px) {
             .entries-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); }
@@ -951,18 +956,59 @@
         }
 
         @media (max-width: 768px) {
-            body { padding: 12px; }
+            body { padding: 12px; padding-bottom: 80px; }
             .entries-grid, .skeleton-grid { grid-template-columns: 1fr; }
             .header-top { flex-direction: column; align-items: flex-start; }
             .date-display { display: none; }
             .history-summary { grid-template-columns: repeat(2, 1fr); }
+
+            /* iOS zoom önleme */
+            .text-input, input[type="date"], input[type="number"] {
+                font-size: 16px !important;
+            }
+
+            /* Büyük dokunma hedefleri */
+            .btn {
+                min-height: 44px;
+                padding: 10px 16px;
+            }
+
+            .btn-help {
+                min-height: 44px;
+            }
+
+            /* Sabit alt navigasyon */
+            .header-actions {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: var(--card);
+                border-top: 1px solid var(--border);
+                padding: 10px 16px;
+                z-index: 200;
+                display: flex;
+                gap: 8px;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            }
+
+            .header-actions .btn,
+            .header-actions .btn-help {
+                flex: 1;
+                justify-content: center;
+            }
+
+            /* Kaydet butonu alt navigasyonun üstünde */
+            .save-section {
+                bottom: 70px;
+            }
         }
 
         @media (max-width: 500px) {
             .card-inputs { grid-template-columns: 1fr; }
             .input-box { border-right: none; border-bottom: 1px solid rgba(71, 85, 105, 0.2); }
             .input-box:last-child { border-bottom: none; }
-            .number-input { font-size: 20px; }
+            .number-input { font-size: 28px; }
             .confirm-table { font-size: 12px; }
         }
     </style>
@@ -1000,17 +1046,9 @@
                 </div>
             </div>
 
-            <!-- Mod Seçici -->
-            <div class="mode-selector">
-                <button class="mode-btn active" id="modeIncremental" onclick="setMode('incremental')">
-                    ➕ Yeni Teslimat Ekle
-                </button>
-                <button class="mode-btn" id="modeTotal" onclick="setMode('total')">
-                    📝 Toplam Değer Gir
-                </button>
-            </div>
-            <p class="mode-desc" id="modeDesc">
-                <strong>Artımsal mod:</strong> GELEN mevcut değere eklenir. Yeni teslimat geldiğinde kullanın.
+            <!-- Artımsal giriş modu (sabit) -->
+            <p class="mode-desc">
+                <strong>⚡ Artımsal giriş:</strong> Teslimat geldiğinde hemen girin. Sistem mevcut değere ekler.
             </p>
 
             <!-- Tarih Seçici -->
@@ -1060,9 +1098,8 @@
         <!-- Kaydet -->
         <div class="save-section" id="saveSection" style="display:none">
             <button class="btn-save" id="saveBtn" onclick="saveAllEntries()">
-                <span id="saveBtnIcon">💾</span>
-                <span id="saveBtnText">Tüm Verileri Kaydet</span>
-                <span class="kbd-hint">Ctrl+S</span>
+                <span id="saveBtnIcon">➕</span>
+                <span id="saveBtnText">Teslimatı Kaydet</span>
             </button>
         </div>
 
@@ -1083,13 +1120,14 @@
                 <div class="step-number">1</div>
                 <div class="step-content">
                     <h4>📦 Gelen Tatlıları Girin</h4>
-                    <p>Teslimat geldiğinde <strong>GELEN</strong> kısmına miktarı yazın.</p>
-                    <ul>
-                        <li>✅ <strong>Artırarak ekle modu:</strong> Her teslimat için ayrı ayrı ekleyin</li>
-                        <li>📝 <strong>Toplam değer modu:</strong> Günün toplam teslimatını tek seferde girin</li>
-                    </ul>
+                    <p>Teslimat geldiğinde <strong>HEMEN</strong> o tatlının miktarını <strong>GELEN</strong> kısmına yazın ve kaydedin.</p>
                     <div class="help-example">
-                        <strong>Örnek:</strong> Sabah 50, öğlen 30 geldi → Artırarak modda iki kere ekleyin (50, sonra 30) veya toplam modda 80 yazın.
+                        <strong>Örnek:</strong><br>
+                        • 15:00 → 50 Magnolya, 50 Tiramisu geldi → Girin ve kaydedin<br>
+                        • 18:00 → 20 Truff, 16 Trileçe geldi → Girin ve kaydedin
+                    </div>
+                    <div class="help-tip">
+                        💡 <strong>İpucu:</strong> Her teslimat AYRI AYRI girilir. Sistem otomatik olarak toplar.
                     </div>
                 </div>
             </div>
@@ -1127,16 +1165,6 @@
                 </div>
             </div>
 
-            <div class="help-shortcuts">
-                <h4>⌨️ Klavye Kısayolları</h4>
-                <ul>
-                    <li><kbd>Ctrl</kbd> + <kbd>S</kbd> &nbsp;→ Kaydet</li>
-                    <li><kbd>Ctrl</kbd> + <kbd>H</kbd> &nbsp;→ Geçmiş</li>
-                    <li><kbd>Ctrl</kbd> + <kbd>Q</kbd> &nbsp;→ Çıkış</li>
-                    <li><kbd>←</kbd> / <kbd>→</kbd> &nbsp;→ Önceki / Sonraki gün</li>
-                    <li><kbd>Esc</kbd> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Pencereyi kapat</li>
-                </ul>
-            </div>
         </div>
     </div>
 
@@ -1258,74 +1286,6 @@
 
             await loadData(selectedDate);
         });
-
-        // ─── Mode ───
-        const modeDescs = {
-            incremental: '<strong>Artımsal mod:</strong> GELEN mevcut değere eklenir. Yeni teslimat geldiğinde kullanın.',
-            total:       '<strong>Toplam mod:</strong> Girilen değer doğrudan kaydedilir. Düzeltme yapmak için kullanın.',
-        };
-
-        function setMode(mode) {
-            entryMode = mode;
-            document.getElementById('modeIncremental').classList.toggle('active', mode === 'incremental');
-            document.getElementById('modeTotal').classList.toggle('active', mode === 'total');
-            document.getElementById('modeDesc').innerHTML = modeDescs[mode];
-
-            // Grid class for visual cue
-            const grid = document.getElementById('entriesGrid');
-            grid.classList.toggle('incremental-mode', mode === 'incremental');
-
-            // Update inputs based on mode
-            refreshInputsForMode();
-
-            // Update save button text
-            document.getElementById('saveBtnText').textContent =
-                mode === 'incremental' ? 'Yeni Teslimatı Ekle' : 'Toplam Değeri Kaydet';
-            document.getElementById('saveBtnIcon').textContent =
-                mode === 'incremental' ? '➕' : '💾';
-        }
-
-        function refreshInputsForMode() {
-            desserts.forEach(dessert => {
-                const receivedInput = document.querySelector(
-                    `input[data-dessert="${dessert.id}"][data-field="received"]`
-                );
-                const remainingInput = document.querySelector(
-                    `input[data-dessert="${dessert.id}"][data-field="remaining"]`
-                );
-                const wasteInput = document.querySelector(
-                    `input[data-dessert="${dessert.id}"][data-field="waste"]`
-                );
-
-                if (!receivedInput) return;
-
-                const saved = savedData[dessert.id] || { received: 0, remaining: 0, waste: 0 };
-
-                if (entryMode === 'incremental') {
-                    receivedInput.value  = 0;
-                    remainingInput.value = saved.remaining;
-                    wasteInput.value     = saved.waste;
-                    receivedInput.placeholder  = 'Yeni gelen';
-                    remainingInput.placeholder = 'Güncel kalan';
-                    wasteInput.placeholder     = 'Güncel zayiat';
-                } else {
-                    receivedInput.value  = saved.received;
-                    remainingInput.value = saved.remaining;
-                    wasteInput.value     = saved.waste;
-                    receivedInput.placeholder  = 'Toplam gelen';
-                    remainingInput.placeholder = 'Toplam kalan';
-                    wasteInput.placeholder     = 'Toplam zayiat';
-                }
-
-                entryData[dessert.id] = {
-                    received:  parseInt(receivedInput.value)  || 0,
-                    remaining: parseInt(remainingInput.value) || 0,
-                    waste:     parseInt(wasteInput.value)     || 0,
-                };
-
-                updateSoldBadge(dessert.id);
-            });
-        }
 
         // ─── Date ───
         function updateDateDisplay() {
@@ -1477,7 +1437,7 @@
                             <span class="input-box-label">Gelen</span>
                             <input type="number" class="number-input" min="0"
                                 value="${initReceived}"
-                                placeholder="${entryMode === 'incremental' ? 'Yeni gelen' : 'Toplam gelen'}"
+                                placeholder="Yeni gelen"
                                 data-dessert="${dessert.id}" data-field="received"
                                 oninput="updateEntry(this)" onfocus="this.select()">
                             <span class="additive-tag">+ ekle</span>
@@ -1887,16 +1847,8 @@
             }
         });
 
-        // ─── Keyboard Shortcuts ───
+        // ─── ESC tuşu ile açık modal/kart kapatma ───
         document.addEventListener('keydown', e => {
-            // Ctrl+S: save anywhere
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                saveAllEntries();
-                return;
-            }
-
-            // Esc: close help card or any open modal
             if (e.key === 'Escape') {
                 const helpCard = document.getElementById('helpCard');
                 if (helpCard.style.display !== 'none') {
@@ -1905,16 +1857,7 @@
                 }
                 document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
                 if (confirmResolve) { confirmResolve(false); confirmResolve = null; }
-                return;
             }
-
-            // Skip shortcuts while typing
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-            if (e.key === 'ArrowLeft')  changeDate(-1);
-            if (e.key === 'ArrowRight') changeDate(1);
-            if (e.ctrlKey && e.key === 'h') { e.preventDefault(); showHistory(); }
-            if (e.ctrlKey && e.key === 'q') { e.preventDefault(); confirmLogout(); }
         });
 
         // Close modals on backdrop click
