@@ -296,6 +296,88 @@
             50% { opacity: 1; transform: scale(1.1); }
         }
 
+        /* ─── PIN OVERLAY ─── */
+        #pinOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0a1020, #0f172a);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        #pinOverlay.active { display: flex; }
+
+        .pin-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 40px 36px;
+            text-align: center;
+            max-width: 340px;
+            width: 90%;
+        }
+
+        .pin-box-icon { font-size: 56px; margin-bottom: 14px; display: block; }
+        .pin-box-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+        .pin-box-sub { font-size: 14px; color: var(--text-tertiary); margin-bottom: 28px; }
+
+        .pin-inputs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .pin-digit {
+            width: 60px;
+            height: 68px;
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            color: white;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .pin-digit:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        .pin-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            touch-action: manipulation;
+        }
+
+        .pin-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+        }
+
+        .pin-error {
+            font-size: 13px;
+            color: var(--danger);
+            margin-top: 12px;
+            min-height: 18px;
+        }
+
         /* ─── RESPONSIVE ─── */
         @media (max-width: 900px) {
             .branches-grid { grid-template-columns: repeat(3, 1fr); }
@@ -329,6 +411,23 @@
     </style>
 </head>
 <body>
+
+    <!-- PIN Overlay -->
+    <div id="pinOverlay" class="active">
+        <div class="pin-box">
+            <span class="pin-box-icon">👨‍🍳</span>
+            <h2 class="pin-box-title">Tatlıcılar Paneli</h2>
+            <p class="pin-box-sub">Devam etmek için şifrenizi girin</p>
+            <div class="pin-inputs">
+                <input type="password" class="pin-digit" maxlength="1" id="pd1" inputmode="numeric">
+                <input type="password" class="pin-digit" maxlength="1" id="pd2" inputmode="numeric">
+                <input type="password" class="pin-digit" maxlength="1" id="pd3" inputmode="numeric">
+                <input type="password" class="pin-digit" maxlength="1" id="pd4" inputmode="numeric">
+            </div>
+            <button class="pin-submit" onclick="checkPin()">Giriş Yap</button>
+            <div class="pin-error" id="pinError"></div>
+        </div>
+    </div>
 
     <div class="container">
 
@@ -394,6 +493,43 @@
 
     <script src="supabase-client.js"></script>
     <script>
+        // ─── PIN Kontrolü ───
+        const PANEL_PIN = '8520';
+        const pinIds = ['pd1','pd2','pd3','pd4'];
+
+        // Oturum boyunca hatırla
+        if (sessionStorage.getItem('tatlicilarAuth') === '1') {
+            document.getElementById('pinOverlay').classList.remove('active');
+        }
+
+        pinIds.forEach((id, idx) => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', e => {
+                if (e.target.value && idx < 3) document.getElementById(pinIds[idx + 1]).focus();
+                if (e.target.value && idx === 3) checkPin();
+            });
+            el.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !e.target.value && idx > 0)
+                    document.getElementById(pinIds[idx - 1]).focus();
+                if (e.key === 'Enter') checkPin();
+            });
+        });
+
+        setTimeout(() => document.getElementById('pd1').focus(), 100);
+
+        function checkPin() {
+            const entered = pinIds.map(id => document.getElementById(id).value).join('');
+            if (entered === PANEL_PIN) {
+                sessionStorage.setItem('tatlicilarAuth', '1');
+                document.getElementById('pinOverlay').classList.remove('active');
+            } else {
+                document.getElementById('pinError').textContent = 'Hatalı şifre, tekrar deneyin.';
+                pinIds.forEach(id => document.getElementById(id).value = '');
+                document.getElementById('pd1').focus();
+                setTimeout(() => document.getElementById('pinError').textContent = '', 2500);
+            }
+        }
+
         const branchEmojis = {
             'Rumeli İskelesi': '🌊',
             'Yahya Kemal':     '📚',

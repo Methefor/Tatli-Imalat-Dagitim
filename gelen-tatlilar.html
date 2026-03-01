@@ -311,9 +311,7 @@
                            value="${currentValue}"
                            min="0"
                            data-id="${dessert.id}"
-                           data-received="${currentValue}"
                            data-remaining="${entry?.remaining_amount ?? 0}"
-                           data-waste="${entry?.waste_amount ?? 0}"
                            inputmode="numeric"
                            oninput="updateTotal()">
                 `;
@@ -335,7 +333,6 @@
                 const dessertId     = input.dataset.id;
                 const gelenAmount   = parseInt(input.value) || 0;
                 const kalanAmount   = parseInt(input.dataset.remaining) || 0;
-                const wasteAmount   = parseInt(input.dataset.waste) || 0;
 
                 const result = await saveDailyEntry(
                     branchId,
@@ -343,7 +340,7 @@
                     today,
                     gelenAmount,
                     kalanAmount,
-                    wasteAmount,
+                    0,
                     ''
                 );
 

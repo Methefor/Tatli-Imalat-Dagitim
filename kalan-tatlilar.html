@@ -323,7 +323,6 @@
                 const entry        = (existing || []).find(e => e.dessert_id === dessert.id);
                 const gelenAmount  = entry?.received_amount  ?? 0;
                 const kalanAmount  = entry?.remaining_amount ?? 0;
-                const wasteAmount  = entry?.waste_amount     ?? 0;
 
                 const item = document.createElement('div');
                 item.className = 'dessert-item';
@@ -338,7 +337,6 @@
                            min="0"
                            data-id="${dessert.id}"
                            data-received="${gelenAmount}"
-                           data-waste="${wasteAmount}"
                            inputmode="numeric"
                            oninput="updateTotal()">
                 `;
@@ -371,7 +369,6 @@
                 const dessertId   = input.dataset.id;
                 const kalanAmount = parseInt(input.value) || 0;
                 const gelenAmount = parseInt(input.dataset.received) || 0;
-                const wasteAmount = parseInt(input.dataset.waste) || 0;
 
                 const result = await saveDailyEntry(
                     branchId,
@@ -379,7 +376,7 @@
                     today,
                     gelenAmount,
                     kalanAmount,
-                    wasteAmount,
+                    0,
                     ''
                 );
 

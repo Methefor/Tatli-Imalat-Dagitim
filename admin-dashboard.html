@@ -584,12 +584,6 @@
                 <div class="stat-footer">Tüm şubeler toplamı</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon">⚠️</div>
-                <div class="stat-label">Toplam Zayiat</div>
-                <div class="stat-value negative" id="totalWaste">0</div>
-                <div class="stat-footer" id="wastePercentage">%0 zayiat oranı</div>
-            </div>
         </div>
 
         <!-- Branch Table -->
@@ -605,8 +599,7 @@
                             <th onclick="sortTable(1)">Gelen</th>
                             <th onclick="sortTable(2)">Satılan</th>
                             <th onclick="sortTable(3)">Kalan</th>
-                            <th onclick="sortTable(4)">Zayiat</th>
-                            <th onclick="sortTable(5)">Satış %</th>
+                            <th onclick="sortTable(4)">Satış %</th>
                         </tr>
                     </thead>
                     <tbody id="branchTableBody">
@@ -628,15 +621,6 @@
                 </div>
             </div>
 
-            <!-- Waste Chart -->
-            <div class="content-card">
-                <div class="card-header">
-                    <h3 class="card-title">⚠️ Şube Bazlı Zayiat</h3>
-                </div>
-                <div class="chart-container">
-                    <canvas id="wasteChart"></canvas>
-                </div>
-            </div>
         </div>
 
         <!-- Current Stock -->
@@ -657,7 +641,6 @@
         let currentFilter = 'today';
         let allData = [];
         let dessertChart = null;
-        let wasteChart = null;
         const DAILY_TARGET = 2500;
         let autoRefreshTimer = null;
         let lastRefreshTime = null;
@@ -755,9 +738,9 @@
             updateLiveStatus();
         }
 
-        // Giriş için satılan hesapla (received - remaining - waste)
+        // Satılan hesapla (received - remaining)
         function calcSold(entry) {
-            return Math.max(0, (entry.received_amount || 0) - (entry.remaining_amount || 0) - (entry.waste_amount || 0));
+            return Math.max(0, (entry.received_amount || 0) - (entry.remaining_amount || 0));
         }
 
         // İstatistikleri güncelle
@@ -765,24 +748,19 @@
             const totalDistribution = allData.reduce((sum, entry) => sum + (entry.received_amount || 0), 0);
             const totalSales = allData.reduce((sum, entry) => sum + calcSold(entry), 0);
             const totalStock = allData.reduce((sum, entry) => sum + (entry.remaining_amount || 0), 0);
-            const totalWaste = allData.reduce((sum, entry) => sum + (entry.waste_amount || 0), 0);
 
             // Animasyonlu sayaç
             animateCounter('totalDistribution', totalDistribution);
             animateCounter('totalSales', totalSales);
             animateCounter('totalStock', totalStock);
-            animateCounter('totalWaste', totalWaste);
 
             // Progress bar
             const progressPercent = Math.min((totalDistribution / DAILY_TARGET) * 100, 100);
             document.getElementById('distProgress').style.width = `${progressPercent}%`;
 
-            // Yüzdeler
+            // Satış yüzdesi
             const salesPercent = totalDistribution > 0 ? ((totalSales / totalDistribution) * 100).toFixed(1) : 0;
-            const wastePercent = totalDistribution > 0 ? ((totalWaste / totalDistribution) * 100).toFixed(1) : 0;
-            
             document.getElementById('salesPercentage').textContent = `%${salesPercent} satış oranı`;
-            document.getElementById('wastePercentage').textContent = `%${wastePercent} zayiat oranı`;
         }
 
         // Sayaç animasyonu
@@ -817,15 +795,13 @@
                         name: branchName,
                         received: 0,
                         sold: 0,
-                        remaining: 0,
-                        waste: 0
+                        remaining: 0
                     };
                 }
-                
+
                 branchData[branchId].received  += entry.received_amount  || 0;
                 branchData[branchId].sold      += calcSold(entry);
                 branchData[branchId].remaining += entry.remaining_amount || 0;
-                branchData[branchId].waste     += entry.waste_amount     || 0;
             });
 
             const tbody = document.getElementById('branchTableBody');
@@ -841,7 +817,6 @@
                     <td class="number-cell">${branch.received.toLocaleString('tr-TR')}</td>
                     <td class="number-cell positive">${branch.sold.toLocaleString('tr-TR')}</td>
                     <td class="number-cell">${branch.remaining.toLocaleString('tr-TR')}</td>
-                    <td class="number-cell negative">${branch.waste.toLocaleString('tr-TR')}</td>
                     <td class="number-cell">${salesPercent}%</td>
                 `;
                 tbody.appendChild(row);
@@ -851,7 +826,6 @@
         // Grafikleri güncelle
         function updateCharts() {
             updateDessertChart();
-            updateWasteChart();
         }
 
         // Tatlı grafiği
@@ -924,61 +898,6 @@
             });
         }
 
-        // Zayiat grafiği
-        function updateWasteChart() {
-            // Şubeye göre zayiat grupla
-            const wasteData = {};
-            
-            allData.forEach(entry => {
-                const branchName = entry.branches.name;
-                
-                if (!wasteData[branchName]) {
-                    wasteData[branchName] = 0;
-                }
-                
-                wasteData[branchName] += entry.waste_amount || 0;
-            });
-
-            const labels = Object.keys(wasteData);
-            const data = Object.values(wasteData);
-
-            const ctx = document.getElementById('wasteChart');
-            
-            if (wasteChart) {
-                wasteChart.destroy();
-            }
-
-            wasteChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#ef4444', '#f97316', '#f59e0b', '#22c55e',
-                            '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: { color: '#cbd5e1' }
-                        },
-                        tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#cbd5e1',
-                            borderColor: '#475569',
-                            borderWidth: 1
-                        }
-                    }
-                }
-            });
-        }
 
         // Stok kartlarını güncelle
         async function updateStockCards() {
@@ -1011,14 +930,12 @@
             document.getElementById('totalDistribution').textContent = '0';
             document.getElementById('totalSales').textContent = '0';
             document.getElementById('totalStock').textContent = '0';
-            document.getElementById('totalWaste').textContent = '0';
             document.getElementById('distProgress').style.width = '0%';
             document.getElementById('salesPercentage').textContent = '%0 satış oranı';
-            document.getElementById('wastePercentage').textContent = '%0 zayiat oranı';
-            
+
             document.getElementById('branchTableBody').innerHTML = `
                 <tr>
-                    <td colspan="6" class="no-data">
+                    <td colspan="5" class="no-data">
                         <div class="no-data-icon">📭</div>
                         <div class="no-data-text">Veri Bulunamadı</div>
                         <div class="no-data-subtitle">Seçilen tarih aralığında veri bulunmamaktadır.</div>
