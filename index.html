@@ -523,45 +523,36 @@
         /* ─── MOBİL HEADER ─── */
         .mobile-header { display: none; }
 
-        /* ─── MOBİL RESPONSIVE ─── */
-        @media (max-width: 960px) {
-            .auth-container {
-                flex-direction: column;
-                gap: 24px;
-                max-width: 500px;
-            }
-
-            /* Dikey sıralamada sabit yükseklik kaldır */
-            .auth-card {
-                height: auto;
-                min-height: 500px;
-            }
-        }
-
+        /* ─── MOBİL RESPONSIVE (768px ve altı) ─── */
         @media (max-width: 768px) {
-            /* Body mobilde scroll olsun */
-            body {
+            /* Body scroll aktif */
+            html, body {
+                height: auto;
                 overflow-y: auto;
                 overflow-x: hidden;
+            }
+
+            .animated-bg {
+                position: absolute;
+                min-height: 100vh;
             }
 
             /* Sayfa dikey akış */
             .page {
                 justify-content: flex-start;
-                padding: 24px 14px 40px;
-                padding-top: 0; /* Mobile header altında başla */
+                padding: 0 0 40px;
             }
 
-            /* Masaüstü logo/başlığı gizle */
+            /* Masaüstü header gizle */
             .site-header { display: none; }
 
-            /* Mobil header görünür */
+            /* Mobil header sticky */
             .mobile-header {
                 display: flex;
                 align-items: center;
                 gap: 14px;
-                padding: 16px 20px;
-                background: rgba(15, 23, 42, 0.85);
+                padding: 18px 16px;
+                background: rgba(30, 41, 59, 0.6);
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
                 border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -569,84 +560,137 @@
                 top: 0;
                 z-index: 100;
                 width: 100%;
-                margin-bottom: 28px;
             }
 
             .mobile-logo {
-                font-size: 38px;
+                font-size: 36px;
                 line-height: 1;
-                flex-shrink: 0;
-                filter: drop-shadow(0 2px 8px rgba(245,158,11,0.4));
             }
 
             .mobile-title h1 {
                 font-size: 16px;
                 font-weight: 700;
-                background: linear-gradient(135deg, var(--primary), var(--primary-light));
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                margin-bottom: 1px;
+                color: var(--primary);
+                margin-bottom: 2px;
             }
 
             .mobile-title p {
                 font-size: 10px;
                 color: var(--text-tertiary);
-                line-height: 1.3;
             }
 
-            /* Kartlar tam genişlik */
+            /* ─── KARTLAR YAN YANA ─── */
             .auth-container {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                padding: 24px 12px 60px;
                 max-width: 100%;
-                gap: 20px;
             }
 
+            /* Her kart küçük */
             .auth-card {
+                height: 420px;
                 width: 100%;
-                max-width: 460px;
-                height: auto;
-                min-height: 490px;
-                margin: 0 auto;
             }
 
+            /* İçerik padding küçült */
             .welcome-side,
-            .form-side { padding: 40px 28px; }
-
-            .card-logo { font-size: 60px; margin-bottom: 18px; }
-            .card-title { font-size: 28px; margin-bottom: 12px; }
-            .card-desc { font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
-
-            .switch-btn {
-                font-size: 15px;
-                padding: 14px 32px;
-                min-height: 50px;
+            .form-side {
+                padding: 28px 18px;
             }
 
-            .form-title { font-size: 22px; margin-bottom: 22px; }
+            /* Logo küçült */
+            .card-logo {
+                font-size: 48px;
+                margin-bottom: 12px;
+            }
 
-            .pin-input { width: 52px; height: 62px; font-size: 26px; }
-            .modal-content { padding: 28px 18px; }
+            /* Başlık küçült */
+            .card-title {
+                font-size: 19px;
+                margin-bottom: 8px;
+                line-height: 1.2;
+            }
 
-            .branch-grid { gap: 10px; max-height: 340px; }
-            .branch-item { padding: 16px 10px; }
-            .branch-item-emoji { font-size: 30px; }
+            /* Açıklama küçült */
+            .card-desc {
+                font-size: 12px;
+                margin-bottom: 18px;
+                line-height: 1.4;
+            }
 
-            .site-footer { margin-top: 28px; }
+            /* Buton küçült */
+            .switch-btn {
+                font-size: 13px;
+                padding: 11px 22px;
+                min-height: 42px;
+            }
+
+            .btn-arrow { font-size: 14px; }
+
+            /* Form içeriği */
+            .form-title {
+                font-size: 18px;
+                margin-bottom: 18px;
+            }
+
+            .glass-input {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .submit-btn {
+                padding: 13px;
+                font-size: 15px;
+            }
+
+            /* Branch grid */
+            .branch-grid {
+                gap: 10px;
+                max-height: 280px;
+            }
+
+            .branch-item { padding: 12px 8px; }
+            .branch-item-emoji { font-size: 28px; margin-bottom: 6px; }
+            .branch-item-name { font-size: 11px; }
+
+            /* Footer */
+            .site-footer {
+                font-size: 10px;
+                padding: 20px 12px;
+                margin-top: 0;
+            }
         }
 
+        /* ─── ÇOK KÜÇÜK EKRANLAR (375px ve altı) ─── */
         @media (max-width: 375px) {
-            .mobile-header { padding: 14px 16px; }
-            .mobile-logo { font-size: 32px; }
-            .mobile-title h1 { font-size: 14px; }
+            .auth-card { height: 390px; }
 
-            .auth-card { min-height: 460px; }
+            .card-logo { font-size: 42px; }
+            .card-title { font-size: 17px; }
+            .card-desc { font-size: 11px; }
 
-            .card-logo { font-size: 52px; }
-            .card-title { font-size: 25px; }
-            .card-desc { font-size: 13px; margin-bottom: 24px; }
+            .switch-btn {
+                font-size: 12px;
+                padding: 10px 18px;
+            }
 
             .pin-input { width: 46px; height: 56px; font-size: 22px; }
-            .pin-input-group { gap: 8px; }
+            .modal-content { padding: 24px 16px; }
+        }
+
+        /* ─── ORTA BOY TABLETLER (480px - 768px) ─── */
+        @media (min-width: 480px) and (max-width: 768px) {
+            .auth-container {
+                gap: 20px;
+                padding: 32px 20px 70px;
+            }
+
+            .auth-card { height: 460px; }
+            .card-logo { font-size: 56px; }
+            .card-title { font-size: 21px; }
+            .card-desc { font-size: 13px; }
         }
     </style>
 </head>
