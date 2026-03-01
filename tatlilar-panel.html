@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👨‍🍳 Tatlıcılar Paneli</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1020, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px 16px 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ─── HEADER ─── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding: 20px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            touch-action: manipulation;
+        }
+
+        .back-btn:hover { background: rgba(255, 255, 255, 0.14); }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 3px;
+        }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .refresh-btn {
+            padding: 11px 22px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            white-space: nowrap;
+            touch-action: manipulation;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Son güncelleme */
+        .last-updated {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        /* ─── ÖZET KARTLAR ─── */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 18px 14px;
+            text-align: center;
+        }
+
+        .summary-icon { font-size: 30px; margin-bottom: 10px; }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .summary-label { font-size: 12px; color: var(--text-tertiary); }
+
+        .card-total  .summary-value { color: var(--primary); }
+        .card-ok     .summary-value { color: var(--success); }
+        .card-low    .summary-value { color: var(--warning); }
+        .card-empty  .summary-value { color: var(--danger); }
+
+        /* ─── TATLICILAR Açıklama ─── */
+        .date-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .date-badge {
+            padding: 6px 18px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .legend-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .dot-high   { background: var(--success); }
+        .dot-medium { background: var(--warning); }
+        .dot-low    { background: var(--danger); }
+        .dot-empty  { background: rgba(255,255,255,0.2); }
+
+        /* ─── TATLICILAR KARTİ ─── */
+        .desserts-grid { display: grid; gap: 18px; }
+
+        .dessert-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 22px 22px 18px;
+            transition: transform 0.2s;
+        }
+
+        .dessert-card:hover { transform: translateY(-2px); }
+
+        .dessert-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .dessert-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .dessert-emoji { font-size: 44px; }
+
+        .dessert-name {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .dessert-total-wrap { text-align: right; }
+
+        .total-lbl {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 3px;
+        }
+
+        .total-val {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        /* ─── ŞUBE GRID ─── */
+        .branches-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        .branch-item {
+            border-radius: 14px;
+            padding: 14px 8px;
+            text-align: center;
+            border: 2px solid;
+            transition: transform 0.2s;
+        }
+
+        .branch-item:hover { transform: translateY(-2px); }
+
+        .bi-emoji  { font-size: 26px; margin-bottom: 6px; display: block; }
+        .bi-name   { font-size: 11px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); line-height: 1.2; }
+        .bi-stock  { font-size: 26px; font-weight: 800; line-height: 1; }
+
+        /* Stok renkleri */
+        .stock-high {
+            background: rgba(34, 197, 94, 0.08);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        .stock-high .bi-stock { color: var(--success); }
+
+        .stock-medium {
+            background: rgba(234, 179, 8, 0.08);
+            border-color: rgba(234, 179, 8, 0.3);
+        }
+        .stock-medium .bi-stock { color: var(--warning); }
+
+        .stock-low {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .stock-low .bi-stock { color: var(--danger); }
+
+        .stock-empty {
+            background: rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .stock-empty .bi-stock { color: var(--text-tertiary); }
+
+        /* ─── YÜKLENİYOR ─── */
+        .loading-state {
+            text-align: center;
+            padding: 64px 20px;
+            color: var(--text-tertiary);
+        }
+
+        .loading-emoji {
+            font-size: 52px;
+            display: block;
+            margin-bottom: 16px;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 900px) {
+            .branches-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .header { flex-wrap: wrap; padding: 16px; }
+            .header-left { flex-wrap: wrap; }
+            .refresh-btn { width: 100%; justify-content: center; }
+
+            .summary-cards { grid-template-columns: repeat(2, 1fr); }
+
+            .date-bar { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .legend { flex-wrap: wrap; gap: 10px; }
+
+            .dessert-emoji { font-size: 36px; }
+            .dessert-name { font-size: 19px; }
+            .total-val { font-size: 28px; }
+
+            .branches-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .summary-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .summary-value { font-size: 24px; }
+
+            .branches-grid { grid-template-columns: repeat(2, 1fr); }
+            .bi-emoji { font-size: 22px; }
+            .bi-stock { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.location.href='index.html'">← Ana Sayfa</button>
+                <div class="header-title">
+                    <h1>👨‍🍳 Tatlıcılar Paneli</h1>
+                    <p>Şubelerdeki günlük kalan stok durumu</p>
+                </div>
+            </div>
+            <button class="refresh-btn" onclick="loadData()">
+                <span>🔄</span>
+                <span>Yenile</span>
+            </button>
+        </div>
+
+        <!-- Özet Kartlar -->
+        <div class="summary-cards">
+            <div class="summary-card card-total">
+                <div class="summary-icon">📦</div>
+                <div class="summary-value" id="totalStock">—</div>
+                <div class="summary-label">Toplam Kalan</div>
+            </div>
+            <div class="summary-card card-ok">
+                <div class="summary-icon">✅</div>
+                <div class="summary-value" id="stockOk">—</div>
+                <div class="summary-label">Yeterli (&gt;20)</div>
+            </div>
+            <div class="summary-card card-low">
+                <div class="summary-icon">⚠️</div>
+                <div class="summary-value" id="stockLow">—</div>
+                <div class="summary-label">Düşük (1–20)</div>
+            </div>
+            <div class="summary-card card-empty">
+                <div class="summary-icon">❌</div>
+                <div class="summary-value" id="stockEmpty">—</div>
+                <div class="summary-label">Tükendi (0)</div>
+            </div>
+        </div>
+
+        <!-- Tarih + Lejant -->
+        <div class="date-bar">
+            <span class="date-badge" id="todayBadge">—</span>
+            <div class="legend">
+                <span class="legend-dot dot-high"></span><span>Yeterli (&gt;20)</span>
+                <span class="legend-dot dot-medium"></span><span>Orta (10–20)</span>
+                <span class="legend-dot dot-low"></span><span>Düşük (1–9)</span>
+                <span class="legend-dot dot-empty"></span><span>Tükendi</span>
+            </div>
+        </div>
+
+        <!-- Tatlı Kartları -->
+        <div class="desserts-grid" id="dessertsGrid">
+            <div class="loading-state">
+                <span class="loading-emoji">🍰</span>
+                <p>Veriler yükleniyor...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="supabase-client.js"></script>
+    <script>
+        const branchEmojis = {
+            'Rumeli İskelesi': '🌊',
+            'Yahya Kemal':     '📚',
+            'TunaBoyu':        '🏞️',
+            'Sahil':           '🏖️',
+            'Vagon':           '🚂',
+            'Millet Bahçesi':  '🌳',
+        };
+
+        const today = getTodayDate();
+        document.getElementById('todayBadge').textContent = formatDateTurkish(today);
+
+        function getStockClass(val) {
+            if (val > 20)  return 'stock-high';
+            if (val > 9)   return 'stock-medium';
+            if (val > 0)   return 'stock-low';
+            return 'stock-empty';
+        }
+
+        async function loadData() {
+            const grid = document.getElementById('dessertsGrid');
+            grid.innerHTML = '<div class="loading-state"><span class="loading-emoji">🍰</span><p>Veriler yükleniyor...</p></div>';
+
+            const [branches, desserts, allEntries] = await Promise.all([
+                getBranches(),
+                getActiveDesserts(),
+                getAllDailyEntriesByDate(today)
+            ]);
+
+            if (!branches || !desserts) {
+                grid.innerHTML = '<div class="loading-state"><p style="color:var(--danger);">❌ Veriler yüklenemedi.</p></div>';
+                return;
+            }
+
+            let totalStock = 0, cntOk = 0, cntLow = 0, cntEmpty = 0;
+
+            grid.innerHTML = '';
+
+            desserts.forEach(dessert => {
+                const dessertEntries = (allEntries || []).filter(e => e.dessert_id === dessert.id);
+                let dessertTotal = 0;
+
+                let branchesHTML = '';
+                branches.forEach(branch => {
+                    const entry     = dessertEntries.find(e => e.branch_id === branch.id);
+                    const remaining = entry?.remaining_amount ?? 0;
+
+                    dessertTotal += remaining;
+
+                    const cls = getStockClass(remaining);
+                    if (remaining > 20) cntOk++;
+                    else if (remaining > 0) cntLow++;
+                    else cntEmpty++;
+
+                    branchesHTML += `
+                        <div class="branch-item ${cls}">
+                            <span class="bi-emoji">${branchEmojis[branch.name] || '🏪'}</span>
+                            <div class="bi-name">${branch.name}</div>
+                            <div class="bi-stock">${remaining}</div>
+                        </div>
+                    `;
+                });
+
+                totalStock += dessertTotal;
+
+                const card = document.createElement('div');
+                card.className = 'dessert-card';
+                card.innerHTML = `
+                    <div class="dessert-header">
+                        <div class="dessert-info">
+                            <span class="dessert-emoji">${dessert.emoji || '🍰'}</span>
+                            <span class="dessert-name">${dessert.name}</span>
+                        </div>
+                        <div class="dessert-total-wrap">
+                            <div class="total-lbl">Toplam Kalan</div>
+                            <div class="total-val">${dessertTotal}</div>
+                        </div>
+                    </div>
+                    <div class="branches-grid">${branchesHTML}</div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('totalStock').textContent = totalStock;
+            document.getElementById('stockOk').textContent    = cntOk;
+            document.getElementById('stockLow').textContent   = cntLow;
+            document.getElementById('stockEmpty').textContent  = cntEmpty;
+        }
+
+        loadData();
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
