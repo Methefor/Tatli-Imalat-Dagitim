@@ -5,190 +5,427 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🍰 Tatlı İmalat ve Dağıtım Takip</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Anime.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary: #f59e0b;
-            --primary-dark: #d97706;
-            --primary-light: #fbbf24;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --input: #334155;
-            --border: #475569;
-            --text: #f1f5f9;
+            --primary:        #f59e0b;
+            --primary-dark:   #d97706;
+            --primary-light:  #fbbf24;
+            --bg:             #0f172a;
+            --card:           #1e293b;
+            --input:          #334155;
+            --border:         #475569;
+            --text:           #f1f5f9;
             --text-secondary: #cbd5e1;
-            --text-tertiary: #94a3b8;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --manager-from: #0ea5e9;
-            --manager-to: #0d9488;
+            --text-tertiary:  #94a3b8;
+            --success:        #22c55e;
+            --danger:         #ef4444;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ─── ANİMASYONLU ARKA PLAN ─── */
+        .animated-bg {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0a1020 0%, #0f172a 50%, #0a1020 100%);
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.45;
+            will-change: transform;
+        }
+
+        .orb-1 {
+            width: 550px; height: 550px;
+            background: radial-gradient(circle, #f59e0b 0%, #d97706 60%, transparent 100%);
+            top: -220px; left: -220px;
+            animation: orb1Move 22s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 450px; height: 450px;
+            background: radial-gradient(circle, #3b82f6 0%, #1d4ed8 60%, transparent 100%);
+            bottom: -180px; right: -180px;
+            animation: orb2Move 28s ease-in-out infinite;
+        }
+
+        .orb-3 {
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, #8b5cf6 0%, #6d28d9 60%, transparent 100%);
+            top: 45%; left: 45%;
+            animation: orb3Pulse 16s ease-in-out infinite;
+        }
+
+        @keyframes orb1Move {
+            0%, 100% { transform: translate(0, 0); }
+            33%  { transform: translate(70px, -70px); }
+            66%  { transform: translate(-45px, 45px); }
+        }
+        @keyframes orb2Move {
+            0%, 100% { transform: translate(0, 0); }
+            33%  { transform: translate(-55px, 55px); }
+            66%  { transform: translate(35px, -35px); }
+        }
+        @keyframes orb3Pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.45; }
+            50%  { transform: translate(-50%, -50%) scale(1.4); opacity: 0.25; }
+        }
+
+        /* ─── YILDIZLAR ─── */
+        .stars {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.4); }
+            50%  { opacity: 0.9; transform: scale(1); }
+        }
+
+        /* ─── SAYFA YAPISI ─── */
+        .page {
+            position: relative;
+            z-index: 10;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px;
-            line-height: 1.6;
+            padding: 40px 20px;
         }
 
-        .container {
-            max-width: 800px;
-            width: 100%;
-        }
-
-        /* ─── Header ─── */
-        header {
+        /* ─── SITE HEADER ─── */
+        .site-header {
             text-align: center;
-            margin-bottom: 56px;
-            opacity: 0;
+            margin-bottom: 48px;
         }
 
-        .logo {
-            font-size: 72px;
+        .site-logo {
+            font-size: 68px;
             display: block;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            animation: logoBounce 2.2s ease-in-out infinite;
+            filter: drop-shadow(0 4px 16px rgba(245,158,11,0.4));
         }
 
-        h1 {
-            font-size: 34px;
+        @keyframes logoBounce {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50%  { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        .site-title {
+            font-size: 30px;
             font-weight: 800;
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             letter-spacing: -0.5px;
         }
 
-        .subtitle {
+        .site-subtitle {
+            font-size: 14px;
             color: var(--text-tertiary);
-            font-size: 15px;
             font-weight: 500;
         }
 
-        /* ─── Main Buttons ─── */
-        .main-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            opacity: 0;
-        }
-
-        .main-btn {
+        /* ─── AUTH CONTAINER ─── */
+        .auth-container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 40px 24px;
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            gap: 28px;
+            max-width: 1080px;
+            width: 100%;
         }
 
-        .main-btn::after {
-            content: '';
+        /* ─── AUTH KART ─── */
+        .auth-card {
+            flex: 1;
+            height: 580px;
+            position: relative;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        .admin-card { background: linear-gradient(145deg, #1c1f35, #131728); }
+        .manager-card { background: linear-gradient(145deg, #0f1e30, #0a1520); }
+
+        /* ─── PANEL YÜZLERİ ─── */
+        .welcome-side,
+        .form-side {
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.08);
-            opacity: 0;
-            transition: opacity 0.2s;
-            border-radius: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 52px 44px;
+            transition: transform 0.65s cubic-bezier(0.65, -0.3, 0.25, 1.4);
         }
 
-        .main-btn:hover::after { opacity: 1; }
+        .welcome-side { z-index: 2; }
 
-        .main-btn:hover {
-            transform: translateY(-6px) scale(1.02);
+        .form-side {
+            transform: translateX(105%);
+            background: rgba(12, 18, 34, 0.92);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            z-index: 3;
         }
 
-        .main-btn:active {
-            transform: translateY(-2px) scale(0.99);
+        .auth-card.show-form .form-side {
+            transform: translateX(0);
         }
 
-        .admin-main-btn {
-            background: linear-gradient(145deg, #f59e0b, #d97706);
-            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.35);
-            color: #fff;
+        /* Tema renkleri */
+        .admin-card .welcome-side {
+            background: linear-gradient(145deg,
+                rgba(245, 158, 11, 0.22) 0%,
+                rgba(217, 119,  6, 0.10) 100%);
         }
 
-        .admin-main-btn:hover {
-            box-shadow: 0 16px 48px rgba(245, 158, 11, 0.5);
+        .manager-card .welcome-side {
+            background: linear-gradient(145deg,
+                rgba(14, 165, 233, 0.22) 0%,
+                rgba(13, 148, 136, 0.10) 100%);
         }
 
-        .manager-main-btn {
-            background: linear-gradient(145deg, #0ea5e9, #0d9488);
-            box-shadow: 0 8px 32px rgba(14, 165, 233, 0.35);
-            color: #fff;
-        }
+        /* ─── WELCOME İÇERİĞİ ─── */
+        .welcome-content { text-align: center; width: 100%; }
 
-        .manager-main-btn:hover {
-            box-shadow: 0 16px 48px rgba(14, 165, 233, 0.5);
-        }
-
-        .btn-icon {
-            font-size: 52px;
+        .card-logo {
+            font-size: 76px;
             line-height: 1;
+            display: block;
+            margin-bottom: 22px;
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));
+        }
+
+        .card-title {
+            font-size: 34px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 14px;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+        }
+
+        .card-desc {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.68);
+            margin-bottom: 40px;
+            line-height: 1.7;
+        }
+
+        /* ─── GİRİŞ BUTONU ─── */
+        .switch-btn {
+            padding: 15px 36px;
+            background: rgba(255, 255, 255, 0.13);
+            backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            border-radius: 50px;
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            touch-action: manipulation;
+        }
+
+        .switch-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(255, 255, 255, 0.12);
+        }
+
+        .switch-btn:active { transform: translateY(0); }
+
+        .btn-arrow {
+            font-size: 18px;
             transition: transform 0.3s;
         }
 
-        .main-btn:hover .btn-icon {
-            transform: scale(1.15) rotate(-3deg);
+        .switch-btn:hover .btn-arrow { transform: translateX(5px); }
+
+        /* ─── FORM İÇERİĞİ ─── */
+        .form-content {
+            width: 100%;
+            position: relative;
+            padding-top: 20px;
         }
 
-        .btn-label {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-        }
-
-        /* ─── Footer ─── */
-        footer {
-            text-align: center;
-            margin-top: 56px;
-            color: var(--text-tertiary);
+        .back-btn {
+            position: absolute;
+            top: -44px;
+            left: 0;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.65);
             font-size: 13px;
-            opacity: 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
         }
 
-        /* ─── Modal Base ─── */
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+        }
+
+        .form-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .input-group { margin-bottom: 18px; }
+
+        /* ─── GLASS INPUT ─── */
+        .glass-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 14px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(245, 158, 11, 0.6);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
+        }
+
+        .glass-input::placeholder { color: rgba(255, 255, 255, 0.38); }
+
+        /* ─── SUBMIT BUTONU ─── */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 28px rgba(245, 158, 11, 0.4);
+            margin-top: 10px;
+            touch-action: manipulation;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 42px rgba(245, 158, 11, 0.55);
+        }
+
+        .submit-btn:active { transform: translateY(0); }
+
+        /* ─── ŞUBE GRİD ─── */
+        .branch-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .branch-grid::-webkit-scrollbar { width: 4px; }
+        .branch-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 2px; }
+        .branch-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .branch-item {
+            padding: 18px 12px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.11);
+            border-radius: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            touch-action: manipulation;
+        }
+
+        .branch-item:hover {
+            background: rgba(14, 165, 233, 0.2);
+            border-color: rgba(14, 165, 233, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+        }
+
+        .branch-item:active { transform: translateY(-1px); }
+
+        .branch-item-emoji { font-size: 34px; margin-bottom: 8px; display: block; }
+
+        .branch-item-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.82);
+            line-height: 1.3;
+        }
+
+        .branch-loading {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255,255,255,0.38);
+            font-size: 14px;
+        }
+
+        /* ─── PIN MODAL ─── */
         .modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.88);
-            backdrop-filter: blur(10px);
+            background: rgba(10, 16, 32, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 16px;
         }
 
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
 
         .modal-content {
             background: var(--card);
@@ -197,94 +434,24 @@
             padding: 40px;
             max-width: 440px;
             width: 100%;
-            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
-            transform: translateY(30px);
-            opacity: 0;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+            animation: modalUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .modal.active .modal-content {
-            animation: slideUpFade 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes slideUpFade {
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        /* Wide modal for branch selection */
-        .modal-wide .modal-content {
-            max-width: 680px;
+        @keyframes modalUp {
+            from { transform: translateY(28px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
         }
 
         .modal-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 30px;
         }
 
-        .modal-icon {
-            font-size: 56px;
-            margin-bottom: 14px;
-            display: block;
-        }
+        .modal-icon { font-size: 54px; display: block; margin-bottom: 14px; }
+        .modal-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .modal-subtitle { font-size: 14px; color: var(--text-tertiary); }
 
-        .modal-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 6px;
-        }
-
-        .modal-subtitle {
-            font-size: 14px;
-            color: var(--text-tertiary);
-        }
-
-        /* ─── Branch Selection Grid ─── */
-        .branches-select-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            margin-bottom: 28px;
-        }
-
-        .branch-select-card {
-            background: var(--input);
-            border: 2px solid var(--border);
-            border-radius: 16px;
-            padding: 20px 12px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0;
-        }
-
-        .branch-select-card:hover {
-            border-color: var(--primary);
-            background: rgba(245, 158, 11, 0.08);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
-        }
-
-        .branch-select-card:active {
-            transform: translateY(-1px);
-        }
-
-        .branch-select-icon {
-            font-size: 36px;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .branch-select-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            line-height: 1.3;
-        }
-
-        /* ─── PIN Input ─── */
         .pin-input-group {
             display: flex;
             gap: 12px;
@@ -294,8 +461,8 @@
 
         .pin-input {
             width: 62px;
-            height: 72px;
-            font-size: 32px;
+            height: 70px;
+            font-size: 30px;
             font-weight: 700;
             text-align: center;
             background: var(--input);
@@ -311,62 +478,29 @@
             box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
         }
 
-        /* ─── Text Inputs ─── */
-        .input-group {
-            margin-bottom: 18px;
-        }
-
-        .input-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        .text-input {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--input);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 16px;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .text-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
-        }
-
-        /* ─── Buttons ─── */
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-        }
+        .modal-buttons { display: flex; gap: 12px; }
 
         .btn {
             flex: 1;
-            padding: 14px 24px;
+            padding: 14px 20px;
             border: none;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.32);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.44);
         }
 
         .btn-secondary {
@@ -375,148 +509,167 @@
             border: 1px solid var(--border);
         }
 
-        .btn-secondary:hover {
-            background: var(--border);
+        .btn-secondary:hover { background: var(--border); }
+
+        /* ─── FOOTER ─── */
+        .site-footer {
+            margin-top: 48px;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 12px;
+            opacity: 0.65;
         }
 
-        /* ─── Responsive ─── */
-        @media (max-width: 640px) {
-            h1 { font-size: 24px; }
-            .logo { font-size: 56px; }
-
-            .main-buttons {
-                grid-template-columns: 1fr;
-                gap: 16px;
+        /* ─── MOBİL RESPONSIVE ─── */
+        @media (max-width: 960px) {
+            .auth-container {
+                flex-direction: column;
+                gap: 22px;
+                max-width: 500px;
             }
 
-            .main-btn {
-                padding: 32px 20px;
-                flex-direction: row;
-                justify-content: flex-start;
-                gap: 20px;
-            }
-
-            .btn-icon { font-size: 40px; }
-            .btn-label { font-size: 20px; }
-
-            .branches-select-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .pin-input {
-                width: 50px;
-                height: 60px;
-                font-size: 24px;
-            }
-
-            .modal-content {
-                padding: 28px 20px;
-            }
-
-            .modal-wide .modal-content {
-                max-width: 100%;
-            }
+            .auth-card { height: 520px; }
         }
 
-        @media (max-width: 380px) {
-            .branches-select-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        @media (max-width: 600px) {
+            .page { padding: 24px 14px; }
+            .site-header { margin-bottom: 28px; }
+            .site-logo { font-size: 52px; }
+            .site-title { font-size: 22px; }
+
+            .auth-card { height: 480px; }
+
+            .welcome-side,
+            .form-side { padding: 36px 26px; }
+
+            .card-logo { font-size: 60px; }
+            .card-title { font-size: 28px; }
+            .card-desc { font-size: 14px; margin-bottom: 28px; }
+
+            .switch-btn { font-size: 15px; padding: 13px 28px; }
+            .form-title { font-size: 22px; margin-bottom: 22px; }
+
+            .pin-input { width: 50px; height: 60px; font-size: 24px; }
+            .modal-content { padding: 28px 18px; }
+
+            .branch-grid { gap: 10px; max-height: 340px; }
+            .branch-item { padding: 14px 10px; }
+            .branch-item-emoji { font-size: 28px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Stars -->
+    <div class="stars" id="starsContainer"></div>
+
+    <!-- Main -->
+    <div class="page">
+
         <!-- Header -->
-        <header id="header">
-            <span class="logo">🍰</span>
-            <h1>Tatlı İmalat ve Dağıtım Takip</h1>
-            <p class="subtitle">Mutlukent Esenlik Hizmetleri A.Ş</p>
+        <header class="site-header">
+            <span class="site-logo">🍰</span>
+            <h1 class="site-title">Tatlı İmalat ve Dağıtım Takip</h1>
+            <p class="site-subtitle">Mutlukent Esenlik Hizmetleri A.Ş</p>
         </header>
 
-        <!-- Ana Butonlar -->
-        <div class="main-buttons" id="mainButtons">
-            <button class="main-btn admin-main-btn" id="adminBtn" onclick="openAdminModal()">
-                <span class="btn-icon">👔</span>
-                <div class="btn-label">Yönetici Paneli</div>
-            </button>
+        <!-- Auth Cards -->
+        <div class="auth-container">
 
-            <button class="main-btn manager-main-btn" id="managerBtn" onclick="openBranchSelectModal()">
-                <span class="btn-icon">🏪</span>
-                <div class="btn-label">Müdür Paneli</div>
-            </button>
-        </div>
+            <!-- ── YÖNETİCİ KARTI ── -->
+            <div class="auth-card admin-card" id="adminCard">
+
+                <!-- Karşılama yüzü -->
+                <div class="welcome-side">
+                    <div class="welcome-content">
+                        <span class="card-logo">👔</span>
+                        <h2 class="card-title">Yönetici Paneli</h2>
+                        <p class="card-desc">Tüm şubelerin verilerini takip edin ve analiz yapın</p>
+                        <button class="switch-btn" onclick="showAdminForm()">
+                            Giriş Yap
+                            <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form yüzü -->
+                <div class="form-side">
+                    <div class="form-content">
+                        <button class="back-btn" onclick="hideAdminForm()">← Geri</button>
+                        <h3 class="form-title">Yönetici Girişi</h3>
+                        <div class="input-group">
+                            <input type="text" class="glass-input" id="adminUsername"
+                                   placeholder="Kullanıcı adınızı girin" autocomplete="off">
+                        </div>
+                        <div class="input-group">
+                            <input type="password" class="glass-input" id="adminPassword"
+                                   placeholder="Şifrenizi girin" autocomplete="off">
+                        </div>
+                        <button class="submit-btn" onclick="verifyAdminPassword()">Giriş Yap</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── MÜDÜR KARTI ── -->
+            <div class="auth-card manager-card" id="managerCard">
+
+                <!-- Karşılama yüzü -->
+                <div class="welcome-side">
+                    <div class="welcome-content">
+                        <span class="card-logo">🏪</span>
+                        <h2 class="card-title">Müdür Paneli</h2>
+                        <p class="card-desc">Şubenizin günlük tatlı verilerini girin ve takip edin</p>
+                        <button class="switch-btn" onclick="showManagerForm()">
+                            Şube Seç
+                            <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form yüzü -->
+                <div class="form-side">
+                    <div class="form-content">
+                        <button class="back-btn" onclick="hideManagerForm()">← Geri</button>
+                        <h3 class="form-title">Şube Seçin</h3>
+                        <div class="branch-grid" id="branchGrid">
+                            <div class="branch-loading">Şubeler yükleniyor...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /auth-container -->
 
         <!-- Footer -->
-        <footer id="footer">
-            <p>&copy; 2026 Mutlukent Esenlik Hizmetleri A.Ş &nbsp;·&nbsp; Tüm hakları saklıdır.</p>
+        <footer class="site-footer">
+            &copy; 2026 Mutlukent Esenlik Hizmetleri A.Ş &nbsp;·&nbsp; Tüm hakları saklıdır.
         </footer>
-    </div>
+    </div><!-- /page -->
 
-    <!-- ─── Şube Seçim Modal ─── -->
-    <div class="modal modal-wide" id="branchSelectModal">
-        <div class="modal-content" style="max-width:680px">
-            <div class="modal-header">
-                <span class="modal-icon">🏪</span>
-                <h3 class="modal-title">Şube Seçin</h3>
-                <p class="modal-subtitle">Giriş yapmak istediğiniz şubeyi seçin</p>
-            </div>
-
-            <div class="branches-select-grid" id="branchesGrid">
-                <!-- Dinamik yükleniyor -->
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeBranchSelectModal()">İptal</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── Şube PIN Modal ─── -->
-    <div class="modal" id="branchModal">
+    <!-- PIN Modal -->
+    <div class="modal" id="pinModal">
         <div class="modal-content">
             <div class="modal-header">
-                <span class="modal-icon" id="modalBranchIcon">🏪</span>
-                <h3 class="modal-title" id="modalBranchName">Şube</h3>
+                <span class="modal-icon" id="pinBranchIcon">🏪</span>
+                <h3 class="modal-title" id="pinBranchName">Şube</h3>
                 <p class="modal-subtitle">4 haneli şifrenizi girin</p>
             </div>
-
             <div class="pin-input-group">
-                <input type="password" class="pin-input" maxlength="1" id="pin1" inputmode="numeric" />
-                <input type="password" class="pin-input" maxlength="1" id="pin2" inputmode="numeric" />
-                <input type="password" class="pin-input" maxlength="1" id="pin3" inputmode="numeric" />
-                <input type="password" class="pin-input" maxlength="1" id="pin4" inputmode="numeric" />
+                <input type="password" class="pin-input" maxlength="1" id="pin1" inputmode="numeric">
+                <input type="password" class="pin-input" maxlength="1" id="pin2" inputmode="numeric">
+                <input type="password" class="pin-input" maxlength="1" id="pin3" inputmode="numeric">
+                <input type="password" class="pin-input" maxlength="1" id="pin4" inputmode="numeric">
             </div>
-
             <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeBranchModal()">İptal</button>
-                <button class="btn btn-primary" onclick="verifyBranchPassword()">Giriş</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── Yönetici Giriş Modal ─── -->
-    <div class="modal" id="adminModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-icon">👔</span>
-                <h3 class="modal-title">Yönetici Girişi</h3>
-                <p class="modal-subtitle">Kullanıcı adı ve şifrenizi girin</p>
-            </div>
-
-            <div class="input-group">
-                <label class="input-label">Kullanıcı Adı</label>
-                <input type="text" class="text-input" id="adminUsername" placeholder="Kullanıcı adınızı girin" autocomplete="off" />
-            </div>
-
-            <div class="input-group" style="margin-bottom:28px">
-                <label class="input-label">Şifre</label>
-                <input type="password" class="text-input" id="adminPassword" placeholder="Şifrenizi girin" autocomplete="off" />
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeAdminModal()">İptal</button>
-                <button class="btn btn-primary" onclick="verifyAdminPassword()">Giriş Yap</button>
+                <button class="btn btn-secondary" onclick="closePinModal()">İptal</button>
+                <button class="btn btn-primary"   onclick="verifyBranchPassword()">Giriş</button>
             </div>
         </div>
     </div>
@@ -535,165 +688,113 @@
             'Millet Bahçesi':  '🌳',
         };
 
-        function getBranchEmoji(name) {
-            return branchEmojis[name] || '🏪';
-        }
+        function getBranchEmoji(name) { return branchEmojis[name] || '🏪'; }
 
         let selectedBranch = null;
         let branchesCache  = [];
 
-        // ─── Sayfa açılış animasyonları ───
+        // ─── Yıldızlar ───
+        (() => {
+            const container = document.getElementById('starsContainer');
+            for (let i = 0; i < 65; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                const size = Math.random() > 0.75 ? 3 : 2;
+                s.style.cssText = `
+                    left: ${Math.random() * 100}%;
+                    top:  ${Math.random() * 100}%;
+                    width:  ${size}px;
+                    height: ${size}px;
+                    animation-delay:    ${(Math.random() * 5).toFixed(2)}s;
+                    animation-duration: ${(2 + Math.random() * 4).toFixed(2)}s;
+                `;
+                container.appendChild(s);
+            }
+        })();
+
+        // ─── Sayfa yüklenince şubeleri çek ───
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1) Başlık
-            anime({
-                targets: '#header',
-                opacity: [0, 1],
-                translateY: [-30, 0],
-                duration: 700,
-                easing: 'easeOutExpo',
-            });
-
-            // 2) Logo sürekli bounce
-            anime({
-                targets: '.logo',
-                translateY: [-8, 0],
-                direction: 'alternate',
-                loop: true,
-                duration: 1800,
-                easing: 'easeInOutSine',
-            });
-
-            // 3) Butonlar
-            anime({
-                targets: '#mainButtons',
-                opacity: [0, 1],
-                translateY: [40, 0],
-                duration: 700,
-                delay: 250,
-                easing: 'easeOutExpo',
-            });
-
-            // 4) Footer
-            anime({
-                targets: '#footer',
-                opacity: [0, 1],
-                duration: 600,
-                delay: 500,
-                easing: 'easeOutExpo',
-            });
-
-            // Şubeleri arka planda çek (modal için hazır olsun)
             branchesCache = await getBranches();
         });
 
-        // ─── Şube Seçim Modal ───
-        function openBranchSelectModal() {
-            renderBranches();
-            document.getElementById('branchSelectModal').classList.add('active');
-
-            // Kartları stagger ile animasyon
-            setTimeout(() => {
-                anime({
-                    targets: '.branch-select-card',
-                    opacity: [0, 1],
-                    translateY: [20, 0],
-                    scale: [0.9, 1],
-                    delay: anime.stagger(60, { start: 80 }),
-                    duration: 400,
-                    easing: 'easeOutBack',
-                });
-            }, 50);
+        // ─── Admin formu ───
+        function showAdminForm() {
+            document.getElementById('adminCard').classList.add('show-form');
+            document.getElementById('adminUsername').value = '';
+            document.getElementById('adminPassword').value = '';
+            setTimeout(() => document.getElementById('adminUsername').focus(), 680);
         }
 
-        function closeBranchSelectModal() {
-            document.getElementById('branchSelectModal').classList.remove('active');
+        function hideAdminForm() {
+            document.getElementById('adminCard').classList.remove('show-form');
         }
 
-        function renderBranches() {
-            const grid = document.getElementById('branchesGrid');
-            grid.innerHTML = '';
+        // ─── Manager formu ───
+        function showManagerForm() {
+            document.getElementById('managerCard').classList.add('show-form');
+            renderBranchGrid();
+        }
 
-            const list = branchesCache.length > 0 ? branchesCache : [];
+        function hideManagerForm() {
+            document.getElementById('managerCard').classList.remove('show-form');
+        }
 
-            if (list.length === 0) {
-                grid.innerHTML = `<p style="color:var(--text-tertiary);text-align:center;grid-column:1/-1;padding:24px">
-                    Şubeler yüklenemiyor. İnternet bağlantınızı kontrol edin.</p>`;
+        function renderBranchGrid() {
+            const grid = document.getElementById('branchGrid');
+
+            if (branchesCache.length === 0) {
+                grid.innerHTML = '<div class="branch-loading">Şube bilgileri alınamadı. İnternet bağlantınızı kontrol edin.</div>';
                 return;
             }
 
-            list.forEach(branch => {
+            grid.innerHTML = '';
+            branchesCache.forEach(branch => {
                 const emoji = getBranchEmoji(branch.name);
-                const card  = document.createElement('div');
-                card.className = 'branch-select-card';
-                card.innerHTML = `
-                    <span class="branch-select-icon">${emoji}</span>
-                    <div class="branch-select-name">${branch.name}</div>
+                const item  = document.createElement('div');
+                item.className = 'branch-item';
+                item.innerHTML = `
+                    <span class="branch-item-emoji">${emoji}</span>
+                    <div class="branch-item-name">${branch.name}</div>
                 `;
-                card.onclick = () => {
-                    closeBranchSelectModal();
-                    openBranchModal(branch, emoji);
+                item.onclick = () => {
+                    selectedBranch = branch;
+                    openPinModal(branch, emoji);
                 };
-                grid.appendChild(card);
+                grid.appendChild(item);
             });
         }
 
-        // ─── Şube PIN Modal ───
-        function openBranchModal(branch, emoji) {
-            selectedBranch = branch;
-            document.getElementById('modalBranchName').textContent = branch.name;
-            document.getElementById('modalBranchIcon').textContent = emoji || getBranchEmoji(branch.name);
-            document.getElementById('branchModal').classList.add('active');
-
-            ['pin1', 'pin2', 'pin3', 'pin4'].forEach(id => {
-                document.getElementById(id).value = '';
-            });
+        // ─── PIN Modal ───
+        function openPinModal(branch, emoji) {
+            document.getElementById('pinBranchName').textContent = branch.name;
+            document.getElementById('pinBranchIcon').textContent = emoji;
+            ['pin1','pin2','pin3','pin4'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('pinModal').classList.add('active');
             setTimeout(() => document.getElementById('pin1').focus(), 100);
         }
 
-        function closeBranchModal() {
-            document.getElementById('branchModal').classList.remove('active');
+        function closePinModal() {
+            document.getElementById('pinModal').classList.remove('active');
             selectedBranch = null;
         }
 
-        // ─── Admin Modal ───
-        function openAdminModal() {
-            document.getElementById('adminModal').classList.add('active');
-            document.getElementById('adminUsername').value = '';
-            document.getElementById('adminPassword').value = '';
-            setTimeout(() => document.getElementById('adminUsername').focus(), 100);
-        }
-
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.remove('active');
-        }
-
-        // ─── PIN otomatik geçiş ───
+        // PIN otomatik geçiş
         const pinInputs = document.querySelectorAll('.pin-input');
-        pinInputs.forEach((input, index) => {
-            input.addEventListener('input', (e) => {
-                if (e.target.value && index < 3) pinInputs[index + 1].focus();
+        pinInputs.forEach((inp, idx) => {
+            inp.addEventListener('input', e => {
+                if (e.target.value && idx < 3) pinInputs[idx + 1].focus();
             });
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                    pinInputs[index - 1].focus();
-                }
+            inp.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !e.target.value && idx > 0) pinInputs[idx - 1].focus();
                 if (e.key === 'Enter') verifyBranchPassword();
             });
         });
 
-        // Admin şifre enter
-        document.getElementById('adminPassword')?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') verifyAdminPassword();
-        });
-        document.getElementById('adminUsername')?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') document.getElementById('adminPassword').focus();
-        });
-
-        // ─── Şube şifre doğrula ───
+        // ─── Şube şifresi doğrula ───
         async function verifyBranchPassword() {
             if (!selectedBranch) return;
 
-            const pin = ['pin1', 'pin2', 'pin3', 'pin4']
+            const pin = ['pin1','pin2','pin3','pin4']
                 .map(id => document.getElementById(id).value)
                 .join('');
 
@@ -709,26 +810,16 @@
             if (result.success) {
                 localStorage.setItem('branchId',   result.branchId);
                 localStorage.setItem('branchName', result.branchName);
-                if (result.managerName) {
-                    localStorage.setItem('managerName', result.managerName);
-                }
+                if (result.managerName) localStorage.setItem('managerName', result.managerName);
                 window.location.href = `branch-entry.html?branch_id=${result.branchId}`;
             } else {
                 showToast(result.error || 'Şifre hatalı!', 'error');
-                pinInputs.forEach(inp => inp.value = '');
+                pinInputs.forEach(i => i.value = '');
                 pinInputs[0].focus();
-
-                // Hata shake animasyonu
-                anime({
-                    targets: '#branchModal .modal-content',
-                    translateX: [-10, 10, -8, 8, -4, 4, 0],
-                    duration: 500,
-                    easing: 'easeInOutSine',
-                });
             }
         }
 
-        // ─── Admin şifre doğrula ───
+        // ─── Admin şifresi doğrula ───
         async function verifyAdminPassword() {
             const username = document.getElementById('adminUsername').value.trim();
             const password = document.getElementById('adminPassword').value;
@@ -747,21 +838,25 @@
                 window.location.href = 'admin-dashboard.html';
             } else {
                 showToast(result.error || 'Kullanıcı adı veya şifre hatalı!', 'error');
-
-                anime({
-                    targets: '#adminModal .modal-content',
-                    translateX: [-10, 10, -8, 8, -4, 4, 0],
-                    duration: 500,
-                    easing: 'easeInOutSine',
-                });
             }
         }
 
-        // ─── Modal dışına tıklayınca kapat ───
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.classList.remove('active');
-            });
+        // Enter ile ilerleme
+        document.getElementById('adminUsername').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('adminPassword').focus();
+        });
+        document.getElementById('adminPassword').addEventListener('keydown', e => {
+            if (e.key === 'Enter') verifyAdminPassword();
+        });
+
+        // Modal dışına tıklayınca kapat
+        document.getElementById('pinModal').addEventListener('click', e => {
+            if (e.target === document.getElementById('pinModal')) closePinModal();
+        });
+
+        // ESC ile PIN modal kapat
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closePinModal();
         });
     </script>
 </body>
