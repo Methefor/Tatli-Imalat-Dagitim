@@ -6,7 +6,6 @@
     <title>🍰 Tatlı İmalat ve Dağıtım Takip</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,15 +25,12 @@
             --danger:         #ef4444;
         }
 
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
             line-height: 1.6;
         }
 
@@ -111,145 +107,50 @@
             50%  { opacity: 0.9; transform: scale(1); }
         }
 
-        /* ─── SCROLL CONTAINER ─── */
-        #scrollContainer {
+        /* ─── SAYFA YAPISI ─── */
+        .page {
             position: relative;
             z-index: 10;
-            height: 100vh;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        #scrollContainer::-webkit-scrollbar { display: none; }
-
-        /* ─── SCROLL SECTION ─── */
-        .scroll-section {
-            scroll-snap-align: start;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 40px 20px;
-            position: relative;
-        }
-
-        /* ─── HERO SECTION ─── */
-        .hero-section {
-            text-align: center;
-        }
-
-        .emoji-3d {
-            font-size: 100px;
-            display: block;
-            margin-bottom: 28px;
-            filter: drop-shadow(0 8px 24px rgba(245,158,11,0.5));
-            line-height: 1;
-        }
-
-        .hero-title {
-            margin-bottom: 14px;
-        }
-
-        .hero-title span {
-            display: block;
-            opacity: 0;
-        }
-
-        .title-line-1 {
-            font-size: 20px;
-            font-weight: 500;
-            color: var(--text-tertiary);
-            margin-bottom: 4px;
-        }
-
-        .title-line-2 {
-            font-size: 52px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1.5px;
-            line-height: 1.1;
-            margin-bottom: 4px;
-        }
-
-        .title-line-3 {
-            font-size: 26px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .hero-subtitle {
-            font-size: 13px;
-            color: var(--text-tertiary);
-            margin-top: 12px;
-            margin-bottom: 0;
-            opacity: 0.7;
-        }
-
-        /* ─── SCROLL İNDİKATÖR ─── */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 36px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            animation: bounceDown 2.2s ease-in-out infinite;
-            cursor: pointer;
-        }
-
-        .scroll-text {
-            font-size: 11px;
-            color: var(--primary);
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .arrow-down {
-            font-size: 24px;
-            color: var(--primary);
-            line-height: 1;
-        }
-
-        @keyframes bounceDown {
-            0%, 100% { transform: translateX(-50%) translateY(0); opacity: 1; }
-            50%       { transform: translateX(-50%) translateY(10px); opacity: 0.7; }
-        }
-
-        /* ─── CARDS SECTION ─── */
-        .cards-section {
-            padding: 40px 20px;
-            gap: 32px;
         }
 
         /* ─── SITE HEADER ─── */
         .site-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 48px;
+        }
+
+        .site-logo {
+            font-size: 68px;
+            display: block;
+            margin-bottom: 16px;
+            animation: logoBounce 2.2s ease-in-out infinite;
+            filter: drop-shadow(0 4px 16px rgba(245,158,11,0.4));
+        }
+
+        @keyframes logoBounce {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50%  { transform: translateY(-10px) rotate(2deg); }
         }
 
         .site-title {
-            font-size: 28px;
+            font-size: 30px;
             font-weight: 800;
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             letter-spacing: -0.5px;
         }
 
         .site-subtitle {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-tertiary);
             font-weight: 500;
         }
@@ -265,7 +166,7 @@
         /* ─── AUTH KART ─── */
         .auth-card {
             flex: 1;
-            height: 560px;
+            height: 580px;
             position: relative;
             border-radius: 28px;
             overflow: hidden;
@@ -273,7 +174,7 @@
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
         }
 
-        .admin-card   { background: linear-gradient(145deg, #1c1f35, #131728); }
+        .admin-card { background: linear-gradient(145deg, #1c1f35, #131728); }
         .manager-card { background: linear-gradient(145deg, #0f1e30, #0a1520); }
 
         /* ─── PANEL YÜZLERİ ─── */
@@ -464,7 +365,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 14px;
-            max-height: 380px;
+            max-height: 420px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -510,14 +411,6 @@
             font-size: 14px;
         }
 
-        /* ─── FOOTER ─── */
-        .site-footer {
-            text-align: center;
-            color: var(--text-tertiary);
-            font-size: 12px;
-            opacity: 0.65;
-        }
-
         /* ─── PIN MODAL ─── */
         .modal {
             display: none;
@@ -555,9 +448,9 @@
             margin-bottom: 30px;
         }
 
-        .modal-icon    { font-size: 54px; display: block; margin-bottom: 14px; }
-        .modal-title   { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-        .modal-subtitle{ font-size: 14px; color: var(--text-tertiary); }
+        .modal-icon { font-size: 54px; display: block; margin-bottom: 14px; }
+        .modal-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .modal-subtitle { font-size: 14px; color: var(--text-tertiary); }
 
         .pin-input-group {
             display: flex;
@@ -618,71 +511,142 @@
 
         .btn-secondary:hover { background: var(--border); }
 
+        /* ─── FOOTER ─── */
+        .site-footer {
+            margin-top: 48px;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 12px;
+            opacity: 0.65;
+        }
+
+        /* ─── MOBİL HEADER ─── */
+        .mobile-header { display: none; }
+
         /* ─── MOBİL RESPONSIVE ─── */
         @media (max-width: 960px) {
             .auth-container {
                 flex-direction: column;
-                gap: 22px;
+                gap: 24px;
                 max-width: 500px;
             }
 
-            .auth-card { height: 520px; }
+            /* Dikey sıralamada sabit yükseklik kaldır */
+            .auth-card {
+                height: auto;
+                min-height: 500px;
+            }
         }
 
         @media (max-width: 768px) {
-            /* Hero section mobil */
-            .hero-section {
-                padding: 60px 20px 80px;
+            /* Body mobilde scroll olsun */
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
             }
 
-            .emoji-3d {
-                font-size: 80px;
-                margin-bottom: 20px;
+            /* Sayfa dikey akış */
+            .page {
+                justify-content: flex-start;
+                padding: 24px 14px 40px;
+                padding-top: 0; /* Mobile header altında başla */
             }
 
-            .title-line-1 { font-size: 18px; }
-            .title-line-2 { font-size: 38px; }
-            .title-line-3 { font-size: 22px; }
+            /* Masaüstü logo/başlığı gizle */
+            .site-header { display: none; }
 
-            .scroll-indicator { bottom: 44px; }
-            .scroll-text { font-size: 12px; }
-            .arrow-down  { font-size: 28px; }
+            /* Mobil header görünür */
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 16px 20px;
+                background: rgba(15, 23, 42, 0.85);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                width: 100%;
+                margin-bottom: 28px;
+            }
 
-            /* Cards section mobil */
-            .cards-section { padding: 30px 14px; gap: 24px; }
+            .mobile-logo {
+                font-size: 38px;
+                line-height: 1;
+                flex-shrink: 0;
+                filter: drop-shadow(0 2px 8px rgba(245,158,11,0.4));
+            }
 
-            .site-header { margin-bottom: 20px; }
-            .site-title  { font-size: 22px; }
+            .mobile-title h1 {
+                font-size: 16px;
+                font-weight: 700;
+                background: linear-gradient(135deg, var(--primary), var(--primary-light));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 1px;
+            }
 
-            .auth-card { height: 500px; }
+            .mobile-title p {
+                font-size: 10px;
+                color: var(--text-tertiary);
+                line-height: 1.3;
+            }
+
+            /* Kartlar tam genişlik */
+            .auth-container {
+                max-width: 100%;
+                gap: 20px;
+            }
+
+            .auth-card {
+                width: 100%;
+                max-width: 460px;
+                height: auto;
+                min-height: 490px;
+                margin: 0 auto;
+            }
 
             .welcome-side,
-            .form-side { padding: 36px 26px; }
+            .form-side { padding: 40px 28px; }
 
-            .card-logo  { font-size: 60px; margin-bottom: 16px; }
-            .card-title { font-size: 28px; margin-bottom: 10px; }
-            .card-desc  { font-size: 14px; margin-bottom: 28px; }
+            .card-logo { font-size: 60px; margin-bottom: 18px; }
+            .card-title { font-size: 28px; margin-bottom: 12px; }
+            .card-desc { font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
 
-            .switch-btn { font-size: 15px; padding: 13px 28px; }
+            .switch-btn {
+                font-size: 15px;
+                padding: 14px 32px;
+                min-height: 50px;
+            }
+
             .form-title { font-size: 22px; margin-bottom: 22px; }
 
-            .branch-grid  { gap: 10px; max-height: 320px; }
-            .branch-item  { padding: 14px 10px; }
-            .branch-item-emoji { font-size: 28px; }
-
-            .pin-input     { width: 52px; height: 62px; font-size: 26px; }
+            .pin-input { width: 52px; height: 62px; font-size: 26px; }
             .modal-content { padding: 28px 18px; }
+
+            .branch-grid { gap: 10px; max-height: 340px; }
+            .branch-item { padding: 16px 10px; }
+            .branch-item-emoji { font-size: 30px; }
+
+            .site-footer { margin-top: 28px; }
         }
 
         @media (max-width: 375px) {
-            .emoji-3d    { font-size: 70px; }
-            .title-line-1{ font-size: 16px; }
-            .title-line-2{ font-size: 32px; }
-            .title-line-3{ font-size: 18px; }
+            .mobile-header { padding: 14px 16px; }
+            .mobile-logo { font-size: 32px; }
+            .mobile-title h1 { font-size: 14px; }
 
-            .auth-card { height: 480px; }
+            .auth-card { min-height: 460px; }
 
-            .pin-input  { width: 46px; height: 56px; font-size: 22px; }
+            .card-logo { font-size: 52px; }
+            .card-title { font-size: 25px; }
+            .card-desc { font-size: 13px; margin-bottom: 24px; }
+
+            .pin-input { width: 46px; height: 56px; font-size: 22px; }
+            .pin-input-group { gap: 8px; }
         }
     </style>
 </head>
@@ -698,104 +662,97 @@
     <!-- Stars -->
     <div class="stars" id="starsContainer"></div>
 
-    <!-- ─── SCROLL CONTAINER ─── -->
-    <div id="scrollContainer">
-
-        <!-- ─── BÖLÜM 1: HERO ─── -->
-        <div class="scroll-section hero-section">
-            <span id="hero-emoji" class="emoji-3d">🍰</span>
-
-            <div class="hero-title">
-                <span class="title-line-1">Hoş Geldiniz</span>
-                <span class="title-line-2">Tatlı Takip</span>
-                <span class="title-line-3">Sistemi</span>
-            </div>
-
-            <p class="hero-subtitle">Mutlukent Esenlik Hizmetleri A.Ş</p>
-
-            <!-- Scroll Indicator -->
-            <div class="scroll-indicator" onclick="scrollToCards()">
-                <div class="scroll-text">Giriş için kaydır</div>
-                <div class="arrow-down">↓</div>
-            </div>
+    <!-- Mobil Header (sadece mobilde görünür) -->
+    <header class="mobile-header">
+        <span class="mobile-logo">🍰</span>
+        <div class="mobile-title">
+            <h1>Tatlı Takip Sistemi</h1>
+            <p>Mutlukent Esenlik Hizmetleri A.Ş</p>
         </div>
+    </header>
 
-        <!-- ─── BÖLÜM 2: KARTLAR ─── -->
-        <div class="scroll-section cards-section" id="cardsSection">
+    <!-- Main -->
+    <div class="page">
 
-            <!-- Site Header -->
-            <header class="site-header">
-                <h1 class="site-title">Tatlı İmalat ve Dağıtım Takip</h1>
-                <p class="site-subtitle">Mutlukent Esenlik Hizmetleri A.Ş</p>
-            </header>
+        <!-- Header -->
+        <header class="site-header">
+            <span class="site-logo">🍰</span>
+            <h1 class="site-title">Tatlı İmalat ve Dağıtım Takip</h1>
+            <p class="site-subtitle">Mutlukent Esenlik Hizmetleri A.Ş</p>
+        </header>
 
-            <!-- Auth Cards -->
-            <div class="auth-container">
+        <!-- Auth Cards -->
+        <div class="auth-container">
 
-                <!-- ── YÖNETİCİ KARTI ── -->
-                <div class="auth-card admin-card" id="adminCard">
-                    <div class="welcome-side">
-                        <div class="welcome-content">
-                            <span class="card-logo">👔</span>
-                            <h2 class="card-title">Yönetici Paneli</h2>
-                            <p class="card-desc">Tüm şubelerin verilerini takip edin ve analiz yapın</p>
-                            <button class="switch-btn" onclick="showAdminForm()">
-                                Giriş Yap
-                                <span class="btn-arrow">→</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="form-side">
-                        <div class="form-content">
-                            <button class="back-btn" onclick="hideAdminForm()">← Geri</button>
-                            <h3 class="form-title">Yönetici Girişi</h3>
-                            <div class="input-group">
-                                <input type="text" class="glass-input" id="adminUsername"
-                                       placeholder="Kullanıcı adınızı girin" autocomplete="off">
-                            </div>
-                            <div class="input-group">
-                                <input type="password" class="glass-input" id="adminPassword"
-                                       placeholder="Şifrenizi girin" autocomplete="off">
-                            </div>
-                            <button class="submit-btn" onclick="verifyAdminPassword()">Giriş Yap</button>
-                        </div>
+            <!-- ── YÖNETİCİ KARTI ── -->
+            <div class="auth-card admin-card" id="adminCard">
+
+                <!-- Karşılama yüzü -->
+                <div class="welcome-side">
+                    <div class="welcome-content">
+                        <span class="card-logo">👔</span>
+                        <h2 class="card-title">Yönetici Paneli</h2>
+                        <p class="card-desc">Tüm şubelerin verilerini takip edin ve analiz yapın</p>
+                        <button class="switch-btn" onclick="showAdminForm()">
+                            Giriş Yap
+                            <span class="btn-arrow">→</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- ── MÜDÜR KARTI ── -->
-                <div class="auth-card manager-card" id="managerCard">
-                    <div class="welcome-side">
-                        <div class="welcome-content">
-                            <span class="card-logo">🏪</span>
-                            <h2 class="card-title">Müdür Paneli</h2>
-                            <p class="card-desc">Şubenizin günlük tatlı verilerini girin ve takip edin</p>
-                            <button class="switch-btn" onclick="showManagerForm()">
-                                Şube Seç
-                                <span class="btn-arrow">→</span>
-                            </button>
+                <!-- Form yüzü -->
+                <div class="form-side">
+                    <div class="form-content">
+                        <button class="back-btn" onclick="hideAdminForm()">← Geri</button>
+                        <h3 class="form-title">Yönetici Girişi</h3>
+                        <div class="input-group">
+                            <input type="text" class="glass-input" id="adminUsername"
+                                   placeholder="Kullanıcı adınızı girin" autocomplete="off">
                         </div>
+                        <div class="input-group">
+                            <input type="password" class="glass-input" id="adminPassword"
+                                   placeholder="Şifrenizi girin" autocomplete="off">
+                        </div>
+                        <button class="submit-btn" onclick="verifyAdminPassword()">Giriş Yap</button>
                     </div>
-                    <div class="form-side">
-                        <div class="form-content">
-                            <button class="back-btn" onclick="hideManagerForm()">← Geri</button>
-                            <h3 class="form-title">Şube Seçin</h3>
-                            <div class="branch-grid" id="branchGrid">
-                                <div class="branch-loading">Şubeler yükleniyor...</div>
-                            </div>
-                        </div>
+                </div>
+            </div>
+
+            <!-- ── MÜDÜR KARTI ── -->
+            <div class="auth-card manager-card" id="managerCard">
+
+                <!-- Karşılama yüzü -->
+                <div class="welcome-side">
+                    <div class="welcome-content">
+                        <span class="card-logo">🏪</span>
+                        <h2 class="card-title">Müdür Paneli</h2>
+                        <p class="card-desc">Şubenizin günlük tatlı verilerini girin ve takip edin</p>
+                        <button class="switch-btn" onclick="showManagerForm()">
+                            Şube Seç
+                            <span class="btn-arrow">→</span>
+                        </button>
                     </div>
                 </div>
 
-            </div><!-- /auth-container -->
+                <!-- Form yüzü -->
+                <div class="form-side">
+                    <div class="form-content">
+                        <button class="back-btn" onclick="hideManagerForm()">← Geri</button>
+                        <h3 class="form-title">Şube Seçin</h3>
+                        <div class="branch-grid" id="branchGrid">
+                            <div class="branch-loading">Şubeler yükleniyor...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <!-- Footer -->
-            <footer class="site-footer">
-                &copy; 2026 Mutlukent Esenlik Hizmetleri A.Ş &nbsp;·&nbsp; Tüm hakları saklıdır.
-            </footer>
+        </div><!-- /auth-container -->
 
-        </div><!-- /cards-section -->
-
-    </div><!-- /scrollContainer -->
+        <!-- Footer -->
+        <footer class="site-footer">
+            &copy; 2026 Mutlukent Esenlik Hizmetleri A.Ş &nbsp;·&nbsp; Tüm hakları saklıdır.
+        </footer>
+    </div><!-- /page -->
 
     <!-- PIN Modal -->
     <div class="modal" id="pinModal">
@@ -822,10 +779,6 @@
     <script src="supabase-client.js"></script>
 
     <script>
-        // ─── MOBİL TESPİT ───
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-            || window.innerWidth < 768;
-
         // ─── Şube emoji haritası ───
         const branchEmojis = {
             'Rumeli İskelesi': '🌊',
@@ -860,61 +813,10 @@
             }
         })();
 
-        // ─── Sayfa yüklenince ───
-        window.addEventListener('load', () => {
-            // Hero emoji döndür
-            anime({
-                targets: '#hero-emoji',
-                rotateY: '1turn',
-                duration: 3500,
-                easing: 'easeInOutSine',
-                loop: true
-            });
-
-            // Başlık satırları belir
-            anime({
-                targets: '.hero-title span',
-                opacity: [0, 1],
-                translateY: [30, 0],
-                delay: anime.stagger(200),
-                duration: 900,
-                easing: 'easeOutExpo'
-            });
-
-            // MOBİLDE 2SN, DESKTOPDA 3SN SONRA SCROLL
-            const scrollDelay = isMobile ? 2000 : 3000;
-            setTimeout(autoScroll, scrollDelay);
-        });
-
-        // Şubeleri arka planda çek
+        // ─── Sayfa yüklenince şubeleri çek ───
         document.addEventListener('DOMContentLoaded', async () => {
             branchesCache = await getBranches();
         });
-
-        // ─── AUTO SCROLL ───
-        let autoScrollEnabled = true;
-        const sections = document.querySelectorAll('.scroll-section');
-        let currentSection = 0;
-
-        function autoScroll() {
-            if (!autoScrollEnabled || currentSection >= sections.length - 1) return;
-            scrollToCards();
-        }
-
-        function scrollToCards() {
-            autoScrollEnabled = false; // kullanıcı müdahalesi gibi say
-            currentSection = 1;
-            sections[1].scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        // Kullanıcı manuel scroll / touch yapınca auto-scroll durdur
-        const sc = document.getElementById('scrollContainer');
-        sc.addEventListener('wheel',      () => { autoScrollEnabled = false; }, { passive: true });
-        sc.addEventListener('touchmove',  () => { autoScrollEnabled = false; }, { passive: true });
-        sc.addEventListener('touchstart', () => {
-            // Touch başlayınca auto-scroll'u durdur ama scroll'u etkinleştir
-            autoScrollEnabled = false;
-        }, { passive: true });
 
         // ─── Admin formu ───
         function showAdminForm() {
@@ -1015,13 +917,6 @@
                 showToast(result.error || 'Şifre hatalı!', 'error');
                 pinInputs.forEach(i => i.value = '');
                 pinInputs[0].focus();
-                // Hata animasyonu
-                anime({
-                    targets: '#pinModal .modal-content',
-                    translateX: [-12, 12, -8, 8, -4, 4, 0],
-                    duration: 500,
-                    easing: 'easeInOutSine'
-                });
             }
         }
 
@@ -1044,12 +939,6 @@
                 window.location.href = 'admin-dashboard.html';
             } else {
                 showToast(result.error || 'Kullanıcı adı veya şifre hatalı!', 'error');
-                anime({
-                    targets: '#adminCard .form-side',
-                    translateX: [-10, 10, -7, 7, -3, 3, 0],
-                    duration: 450,
-                    easing: 'easeInOutSine'
-                });
             }
         }
 
