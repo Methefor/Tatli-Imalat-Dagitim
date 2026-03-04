@@ -10,496 +10,396 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
+            --bg:      #0f172a;
+            --surface: #1e293b;
+            --border:  rgba(255,255,255,0.08);
             --primary: #f59e0b;
-            --primary-dark: #d97706;
-            --success: #22c55e;
-            --warning: #eab308;
-            --danger: #ef4444;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-tertiary: #94a3b8;
+            --text:    #f1f5f9;
+            --muted:   #94a3b8;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a1020, #0f172a);
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 20px 16px 40px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* ─── HEADER ─── */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 28px;
-            padding: 20px 24px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .back-btn {
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 10px;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-            touch-action: manipulation;
-        }
-
-        .back-btn:hover { background: rgba(255, 255, 255, 0.14); }
-
-        .header-title h1 {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 3px;
-        }
-
-        .header-title p {
-            font-size: 13px;
-            color: var(--text-tertiary);
-        }
-
-        .refresh-btn {
-            padding: 11px 22px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            white-space: nowrap;
-            touch-action: manipulation;
-        }
-
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
-        }
-
-        /* Son güncelleme */
-        .last-updated {
-            font-size: 12px;
-            color: var(--text-tertiary);
-            text-align: right;
-            margin-bottom: 20px;
-        }
-
-        /* ─── ÖZET KARTLAR ─── */
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin-bottom: 28px;
-        }
-
-        .summary-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 18px 14px;
-            text-align: center;
-        }
-
-        .summary-icon { font-size: 30px; margin-bottom: 10px; }
-
-        .summary-value {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-
-        .summary-label { font-size: 12px; color: var(--text-tertiary); }
-
-        .card-total  .summary-value { color: var(--primary); }
-        .card-ok     .summary-value { color: var(--success); }
-        .card-low    .summary-value { color: var(--warning); }
-        .card-empty  .summary-value { color: var(--danger); }
-
-        /* ─── TATLICILAR Açıklama ─── */
-        .date-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .date-badge {
-            padding: 6px 18px;
-            background: rgba(245, 158, 11, 0.12);
-            border: 1px solid rgba(245, 158, 11, 0.25);
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .legend {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            font-size: 12px;
-            color: var(--text-tertiary);
-        }
-
-        .legend-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .dot-high   { background: var(--success); }
-        .dot-medium { background: var(--warning); }
-        .dot-low    { background: var(--danger); }
-        .dot-empty  { background: rgba(255,255,255,0.2); }
-
-        /* ─── TATLICILAR KARTİ ─── */
-        .desserts-grid { display: grid; gap: 18px; }
-
-        .dessert-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 22px 22px 18px;
-            transition: transform 0.2s;
-        }
-
-        .dessert-card:hover { transform: translateY(-2px); }
-
-        .dessert-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .dessert-info {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .dessert-emoji { font-size: 44px; }
-
-        .dessert-name {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .dessert-total-wrap { text-align: right; }
-
-        .total-lbl {
-            font-size: 11px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 3px;
-        }
-
-        .total-val {
-            font-size: 34px;
-            font-weight: 800;
-            color: var(--primary);
-            line-height: 1;
-        }
-
-        /* ─── ŞUBE GRID ─── */
-        .branches-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-        }
-
-        .branch-item {
-            border-radius: 14px;
-            padding: 14px 8px;
-            text-align: center;
-            border: 2px solid;
-            transition: transform 0.2s;
-        }
-
-        .branch-item:hover { transform: translateY(-2px); }
-
-        .bi-emoji  { font-size: 26px; margin-bottom: 6px; display: block; }
-        .bi-name   { font-size: 11px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); line-height: 1.2; }
-        .bi-stock  { font-size: 26px; font-weight: 800; line-height: 1; }
-
-        /* Stok renkleri */
-        .stock-high {
-            background: rgba(34, 197, 94, 0.08);
-            border-color: rgba(34, 197, 94, 0.3);
-        }
-        .stock-high .bi-stock { color: var(--success); }
-
-        .stock-medium {
-            background: rgba(234, 179, 8, 0.08);
-            border-color: rgba(234, 179, 8, 0.3);
-        }
-        .stock-medium .bi-stock { color: var(--warning); }
-
-        .stock-low {
-            background: rgba(239, 68, 68, 0.08);
-            border-color: rgba(239, 68, 68, 0.3);
-        }
-        .stock-low .bi-stock { color: var(--danger); }
-
-        .stock-empty {
-            background: rgba(0, 0, 0, 0.2);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-        .stock-empty .bi-stock { color: var(--text-tertiary); }
-
-        /* ─── YÜKLENİYOR ─── */
-        .loading-state {
-            text-align: center;
-            padding: 64px 20px;
-            color: var(--text-tertiary);
-        }
-
-        .loading-emoji {
-            font-size: 52px;
-            display: block;
-            margin-bottom: 16px;
-            animation: pulse 1.4s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-
-        /* ─── PIN OVERLAY ─── */
+        /* ─── PIN EKRANI ─── */
         #pinOverlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: linear-gradient(135deg, #0a1020, #0f172a);
+            background: var(--bg);
             z-index: 9999;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            gap: 0;
         }
-
         #pinOverlay.active { display: flex; }
 
         .pin-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 28px;
-            padding: 40px 36px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 32px;
             text-align: center;
-            max-width: 340px;
             width: 90%;
+            max-width: 320px;
         }
 
-        .pin-box-icon { font-size: 56px; margin-bottom: 14px; display: block; }
-        .pin-box-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-        .pin-box-sub { font-size: 14px; color: var(--text-tertiary); margin-bottom: 28px; }
+        .pin-icon  { font-size: 60px; margin-bottom: 16px; display: block; }
+        .pin-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+        .pin-sub   { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
 
-        .pin-inputs {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-bottom: 24px;
-        }
+        .pin-inputs { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
 
         .pin-digit {
-            width: 60px;
-            height: 68px;
-            font-size: 26px;
-            font-weight: 700;
+            width: 58px; height: 66px;
+            font-size: 26px; font-weight: 700;
             text-align: center;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 14px;
-            color: white;
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.14);
+            border-radius: 12px;
+            color: var(--text);
             outline: none;
-            transition: all 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-
         .pin-digit:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
-            background: rgba(245, 158, 11, 0.08);
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
         }
 
-        .pin-submit {
+        .pin-btn {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 14px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             color: white;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.2s, box-shadow 0.2s;
             touch-action: manipulation;
         }
-
-        .pin-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
-        }
+        .pin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
 
         .pin-error {
             font-size: 13px;
-            color: var(--danger);
+            color: #ef4444;
             margin-top: 12px;
             min-height: 18px;
         }
 
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 900px) {
-            .branches-grid { grid-template-columns: repeat(3, 1fr); }
+        /* ─── PANEL ─── */
+        #panel { display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Üst bar */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15,23,42,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
-        @media (max-width: 768px) {
-            .header { flex-wrap: wrap; padding: 16px; }
-            .header-left { flex-wrap: wrap; }
-            .refresh-btn { width: 100%; justify-content: center; }
+        .back-btn {
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            touch-action: manipulation;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.14); }
 
-            .summary-cards { grid-template-columns: repeat(2, 1fr); }
-
-            .date-bar { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .legend { flex-wrap: wrap; gap: 10px; }
-
-            .dessert-emoji { font-size: 36px; }
-            .dessert-name { font-size: 19px; }
-            .total-val { font-size: 28px; }
-
-            .branches-grid { grid-template-columns: repeat(3, 1fr); }
+        .topbar-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 700;
         }
 
-        @media (max-width: 480px) {
-            .summary-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .summary-value { font-size: 24px; }
+        .topbar-date {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 600;
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.2);
+            border-radius: 20px;
+            padding: 5px 14px;
+            white-space: nowrap;
+        }
 
-            .branches-grid { grid-template-columns: repeat(2, 1fr); }
-            .bi-emoji { font-size: 22px; }
-            .bi-stock { font-size: 22px; }
+        .refresh-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+            touch-action: manipulation;
+        }
+        .refresh-btn:hover { background: rgba(255,255,255,0.12); }
+
+        /* İçerik */
+        .content { padding: 20px 16px 48px; overflow-x: auto; }
+
+        /* ─── TABLO ─── */
+        .tatli-tablo {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 680px;
+        }
+
+        /* Başlık satırı */
+        .tatli-tablo thead th {
+            padding: 12px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+            position: sticky;
+            top: 60px;
+            background: var(--bg);
+            z-index: 10;
+        }
+
+        .tatli-tablo thead th:first-child {
+            text-align: left;
+            padding-left: 12px;
+            min-width: 140px;
+        }
+
+        .tatli-tablo thead th.toplam-col {
+            color: var(--primary);
+            border-left: 2px solid rgba(245,158,11,0.2);
+        }
+
+        /* Şube emoji satırı */
+        .branch-header-row th {
+            padding: 8px 10px 14px;
+            font-size: 22px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .branch-header-row th:first-child { text-align: left; }
+
+        /* Gövde satırları */
+        .tatli-tablo tbody tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tatli-tablo tbody tr:last-child { border-bottom: none; }
+
+        /* Tatlı isim hücresi */
+        .dessert-cell {
+            padding: 14px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dessert-emoji-sm { font-size: 24px; }
+        .dessert-name-txt { font-size: 15px; font-weight: 600; }
+
+        /* Stok hücresi */
+        .stock-cell {
+            text-align: center;
+            padding: 8px 6px;
+            vertical-align: middle;
+        }
+
+        .stock-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 52px;
+            border-radius: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            border: 2px solid;
+            line-height: 1;
+        }
+
+        /* Stok renkleri */
+        .s-ok     { background: rgba(34,197,94,0.12);  border-color: rgba(34,197,94,0.35);  color: #22c55e; }
+        .s-mid    { background: rgba(234,179,8,0.12);  border-color: rgba(234,179,8,0.35);  color: #eab308; }
+        .s-low    { background: rgba(239,68,68,0.12);  border-color: rgba(239,68,68,0.35);  color: #ef4444; }
+        .s-empty  { background: rgba(0,0,0,0.25);      border-color: rgba(255,255,255,0.1); color: #475569; }
+
+        /* Toplam sütunu */
+        .toplam-cell {
+            text-align: center;
+            padding: 8px 10px;
+            border-left: 2px solid rgba(245,158,11,0.15);
+        }
+
+        .toplam-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 52px;
+            height: 48px;
+            padding: 0 10px;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: 800;
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.2);
+            color: var(--primary);
+        }
+
+        /* Alt toplam satırı */
+        .sum-row td {
+            padding: 10px 6px;
+            border-top: 2px solid var(--border);
+            text-align: center;
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--muted);
+        }
+        .sum-row td:first-child { text-align: left; padding-left: 12px; }
+
+        /* ─── ALT BİLGİ ─── */
+        .footer-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 20px 16px;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .legend-dot {
+            width: 14px; height: 14px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .ld-ok    { background: rgba(34,197,94,0.2);  border-color: #22c55e; }
+        .ld-mid   { background: rgba(234,179,8,0.2);  border-color: #eab308; }
+        .ld-low   { background: rgba(239,68,68,0.2);  border-color: #ef4444; }
+        .ld-empty { background: rgba(0,0,0,0.3);       border-color: #475569; }
+
+        /* ─── YÜKLENİYOR ─── */
+        .loading-row td {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        /* ─── MOBİL ─── */
+        @media (max-width: 600px) {
+            .topbar-date { display: none; }
+            .topbar-title { font-size: 16px; }
+            .stock-badge { width: 46px; height: 44px; font-size: 18px; border-radius: 10px; }
+            .toplam-badge { font-size: 18px; height: 40px; }
+            .dessert-name-txt { font-size: 13px; }
+            .dessert-emoji-sm { font-size: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- PIN Overlay -->
+    <!-- ─── PIN ─── -->
     <div id="pinOverlay" class="active">
         <div class="pin-box">
-            <span class="pin-box-icon">👨‍🍳</span>
-            <h2 class="pin-box-title">Tatlıcılar Paneli</h2>
-            <p class="pin-box-sub">Devam etmek için şifrenizi girin</p>
+            <span class="pin-icon">👨‍🍳</span>
+            <h2 class="pin-title">Tatlıcılar Paneli</h2>
+            <p class="pin-sub">Şifrenizi girin</p>
             <div class="pin-inputs">
                 <input type="password" class="pin-digit" maxlength="1" id="pd1" inputmode="numeric">
                 <input type="password" class="pin-digit" maxlength="1" id="pd2" inputmode="numeric">
                 <input type="password" class="pin-digit" maxlength="1" id="pd3" inputmode="numeric">
                 <input type="password" class="pin-digit" maxlength="1" id="pd4" inputmode="numeric">
             </div>
-            <button class="pin-submit" onclick="checkPin()">Giriş Yap</button>
+            <button class="pin-btn" onclick="checkPin()">Giriş</button>
             <div class="pin-error" id="pinError"></div>
         </div>
     </div>
 
-    <div class="container">
+    <!-- ─── PANEL ─── -->
+    <div id="panel">
 
-        <!-- Header -->
-        <div class="header">
-            <div class="header-left">
-                <button class="back-btn" onclick="window.location.href='index.html'">← Ana Sayfa</button>
-                <div class="header-title">
-                    <h1>👨‍🍳 Tatlıcılar Paneli</h1>
-                    <p>Şubelerdeki günlük kalan stok durumu</p>
-                </div>
-            </div>
-            <button class="refresh-btn" onclick="loadData()">
-                <span>🔄</span>
-                <span>Yenile</span>
-            </button>
+        <!-- Üst Bar -->
+        <div class="topbar">
+            <button class="back-btn" onclick="window.location.href='index.html'">← Geri</button>
+            <span class="topbar-title">👨‍🍳 Tatlıcılar Paneli</span>
+            <span class="topbar-date" id="todayBadge">—</span>
+            <button class="refresh-btn" onclick="loadData()">🔄 Yenile</button>
         </div>
 
-        <!-- Özet Kartlar -->
-        <div class="summary-cards">
-            <div class="summary-card card-total">
-                <div class="summary-icon">📦</div>
-                <div class="summary-value" id="totalStock">—</div>
-                <div class="summary-label">Toplam Kalan</div>
-            </div>
-            <div class="summary-card card-ok">
-                <div class="summary-icon">✅</div>
-                <div class="summary-value" id="stockOk">—</div>
-                <div class="summary-label">Yeterli (&gt;20)</div>
-            </div>
-            <div class="summary-card card-low">
-                <div class="summary-icon">⚠️</div>
-                <div class="summary-value" id="stockLow">—</div>
-                <div class="summary-label">Düşük (1–20)</div>
-            </div>
-            <div class="summary-card card-empty">
-                <div class="summary-icon">❌</div>
-                <div class="summary-value" id="stockEmpty">—</div>
-                <div class="summary-label">Tükendi (0)</div>
-            </div>
+        <!-- Tablo -->
+        <div class="content">
+            <table class="tatli-tablo">
+                <thead>
+                    <tr class="branch-header-row" id="branchEmojiRow">
+                        <th></th>
+                        <!-- şube emojileri dinamik -->
+                    </tr>
+                    <tr id="branchNameRow">
+                        <th>Tatlı</th>
+                        <!-- şube isimleri dinamik -->
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr class="loading-row">
+                        <td colspan="10">🍰 Yükleniyor...</td>
+                    </tr>
+                </tbody>
+                <tfoot id="tableFoot"></tfoot>
+            </table>
         </div>
 
-        <!-- Tarih + Lejant -->
-        <div class="date-bar">
-            <span class="date-badge" id="todayBadge">—</span>
-            <div class="legend">
-                <span class="legend-dot dot-high"></span><span>Yeterli (&gt;20)</span>
-                <span class="legend-dot dot-medium"></span><span>Orta (10–20)</span>
-                <span class="legend-dot dot-low"></span><span>Düşük (1–9)</span>
-                <span class="legend-dot dot-empty"></span><span>Tükendi</span>
-            </div>
-        </div>
-
-        <!-- Tatlı Kartları -->
-        <div class="desserts-grid" id="dessertsGrid">
-            <div class="loading-state">
-                <span class="loading-emoji">🍰</span>
-                <p>Veriler yükleniyor...</p>
-            </div>
+        <!-- Lejant -->
+        <div class="footer-info">
+            <div class="legend-item"><div class="legend-dot ld-ok"></div>Yeterli (&gt;20)</div>
+            <div class="legend-item"><div class="legend-dot ld-mid"></div>Orta (10–20)</div>
+            <div class="legend-item"><div class="legend-dot ld-low"></div>Düşük (1–9)</div>
+            <div class="legend-item"><div class="legend-dot ld-empty"></div>Tükendi (0)</div>
         </div>
 
     </div>
 
     <script src="supabase-client.js"></script>
     <script>
-        // ─── PIN Kontrolü ───
+        // ─── PIN ───
         const PANEL_PIN = '0000';
-        const pinIds = ['pd1','pd2','pd3','pd4'];
+        const pinIds    = ['pd1','pd2','pd3','pd4'];
 
-        // Oturum boyunca hatırla
         if (sessionStorage.getItem('tatlicilarAuth') === '1') {
             document.getElementById('pinOverlay').classList.remove('active');
+            document.getElementById('pd1').blur();
         }
 
         pinIds.forEach((id, idx) => {
@@ -515,21 +415,26 @@
             });
         });
 
-        setTimeout(() => document.getElementById('pd1').focus(), 100);
+        setTimeout(() => {
+            if (document.getElementById('pinOverlay').classList.contains('active'))
+                document.getElementById('pd1').focus();
+        }, 150);
 
         function checkPin() {
             const entered = pinIds.map(id => document.getElementById(id).value).join('');
             if (entered === PANEL_PIN) {
                 sessionStorage.setItem('tatlicilarAuth', '1');
                 document.getElementById('pinOverlay').classList.remove('active');
+                loadData();
             } else {
-                document.getElementById('pinError').textContent = 'Hatalı şifre, tekrar deneyin.';
+                document.getElementById('pinError').textContent = 'Hatalı şifre!';
                 pinIds.forEach(id => document.getElementById(id).value = '');
                 document.getElementById('pd1').focus();
-                setTimeout(() => document.getElementById('pinError').textContent = '', 2500);
+                setTimeout(() => document.getElementById('pinError').textContent = '', 2200);
             }
         }
 
+        // ─── VERİ ───
         const branchEmojis = {
             'Rumeli İskelesi': '🌊',
             'Yahya Kemal':     '📚',
@@ -542,16 +447,18 @@
         const today = getTodayDate();
         document.getElementById('todayBadge').textContent = formatDateTurkish(today);
 
-        function getStockClass(val) {
-            if (val > 20)  return 'stock-high';
-            if (val > 9)   return 'stock-medium';
-            if (val > 0)   return 'stock-low';
-            return 'stock-empty';
+        function stockClass(val) {
+            if (val > 20) return 's-ok';
+            if (val > 9)  return 's-mid';
+            if (val > 0)  return 's-low';
+            return 's-empty';
         }
 
         async function loadData() {
-            const grid = document.getElementById('dessertsGrid');
-            grid.innerHTML = '<div class="loading-state"><span class="loading-emoji">🍰</span><p>Veriler yükleniyor...</p></div>';
+            const body = document.getElementById('tableBody');
+            const foot = document.getElementById('tableFoot');
+            body.innerHTML = '<tr class="loading-row"><td colspan="10">🍰 Yükleniyor...</td></tr>';
+            foot.innerHTML = '';
 
             const [branches, desserts, allEntries] = await Promise.all([
                 getBranches(),
@@ -560,67 +467,116 @@
             ]);
 
             if (!branches || !desserts) {
-                grid.innerHTML = '<div class="loading-state"><p style="color:var(--danger);">❌ Veriler yüklenemedi.</p></div>';
+                body.innerHTML = '<tr class="loading-row"><td colspan="10" style="color:#ef4444;">❌ Veri alınamadı.</td></tr>';
                 return;
             }
 
-            let totalStock = 0, cntOk = 0, cntLow = 0, cntEmpty = 0;
+            // Başlık satırlarını doldur
+            const emojiRow = document.getElementById('branchEmojiRow');
+            const nameRow  = document.getElementById('branchNameRow');
 
-            grid.innerHTML = '';
+            // Önce temizle (ilk th hariç)
+            while (emojiRow.children.length > 1) emojiRow.removeChild(emojiRow.lastChild);
+            while (nameRow.children.length > 1)  nameRow.removeChild(nameRow.lastChild);
 
-            desserts.forEach(dessert => {
-                const dessertEntries = (allEntries || []).filter(e => e.dessert_id === dessert.id);
-                let dessertTotal = 0;
+            branches.forEach(b => {
+                const eTh = document.createElement('th');
+                eTh.textContent = branchEmojis[b.name] || '🏪';
+                emojiRow.appendChild(eTh);
 
-                let branchesHTML = '';
-                branches.forEach(branch => {
-                    const entry     = dessertEntries.find(e => e.branch_id === branch.id);
-                    const remaining = entry?.remaining_amount ?? 0;
-
-                    dessertTotal += remaining;
-
-                    const cls = getStockClass(remaining);
-                    if (remaining > 20) cntOk++;
-                    else if (remaining > 0) cntLow++;
-                    else cntEmpty++;
-
-                    branchesHTML += `
-                        <div class="branch-item ${cls}">
-                            <span class="bi-emoji">${branchEmojis[branch.name] || '🏪'}</span>
-                            <div class="bi-name">${branch.name}</div>
-                            <div class="bi-stock">${remaining}</div>
-                        </div>
-                    `;
-                });
-
-                totalStock += dessertTotal;
-
-                const card = document.createElement('div');
-                card.className = 'dessert-card';
-                card.innerHTML = `
-                    <div class="dessert-header">
-                        <div class="dessert-info">
-                            <span class="dessert-emoji">${dessert.emoji || '🍰'}</span>
-                            <span class="dessert-name">${dessert.name}</span>
-                        </div>
-                        <div class="dessert-total-wrap">
-                            <div class="total-lbl">Toplam Kalan</div>
-                            <div class="total-val">${dessertTotal}</div>
-                        </div>
-                    </div>
-                    <div class="branches-grid">${branchesHTML}</div>
-                `;
-                grid.appendChild(card);
+                const nTh = document.createElement('th');
+                nTh.textContent = b.name;
+                nameRow.appendChild(nTh);
             });
 
-            document.getElementById('totalStock').textContent = totalStock;
-            document.getElementById('stockOk').textContent    = cntOk;
-            document.getElementById('stockLow').textContent   = cntLow;
-            document.getElementById('stockEmpty').textContent  = cntEmpty;
+            // Toplam sütunu başlıkları
+            const eTotTh = document.createElement('th');
+            eTotTh.innerHTML = '∑';
+            eTotTh.className = 'toplam-col';
+            emojiRow.appendChild(eTotTh);
+
+            const nTotTh = document.createElement('th');
+            nTotTh.textContent = 'TOPLAM';
+            nTotTh.className = 'toplam-col';
+            nameRow.appendChild(nTotTh);
+
+            // Şube toplamları (alt satır için)
+            const branchTotals = new Array(branches.length).fill(0);
+            let grandTotal = 0;
+
+            // Tatlı satırlarını doldur
+            body.innerHTML = '';
+
+            desserts.forEach(dessert => {
+                const entries = (allEntries || []).filter(e => e.dessert_id === dessert.id);
+                let rowTotal = 0;
+
+                const tr = document.createElement('tr');
+
+                // Tatlı isim hücresi
+                const nameTd = document.createElement('td');
+                nameTd.innerHTML = `
+                    <div class="dessert-cell">
+                        <span class="dessert-emoji-sm">${dessert.emoji || '🍰'}</span>
+                        <span class="dessert-name-txt">${dessert.name}</span>
+                    </div>
+                `;
+                tr.appendChild(nameTd);
+
+                // Her şube için stok hücresi
+                branches.forEach((branch, idx) => {
+                    const entry     = entries.find(e => e.branch_id === branch.id);
+                    const remaining = entry?.remaining_amount ?? 0;
+
+                    rowTotal         += remaining;
+                    branchTotals[idx] += remaining;
+
+                    const td = document.createElement('td');
+                    td.className = 'stock-cell';
+                    td.innerHTML = `<div class="stock-badge ${stockClass(remaining)}">${remaining}</div>`;
+                    tr.appendChild(td);
+                });
+
+                grandTotal += rowTotal;
+
+                // Satır toplamı
+                const totTd = document.createElement('td');
+                totTd.className = 'toplam-cell';
+                totTd.innerHTML = `<div class="toplam-badge">${rowTotal}</div>`;
+                tr.appendChild(totTd);
+
+                body.appendChild(tr);
+            });
+
+            // Alt toplam satırı
+            const sumTr = document.createElement('tr');
+            sumTr.className = 'sum-row';
+
+            const sumLabel = document.createElement('td');
+            sumLabel.textContent = 'TOPLAM';
+            sumTr.appendChild(sumLabel);
+
+            branchTotals.forEach(t => {
+                const td = document.createElement('td');
+                td.textContent = t;
+                sumTr.appendChild(td);
+            });
+
+            const sumGrand = document.createElement('td');
+            sumGrand.textContent = grandTotal;
+            sumGrand.style.color = 'var(--primary)';
+            sumTr.appendChild(sumGrand);
+
+            foot.appendChild(sumTr);
         }
 
-        loadData();
-        setInterval(loadData, 30000);
+        // Giriş yapılmışsa yükle
+        if (sessionStorage.getItem('tatlicilarAuth') === '1') loadData();
+
+        // 60 saniyede bir yenile
+        setInterval(() => {
+            if (sessionStorage.getItem('tatlicilarAuth') === '1') loadData();
+        }, 60000);
     </script>
 </body>
 </html>
