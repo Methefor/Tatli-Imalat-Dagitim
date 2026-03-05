@@ -50,6 +50,35 @@ async function checkBranchPassword(branchName, password) {
 }
 
 /**
+ * Admin şifre kontrolü (sadece şifre ile)
+ */
+async function checkAdminPasswordOnly(password) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('admins')
+            .select('id, username, name')
+            .eq('password', password)
+            .single()
+
+        if (error) {
+            return { success: false, error: 'Şifre hatalı!' }
+        }
+
+        if (data) {
+            return {
+                success: true,
+                adminName: data.name
+            }
+        }
+
+        return { success: false, error: 'Şifre hatalı!' }
+    } catch (err) {
+        console.error('Admin giriş hatası:', err)
+        return { success: false, error: 'Bağlantı hatası!' }
+    }
+}
+
+/**
  * Admin şifre kontrolü
  */
 async function checkAdminPassword(username, password) {
