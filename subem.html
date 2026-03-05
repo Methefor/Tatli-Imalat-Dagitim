@@ -3,298 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏪 Şubem</title>
+    <title>Şubem</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary: #f59e0b;
-            --success: #22c55e;
-            --info: #3b82f6;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-tertiary: #94a3b8;
+            --amber:  #f59e0b;
+            --blue:   #3b82f6;
+            --green:  #10b981;
+            --bg:     #070d1a;
+            --glass:  rgba(255,255,255,0.035);
+            --border: rgba(255,255,255,0.07);
+            --text:   #f0f4ff;
+            --muted:  rgba(255,255,255,0.35);
         }
+
+        html { height: 100%; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a1020, #0f172a);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 20px 16px 40px;
-        }
-
-        .container {
-            max-width: 680px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        .header {
             display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 24px;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* ── Arka plan ── */
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none; z-index: 0;
+        }
+
+        .bg-orb-1 {
+            position: fixed; top: -15%; left: -10%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(245,158,11,0.11) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(90px);
+            pointer-events: none; z-index: 0;
+            animation: drift1 16s ease-in-out infinite alternate;
+        }
+
+        .bg-orb-2 {
+            position: fixed; bottom: -10%; right: -10%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(80px);
+            pointer-events: none; z-index: 0;
+            animation: drift2 20s ease-in-out infinite alternate;
+        }
+
+        .bg-orb-3 {
+            position: fixed; bottom: 30%; left: -5%;
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(70px);
+            pointer-events: none; z-index: 0;
+            animation: drift1 24s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes drift1 { 0% { transform: translate(0,0); } 100% { transform: translate(35px,40px); } }
+        @keyframes drift2 { 0% { transform: translate(0,0); } 100% { transform: translate(-28px,-36px); } }
+
+        /* ── Topbar ── */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            background: rgba(7,13,26,0.8);
+            animation: fadeDown 0.4s ease both;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .back-btn {
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            display: flex; align-items: center;
+            padding: 8px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
             border-radius: 10px;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-            touch-action: manipulation;
+            color: var(--muted);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            touch-action: manipulation; white-space: nowrap; flex-shrink: 0;
         }
 
-        .back-btn:hover { background: rgba(255, 255, 255, 0.14); }
-
-        .header-info { flex: 1; }
-
-        .header-info h1 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 3px;
+        .back-btn:hover {
+            background: rgba(255,255,255,0.07);
+            color: var(--text); border-color: rgba(255,255,255,0.12);
         }
 
-        .header-info p {
-            font-size: 13px;
-            color: var(--text-tertiary);
+        .topbar-info { flex: 1; min-width: 0; }
+
+        .topbar-title {
+            font-size: 16px; font-weight: 700; letter-spacing: -0.02em;
         }
 
-        /* İstatistik kartları */
+        .topbar-sub {
+            font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 1px;
+        }
+
+        .refresh-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            touch-action: manipulation; flex-shrink: 0;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255,255,255,0.07);
+            color: var(--text); border-color: rgba(255,255,255,0.12);
+        }
+
+        .refresh-btn.spinning .refresh-icon { animation: spin 0.7s linear infinite; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── İçerik ── */
+        .content {
+            flex: 1; position: relative; z-index: 1;
+            padding: 20px 18px 40px;
+            max-width: 600px; width: 100%; margin: 0 auto;
+        }
+
+        /* ── Stat kartları ── */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 18px 14px;
-            text-align: center;
-        }
-
-        .stat-icon { font-size: 26px; margin-bottom: 8px; }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 4px;
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-tertiary);
-            font-weight: 500;
-        }
-
-        .stat-gelen .stat-value  { color: var(--primary); }
-        .stat-kalan .stat-value  { color: var(--info); }
-        .stat-satilan .stat-value { color: var(--success); }
-
-        /* Tatlı özet tablosu */
-        .summary-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            overflow: hidden;
+            gap: 10px;
             margin-bottom: 20px;
         }
 
-        .summary-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            display: grid;
-            grid-template-columns: 1fr auto auto auto;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .stat-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 14px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
         }
 
-        .col-right { text-align: center; min-width: 52px; }
+        .stat-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 2px; border-radius: 16px 16px 0 0;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.18s; }
+        .stat-card:nth-child(3) { animation-delay: 0.26s; }
+
+        .card-amber::before { background: var(--amber); }
+        .card-blue::before  { background: var(--blue);  }
+        .card-green::before { background: var(--green); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); filter: blur(4px); }
+            to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+        }
+
+        .stat-icon {
+            font-size: 24px; margin-bottom: 10px; line-height: 1;
+        }
+
+        .stat-value {
+            font-size: 30px; font-weight: 800;
+            letter-spacing: -0.04em;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 4px; line-height: 1;
+        }
+
+        .card-amber .stat-value { color: var(--amber); }
+        .card-blue  .stat-value { color: var(--blue);  }
+        .card-green .stat-value { color: var(--green); }
+
+        .stat-label {
+            font-size: 11px; font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.07em;
+        }
+
+        /* ── Özet tablosu ── */
+        .summary-panel {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.34s both;
+        }
+
+        .summary-head {
+            display: grid;
+            grid-template-columns: 1fr 56px 56px 56px;
+            gap: 6px;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .head-cell {
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--muted); text-align: center;
+        }
+
+        .head-cell:first-child { text-align: left; }
+
+        .head-amber { color: rgba(245,158,11,0.7) !important; }
+        .head-blue  { color: rgba(59,130,246,0.7) !important; }
+        .head-green { color: rgba(16,185,129,0.7) !important; }
 
         .dessert-row {
             display: grid;
-            grid-template-columns: 1fr auto auto auto;
-            gap: 8px;
-            padding: 14px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            grid-template-columns: 1fr 56px 56px 56px;
+            gap: 6px;
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
             align-items: center;
+            opacity: 0;
+            animation: rowSlide 0.45s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .dessert-row:last-child { border-bottom: none; }
 
+        @keyframes rowSlide {
+            from { opacity: 0; transform: translateX(-10px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
         .row-name {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 15px;
-            font-weight: 600;
+            display: flex; align-items: center; gap: 10px;
         }
 
-        .row-emoji { font-size: 22px; }
+        .row-emoji {
+            font-size: 22px; flex-shrink: 0;
+            width: 36px; height: 36px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+        }
 
-        .row-value {
-            font-size: 16px;
-            font-weight: 700;
+        .row-text {
+            font-size: 14px; font-weight: 600;
+            letter-spacing: -0.01em;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .row-val {
+            font-size: 16px; font-weight: 700;
             text-align: center;
-            min-width: 52px;
+            font-variant-numeric: tabular-nums;
         }
 
-        .val-gelen   { color: var(--primary); }
-        .val-kalan   { color: var(--info); }
-        .val-satilan { color: var(--success); }
+        .val-amber { color: var(--amber); }
+        .val-blue  { color: var(--blue);  }
+        .val-green { color: var(--green); }
 
-        /* Boş durum */
+        /* Satılan 0 ise soluk */
+        .val-zero  { color: rgba(255,255,255,0.18) !important; }
+
+        /* ── Boş durum ── */
         .empty-state {
-            padding: 48px 20px;
+            padding: 56px 20px;
             text-align: center;
-            color: var(--text-tertiary);
         }
 
-        .empty-state .empty-icon {
-            font-size: 48px;
-            margin-bottom: 14px;
-            display: block;
+        .empty-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.4; }
+        .empty-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+        .empty-sub { font-size: 13px; color: rgba(255,255,255,0.2); }
+
+        /* ── Toast ── */
+        #toastContainer {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000; pointer-events: none;
         }
 
-        .empty-state p {
-            font-size: 15px;
-            margin-bottom: 8px;
-        }
-
-        .empty-state small {
-            font-size: 13px;
-            opacity: 0.7;
-        }
-
-        /* Yenile butonu */
-        .refresh-btn {
-            width: 100%;
-            padding: 14px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 14px;
-            color: var(--text-secondary);
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            touch-action: manipulation;
-        }
-
-        .refresh-btn:hover { background: rgba(255, 255, 255, 0.10); color: white; }
-
-        /* Skeleton */
-        .skeleton {
+        /* ── Skeleton ── */
+        .skel {
             background: rgba(255,255,255,0.06);
             border-radius: 8px;
-            animation: shimmer 1.4s ease-in-out infinite;
+            animation: shimmer 1.5s ease-in-out infinite;
         }
 
         @keyframes shimmer {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
+            0%, 100% { opacity: 0.4; }
+            50%       { opacity: 0.9; }
         }
 
-        /* Toast */
-        #toastContainer {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            pointer-events: none;
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        /* ── Responsive ── */
+        @media (max-width: 400px) {
+            .stats-grid { gap: 8px; }
             .stat-card { padding: 14px 8px; }
-            .stat-icon { font-size: 22px; }
-            .stat-value { font-size: 22px; }
-            .stat-label { font-size: 11px; }
-
-            .summary-header { padding: 12px 14px; font-size: 11px; }
-            .dessert-row { padding: 12px 14px; gap: 6px; }
-            .row-name { font-size: 14px; gap: 8px; }
-            .row-emoji { font-size: 20px; }
-            .row-value { font-size: 15px; min-width: 42px; }
-            .col-right { min-width: 42px; }
+            .stat-value { font-size: 24px; }
+            .stat-label { font-size: 10px; }
+            .summary-head, .dessert-row { padding: 11px 12px; }
+            .row-text { font-size: 13px; }
+            .row-val { font-size: 14px; }
+            .head-cell { font-size: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <button class="back-btn" onclick="window.location.href='branch-menu.html'">← Geri</button>
-            <div class="header-info">
-                <h1>🏪 Şubem</h1>
-                <p id="branchLabel">Yükleniyor...</p>
-            </div>
-        </div>
+    <div class="bg-grid"></div>
+    <div class="bg-orb-1"></div>
+    <div class="bg-orb-2"></div>
+    <div class="bg-orb-3"></div>
 
-        <!-- İstatistikler -->
+    <!-- Topbar -->
+    <nav class="topbar">
+        <button class="back-btn" onclick="window.location.href='branch-menu.html'">‹ Geri</button>
+        <div class="topbar-info">
+            <div class="topbar-title">Şubem</div>
+            <div class="topbar-sub" id="branchLabel">Yükleniyor…</div>
+        </div>
+        <button class="refresh-btn" onclick="refresh(this)">
+            <span class="refresh-icon">↻</span>
+            <span>Yenile</span>
+        </button>
+    </nav>
+
+    <!-- İçerik -->
+    <div class="content">
+
+        <!-- Stat kartları -->
         <div class="stats-grid">
-            <div class="stat-card stat-gelen">
+            <div class="stat-card card-amber">
                 <div class="stat-icon">📦</div>
                 <div class="stat-value" id="totalGelen">—</div>
                 <div class="stat-label">Gelen</div>
             </div>
-            <div class="stat-card stat-kalan">
+            <div class="stat-card card-blue">
                 <div class="stat-icon">📊</div>
                 <div class="stat-value" id="totalKalan">—</div>
                 <div class="stat-label">Kalan</div>
             </div>
-            <div class="stat-card stat-satilan">
+            <div class="stat-card card-green">
                 <div class="stat-icon">✅</div>
                 <div class="stat-value" id="totalSatilan">—</div>
                 <div class="stat-label">Satılan</div>
             </div>
         </div>
 
-        <!-- Tatlı özet tablosu -->
-        <div class="summary-card" id="summaryCard">
-            <div class="summary-header">
-                <span>Tatlı</span>
-                <span class="col-right" style="color:#f59e0b;">Gelen</span>
-                <span class="col-right" style="color:#3b82f6;">Kalan</span>
-                <span class="col-right" style="color:#22c55e;">Satılan</span>
+        <!-- Özet tablosu -->
+        <div class="summary-panel" id="summaryPanel">
+            <div class="summary-head">
+                <div class="head-cell">Tatlı</div>
+                <div class="head-cell head-amber">Gelen</div>
+                <div class="head-cell head-blue">Kalan</div>
+                <div class="head-cell head-green">Satılan</div>
             </div>
-            <!-- Skeleton satırlar -->
-            <div class="dessert-row">
-                <div class="skeleton" style="height:20px;border-radius:6px;"></div>
-                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
-                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
-                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
+            <!-- Skeleton -->
+            <div class="dessert-row" style="opacity:1;animation:none;">
+                <div class="row-name">
+                    <div class="skel" style="width:36px;height:36px;border-radius:9px;flex-shrink:0;"></div>
+                    <div class="skel" style="flex:1;height:16px;"></div>
+                </div>
+                <div class="skel" style="height:18px;border-radius:6px;"></div>
+                <div class="skel" style="height:18px;border-radius:6px;"></div>
+                <div class="skel" style="height:18px;border-radius:6px;"></div>
             </div>
-            <div class="dessert-row">
-                <div class="skeleton" style="height:20px;border-radius:6px;"></div>
-                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
-                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
-                <div class="skeleton col-right" style="height:20px;width:42px;border-radius:6px;"></div>
+            <div class="dessert-row" style="opacity:1;animation:none;">
+                <div class="row-name">
+                    <div class="skel" style="width:36px;height:36px;border-radius:9px;flex-shrink:0;"></div>
+                    <div class="skel" style="flex:1;height:16px;"></div>
+                </div>
+                <div class="skel" style="height:18px;border-radius:6px;"></div>
+                <div class="skel" style="height:18px;border-radius:6px;"></div>
+                <div class="skel" style="height:18px;border-radius:6px;"></div>
             </div>
         </div>
 
-        <!-- Yenile -->
-        <button class="refresh-btn" onclick="loadData()">🔄 Yenile</button>
     </div>
 
     <div id="toastContainer"></div>
@@ -315,81 +417,89 @@
                 getDailyEntriesByBranch(branchId, today)
             ]);
 
-            if (!activeDesserts) {
-                showEmptyState('Veriler yüklenemedi.');
-                return;
-            }
+            if (!activeDesserts) { showEmpty('Veriler yüklenemedi.'); return; }
 
-            let totalGelen = 0, totalKalan = 0, totalSatilan = 0;
+            let totalG = 0, totalK = 0, totalS = 0;
             const rows = [];
 
             activeDesserts.forEach(dessert => {
-                const entry    = (entries || []).find(e => e.dessert_id === dessert.id);
-                const gelen    = entry?.received_amount  ?? 0;
-                const kalan    = entry?.remaining_amount ?? 0;
-                const satilan  = Math.max(0, gelen - kalan);
-
-                totalGelen   += gelen;
-                totalKalan   += kalan;
-                totalSatilan += satilan;
-
+                const entry   = (entries || []).find(e => e.dessert_id === dessert.id);
+                const gelen   = entry?.received_amount  ?? 0;
+                const kalan   = entry?.remaining_amount ?? 0;
+                const satilan = Math.max(0, gelen - kalan);
+                totalG += gelen; totalK += kalan; totalS += satilan;
                 rows.push({ dessert, gelen, kalan, satilan });
             });
 
-            // Stats güncelle
-            document.getElementById('totalGelen').textContent   = totalGelen;
-            document.getElementById('totalKalan').textContent   = totalKalan;
-            document.getElementById('totalSatilan').textContent = totalSatilan;
+            // Animasyonlu sayaç
+            animCount('totalGelen',   totalG);
+            animCount('totalKalan',   totalK);
+            animCount('totalSatilan', totalS);
 
-            // Tablo güncelle
-            const card = document.getElementById('summaryCard');
-            card.innerHTML = `
-                <div class="summary-header">
-                    <span>Tatlı</span>
-                    <span class="col-right" style="color:#f59e0b;">Gelen</span>
-                    <span class="col-right" style="color:#3b82f6;">Kalan</span>
-                    <span class="col-right" style="color:#22c55e;">Satılan</span>
+            // Tablo
+            const panel = document.getElementById('summaryPanel');
+            panel.innerHTML = `
+                <div class="summary-head">
+                    <div class="head-cell">Tatlı</div>
+                    <div class="head-cell head-amber">Gelen</div>
+                    <div class="head-cell head-blue">Kalan</div>
+                    <div class="head-cell head-green">Satılan</div>
                 </div>
             `;
 
-            if (rows.length === 0) {
-                card.innerHTML += `
+            if (rows.every(r => r.gelen === 0 && r.kalan === 0)) {
+                panel.innerHTML += `
                     <div class="empty-state">
-                        <span class="empty-icon">📭</span>
-                        <p>Henüz veri girilmemiş</p>
-                        <small>Gelen Tatlılar veya Kalan Tatlılar bölümünden veri girin</small>
-                    </div>
-                `;
+                        <div class="empty-icon">📭</div>
+                        <div class="empty-title">Henüz veri girilmemiş</div>
+                        <div class="empty-sub">Gelen Tatlılar veya Kalan Tatlılar bölümünden başla</div>
+                    </div>`;
                 return;
             }
 
-            rows.forEach(({ dessert, gelen, kalan, satilan }) => {
+            rows.forEach(({ dessert, gelen, kalan, satilan }, i) => {
                 const row = document.createElement('div');
                 row.className = 'dessert-row';
+                row.style.animationDelay = `${0.38 + i * 0.06}s`;
                 row.innerHTML = `
                     <div class="row-name">
-                        <span class="row-emoji">${dessert.emoji || '🍰'}</span>
-                        <span>${dessert.name}</span>
+                        <div class="row-emoji">${dessert.emoji || '🍰'}</div>
+                        <span class="row-text">${dessert.name}</span>
                     </div>
-                    <span class="row-value val-gelen">${gelen}</span>
-                    <span class="row-value val-kalan">${kalan}</span>
-                    <span class="row-value val-satilan">${satilan}</span>
+                    <span class="row-val val-amber ${gelen===0?'val-zero':''}">${gelen}</span>
+                    <span class="row-val val-blue  ${kalan===0?'val-zero':''}">${kalan}</span>
+                    <span class="row-val val-green ${satilan===0?'val-zero':''}">${satilan}</span>
                 `;
-                card.appendChild(row);
+                panel.appendChild(row);
             });
         }
 
-        function showEmptyState(msg) {
-            document.getElementById('totalGelen').textContent   = '—';
-            document.getElementById('totalKalan').textContent   = '—';
-            document.getElementById('totalSatilan').textContent = '—';
+        function animCount(id, target) {
+            const el = document.getElementById(id);
+            const dur = 700, step = target / (dur / 16);
+            let cur = 0;
+            const t = setInterval(() => {
+                cur += step;
+                if (cur >= target) { el.textContent = Math.round(target); clearInterval(t); }
+                else el.textContent = Math.round(cur);
+            }, 16);
+        }
 
-            document.getElementById('summaryCard').innerHTML = `
+        function showEmpty(msg) {
+            ['totalGelen','totalKalan','totalSatilan'].forEach(id => {
+                document.getElementById(id).textContent = '0';
+            });
+            document.getElementById('summaryPanel').innerHTML = `
                 <div class="empty-state">
-                    <span class="empty-icon">⚠️</span>
-                    <p>${msg}</p>
-                </div>
-            `;
+                    <div class="empty-icon">📭</div>
+                    <div class="empty-title">${msg}</div>
+                </div>`;
+        }
+
+        async function refresh(btn) {
+            btn.classList.add('spinning');
+            await loadData();
+            btn.classList.remove('spinning');
         }
 
         loadData();
