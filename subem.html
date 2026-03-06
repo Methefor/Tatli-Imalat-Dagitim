@@ -24,12 +24,9 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex;
+            flex-direction: column; overflow-x: hidden;
         }
 
         /* ── Arka plan ── */
@@ -93,8 +90,7 @@
             padding: 8px 14px;
             background: var(--glass);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--muted);
+            border-radius: 10px; color: var(--muted);
             font-size: 13px; font-weight: 600;
             cursor: pointer; transition: all 0.2s;
             touch-action: manipulation; white-space: nowrap; flex-shrink: 0;
@@ -120,8 +116,7 @@
             padding: 7px 14px;
             background: var(--glass);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--muted);
+            border-radius: 10px; color: var(--muted);
             font-size: 12px; font-weight: 600;
             cursor: pointer; transition: all 0.2s;
             touch-action: manipulation; flex-shrink: 0;
@@ -143,24 +138,59 @@
             max-width: 600px; width: 100%; margin: 0 auto;
         }
 
+        /* ── Ay Navigatörü ── */
+        .month-nav {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px; margin-bottom: 16px;
+            opacity: 0; animation: fadeUp 0.5s ease 0.06s both;
+        }
+
+        .month-nav-btn {
+            flex-shrink: 0;
+            width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text);
+            font-size: 20px; font-weight: 700;
+            cursor: pointer; transition: all 0.18s;
+            touch-action: manipulation; line-height: 1;
+        }
+
+        .month-nav-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .month-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+        .month-nav-center { flex: 1; text-align: center; }
+
+        .month-display {
+            font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+        }
+
+        .month-display-sub {
+            font-size: 10px; color: var(--muted);
+            font-weight: 500; letter-spacing: 0.05em; margin-top: 2px;
+        }
+
         /* ── Stat kartları ── */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 10px; margin-bottom: 20px;
         }
 
         .stat-card {
             background: var(--glass);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px 14px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            opacity: 0;
-            animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
+            border-radius: 16px; padding: 18px 14px;
+            text-align: center; position: relative; overflow: hidden;
+            opacity: 0; animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .stat-card::before {
@@ -174,32 +204,28 @@
         .stat-card:nth-child(3) { animation-delay: 0.26s; }
 
         .card-amber::before { background: var(--amber); }
-        .card-blue::before  { background: var(--blue);  }
         .card-green::before { background: var(--green); }
+        .card-blue::before  { background: var(--blue);  }
 
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(16px); filter: blur(4px); }
             to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
         }
 
-        .stat-icon {
-            font-size: 24px; margin-bottom: 10px; line-height: 1;
-        }
+        .stat-icon { font-size: 24px; margin-bottom: 10px; line-height: 1; }
 
         .stat-value {
             font-size: 30px; font-weight: 800;
-            letter-spacing: -0.04em;
-            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.04em; font-variant-numeric: tabular-nums;
             margin-bottom: 4px; line-height: 1;
         }
 
         .card-amber .stat-value { color: var(--amber); }
-        .card-blue  .stat-value { color: var(--blue);  }
         .card-green .stat-value { color: var(--green); }
+        .card-blue  .stat-value { color: var(--blue);  }
 
         .stat-label {
-            font-size: 11px; font-weight: 700;
-            color: var(--muted);
+            font-size: 10px; font-weight: 700; color: var(--muted);
             text-transform: uppercase; letter-spacing: 0.07em;
         }
 
@@ -207,17 +233,14 @@
         .summary-panel {
             background: var(--glass);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            opacity: 0;
-            animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.34s both;
+            border-radius: 20px; overflow: hidden;
+            opacity: 0; animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.34s both;
         }
 
         .summary-head {
             display: grid;
             grid-template-columns: 1fr 56px 56px 56px;
-            gap: 6px;
-            padding: 12px 18px;
+            gap: 6px; padding: 12px 18px;
             border-bottom: 1px solid var(--border);
             background: rgba(255,255,255,0.02);
         }
@@ -231,17 +254,15 @@
         .head-cell:first-child { text-align: left; }
 
         .head-amber { color: rgba(245,158,11,0.7) !important; }
-        .head-blue  { color: rgba(59,130,246,0.7) !important; }
-        .head-green { color: rgba(16,185,129,0.7) !important; }
+        .head-green { color: rgba(16,185,129,0.7)  !important; }
+        .head-blue  { color: rgba(59,130,246,0.7)  !important; }
 
         .dessert-row {
             display: grid;
             grid-template-columns: 1fr 56px 56px 56px;
-            gap: 6px;
-            padding: 14px 18px;
+            gap: 6px; padding: 14px 18px;
             border-bottom: 1px solid rgba(255,255,255,0.04);
-            align-items: center;
-            opacity: 0;
+            align-items: center; opacity: 0;
             animation: rowSlide 0.45s cubic-bezier(0.16,1,0.3,1) both;
         }
 
@@ -252,9 +273,7 @@
             to   { opacity: 1; transform: translateX(0); }
         }
 
-        .row-name {
-            display: flex; align-items: center; gap: 10px;
-        }
+        .row-name { display: flex; align-items: center; gap: 10px; }
 
         .row-emoji {
             font-size: 22px; flex-shrink: 0;
@@ -266,33 +285,25 @@
         }
 
         .row-text {
-            font-size: 14px; font-weight: 600;
-            letter-spacing: -0.01em;
+            font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
         .row-val {
             font-size: 16px; font-weight: 700;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
+            text-align: center; font-variant-numeric: tabular-nums;
         }
 
         .val-amber { color: var(--amber); }
-        .val-blue  { color: var(--blue);  }
         .val-green { color: var(--green); }
-
-        /* Satılan 0 ise soluk */
+        .val-blue  { color: var(--blue);  }
         .val-zero  { color: rgba(255,255,255,0.18) !important; }
 
         /* ── Boş durum ── */
-        .empty-state {
-            padding: 56px 20px;
-            text-align: center;
-        }
-
-        .empty-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.4; }
+        .empty-state { padding: 56px 20px; text-align: center; }
+        .empty-icon  { font-size: 48px; margin-bottom: 14px; opacity: 0.4; }
         .empty-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
-        .empty-sub { font-size: 13px; color: rgba(255,255,255,0.2); }
+        .empty-sub   { font-size: 13px; color: rgba(255,255,255,0.2); }
 
         /* ── Toast ── */
         #toastContainer {
@@ -303,22 +314,17 @@
 
         /* ── Skeleton ── */
         .skel {
-            background: rgba(255,255,255,0.06);
-            border-radius: 8px;
+            background: rgba(255,255,255,0.06); border-radius: 8px;
             animation: shimmer 1.5s ease-in-out infinite;
         }
 
-        @keyframes shimmer {
-            0%, 100% { opacity: 0.4; }
-            50%       { opacity: 0.9; }
-        }
+        @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
 
-        /* ── Responsive ── */
         @media (max-width: 400px) {
             .stats-grid { gap: 8px; }
             .stat-card { padding: 14px 8px; }
             .stat-value { font-size: 24px; }
-            .stat-label { font-size: 10px; }
+            .stat-label { font-size: 9px; }
             .summary-head, .dessert-row { padding: 11px 12px; }
             .row-text { font-size: 13px; }
             .row-val { font-size: 14px; }
@@ -333,7 +339,6 @@
     <div class="bg-orb-2"></div>
     <div class="bg-orb-3"></div>
 
-    <!-- Topbar -->
     <nav class="topbar">
         <button class="back-btn" onclick="window.location.href='branch-menu.html'">‹ Geri</button>
         <div class="topbar-info">
@@ -346,25 +351,34 @@
         </button>
     </nav>
 
-    <!-- İçerik -->
     <div class="content">
+
+        <!-- Ay Navigatörü -->
+        <div class="month-nav">
+            <button class="month-nav-btn" id="prevMonthBtn" onclick="changeMonth(-1)">‹</button>
+            <div class="month-nav-center">
+                <div class="month-display" id="monthDisplay">—</div>
+                <div class="month-display-sub">Aylık özet</div>
+            </div>
+            <button class="month-nav-btn" id="nextMonthBtn" onclick="changeMonth(1)">›</button>
+        </div>
 
         <!-- Stat kartları -->
         <div class="stats-grid">
             <div class="stat-card card-amber">
                 <div class="stat-icon">📦</div>
                 <div class="stat-value" id="totalGelen">—</div>
-                <div class="stat-label">Gelen</div>
-            </div>
-            <div class="stat-card card-blue">
-                <div class="stat-icon">📊</div>
-                <div class="stat-value" id="totalKalan">—</div>
-                <div class="stat-label">Kalan</div>
+                <div class="stat-label">Bu Ay Gelen</div>
             </div>
             <div class="stat-card card-green">
                 <div class="stat-icon">✅</div>
                 <div class="stat-value" id="totalSatilan">—</div>
-                <div class="stat-label">Satılan</div>
+                <div class="stat-label">Bu Ay Satılan</div>
+            </div>
+            <div class="stat-card card-blue">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="totalKalan">—</div>
+                <div class="stat-label">Şu An Kalan</div>
             </div>
         </div>
 
@@ -373,8 +387,8 @@
             <div class="summary-head">
                 <div class="head-cell">Tatlı</div>
                 <div class="head-cell head-amber">Gelen</div>
-                <div class="head-cell head-blue">Kalan</div>
                 <div class="head-cell head-green">Satılan</div>
+                <div class="head-cell head-blue">Kalan</div>
             </div>
             <!-- Skeleton -->
             <div class="dessert-row" style="opacity:1;animation:none;">
@@ -405,45 +419,104 @@
     <script>
         const branchId   = localStorage.getItem('branchId');
         const branchName = localStorage.getItem('branchName');
-        const today      = getTodayDate();
 
         if (!branchId) window.location.href = 'index.html';
 
-        document.getElementById('branchLabel').textContent = branchName + ' · ' + formatDateTurkish(today);
+        document.getElementById('branchLabel').textContent = branchName;
+
+        const MONTHS_TR = [
+            'Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
+            'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'
+        ];
+
+        const now = new Date();
+        let selectedYear  = now.getFullYear();
+        let selectedMonth = now.getMonth() + 1;
+
+        function updateMonthUI() {
+            const curYear  = new Date().getFullYear();
+            const curMonth = new Date().getMonth() + 1;
+            document.getElementById('monthDisplay').textContent =
+                MONTHS_TR[selectedMonth - 1] + ' ' + selectedYear;
+            document.getElementById('nextMonthBtn').disabled =
+                selectedYear > curYear ||
+                (selectedYear === curYear && selectedMonth >= curMonth);
+        }
+
+        function changeMonth(delta) {
+            let m = selectedMonth + delta;
+            let y = selectedYear;
+            if (m < 1)  { m = 12; y--; }
+            if (m > 12) { m = 1;  y++; }
+            const curYear  = new Date().getFullYear();
+            const curMonth = new Date().getMonth() + 1;
+            if (y > curYear || (y === curYear && m > curMonth)) return;
+            selectedMonth = m;
+            selectedYear  = y;
+            updateMonthUI();
+            loadData();
+        }
+
+        function getMonthRange(year, month) {
+            const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
+            const lastDay   = new Date(year, month, 0).getDate();
+            const endDate   = `${year}-${String(month).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+            return { startDate, endDate };
+        }
 
         async function loadData() {
+            const { startDate, endDate } = getMonthRange(selectedYear, selectedMonth);
+
             const [activeDesserts, entries] = await Promise.all([
                 getActiveDesserts(),
-                getDailyEntriesByBranch(branchId, today)
+                getBranchEntriesDateRange(branchId, startDate, endDate)
             ]);
 
-            if (!activeDesserts) { showEmpty('Veriler yüklenemedi.'); return; }
+            if (!activeDesserts || activeDesserts.length === 0) {
+                showEmpty('Tatlı bulunamadı.');
+                return;
+            }
 
-            let totalG = 0, totalK = 0, totalS = 0;
+            let totalG = 0, totalS = 0, totalK = 0;
             const rows = [];
 
             activeDesserts.forEach(dessert => {
-                const entry   = (entries || []).find(e => e.dessert_id === dessert.id);
-                const gelen   = entry?.received_amount  ?? 0;
-                const kalan   = entry?.remaining_amount ?? 0;
-                const satilan = Math.max(0, gelen - kalan);
-                totalG += gelen; totalK += kalan; totalS += satilan;
-                rows.push({ dessert, gelen, kalan, satilan });
+                const dessertEntries = (entries || []).filter(e => e.dessert_id === dessert.id);
+
+                // Aylık toplam gelen
+                const monthlyGelen = dessertEntries.reduce(
+                    (s, e) => s + (e.received_amount || 0), 0
+                );
+
+                // Güncel kalan: en son tarihteki remaining_amount
+                const latestEntry = dessertEntries.length > 0
+                    ? dessertEntries.reduce((latest, e) =>
+                        e.entry_date > latest.entry_date ? e : latest)
+                    : null;
+                const currentKalan = latestEntry?.remaining_amount ?? 0;
+
+                // Aylık satılan: her gün için (gelen - kalan) toplamı
+                const monthlySatilan = dessertEntries.reduce(
+                    (s, e) => s + Math.max(0, (e.received_amount || 0) - (e.remaining_amount || 0)), 0
+                );
+
+                totalG += monthlyGelen;
+                totalK += currentKalan;
+                totalS += monthlySatilan;
+                rows.push({ dessert, gelen: monthlyGelen, kalan: currentKalan, satilan: monthlySatilan });
             });
 
-            // Animasyonlu sayaç
             animCount('totalGelen',   totalG);
-            animCount('totalKalan',   totalK);
             animCount('totalSatilan', totalS);
+            animCount('totalKalan',   totalK);
 
-            // Tablo
             const panel = document.getElementById('summaryPanel');
             panel.innerHTML = `
                 <div class="summary-head">
                     <div class="head-cell">Tatlı</div>
                     <div class="head-cell head-amber">Gelen</div>
-                    <div class="head-cell head-blue">Kalan</div>
                     <div class="head-cell head-green">Satılan</div>
+                    <div class="head-cell head-blue">Kalan</div>
                 </div>
             `;
 
@@ -451,7 +524,7 @@
                 panel.innerHTML += `
                     <div class="empty-state">
                         <div class="empty-icon">📭</div>
-                        <div class="empty-title">Henüz veri girilmemiş</div>
+                        <div class="empty-title">Bu ay için veri girilmemiş</div>
                         <div class="empty-sub">Gelen Tatlılar veya Kalan Tatlılar bölümünden başla</div>
                     </div>`;
                 return;
@@ -467,8 +540,8 @@
                         <span class="row-text">${dessert.name}</span>
                     </div>
                     <span class="row-val val-amber ${gelen===0?'val-zero':''}">${gelen}</span>
-                    <span class="row-val val-blue  ${kalan===0?'val-zero':''}">${kalan}</span>
                     <span class="row-val val-green ${satilan===0?'val-zero':''}">${satilan}</span>
+                    <span class="row-val val-blue  ${kalan===0?'val-zero':''}">${kalan}</span>
                 `;
                 panel.appendChild(row);
             });
@@ -476,6 +549,7 @@
 
         function animCount(id, target) {
             const el = document.getElementById(id);
+            if (target === 0) { el.textContent = '0'; return; }
             const dur = 700, step = target / (dur / 16);
             let cur = 0;
             const t = setInterval(() => {
@@ -486,7 +560,7 @@
         }
 
         function showEmpty(msg) {
-            ['totalGelen','totalKalan','totalSatilan'].forEach(id => {
+            ['totalGelen','totalSatilan','totalKalan'].forEach(id => {
                 document.getElementById(id).textContent = '0';
             });
             document.getElementById('summaryPanel').innerHTML = `
@@ -502,6 +576,7 @@
             btn.classList.remove('spinning');
         }
 
+        updateMonthUI();
         loadData();
     </script>
 </body>

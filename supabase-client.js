@@ -292,6 +292,35 @@ async function getDailyEntriesDateRange(startDate, endDate) {
 }
 
 /**
+ * Şube bazlı tarih aralığında günlük verileri çek
+ */
+async function getBranchEntriesDateRange(branchId, startDate, endDate) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('daily_entries')
+            .select(`
+                *,
+                desserts (
+                    id,
+                    name,
+                    emoji,
+                    display_order
+                )
+            `)
+            .eq('branch_id', branchId)
+            .gte('entry_date', startDate)
+            .lte('entry_date', endDate)
+            .order('entry_date', { ascending: false })
+
+        if (error) throw error
+        return data || []
+    } catch (err) {
+        console.error('Veri çekme hatası:', err)
+        return []
+    }
+}
+
+/**
  * Şube bazlı son 7 günlük verileri çek
  */
 async function getLastSevenDays(branchId) {

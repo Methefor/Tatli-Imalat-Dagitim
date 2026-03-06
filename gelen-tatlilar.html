@@ -43,23 +43,19 @@
         }
 
         .bg-orb-1 {
-            position: fixed;
-            top: -20%; left: -15%;
+            position: fixed; top: -20%; left: -15%;
             width: 500px; height: 500px;
             background: radial-gradient(circle, rgba(245,158,11,0.13) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(80px);
+            border-radius: 50%; filter: blur(80px);
             pointer-events: none; z-index: 0;
             animation: drift1 16s ease-in-out infinite alternate;
         }
 
         .bg-orb-2 {
-            position: fixed;
-            bottom: -10%; right: -10%;
+            position: fixed; bottom: -10%; right: -10%;
             width: 380px; height: 380px;
             background: radial-gradient(circle, rgba(96,165,250,0.08) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(80px);
+            border-radius: 50%; filter: blur(80px);
             pointer-events: none; z-index: 0;
             animation: drift2 20s ease-in-out infinite alternate;
         }
@@ -91,11 +87,9 @@
             border-radius: 10px;
             color: var(--muted);
             font-size: 13px; font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+            cursor: pointer; transition: all 0.2s;
             touch-action: manipulation;
-            white-space: nowrap;
-            flex-shrink: 0;
+            white-space: nowrap; flex-shrink: 0;
         }
 
         .back-btn:hover {
@@ -114,8 +108,7 @@
 
         .topbar-sub {
             font-size: 11px; color: var(--muted);
-            font-weight: 500; letter-spacing: 0.02em;
-            margin-top: 1px;
+            font-weight: 500; letter-spacing: 0.02em; margin-top: 1px;
         }
 
         .topbar-badge {
@@ -127,18 +120,66 @@
             font-size: 11px; font-weight: 700;
             color: var(--accent);
             letter-spacing: 0.04em;
-            white-space: nowrap;
-            flex-shrink: 0;
+            white-space: nowrap; flex-shrink: 0;
         }
 
         /* ── İçerik ── */
         .content {
-            flex: 1;
-            position: relative; z-index: 1;
+            flex: 1; position: relative; z-index: 1;
             padding: 20px 18px 140px;
-            max-width: 560px;
-            width: 100%;
-            margin: 0 auto;
+            max-width: 560px; width: 100%; margin: 0 auto;
+        }
+
+        /* ── Tarih Navigatörü ── */
+        .date-nav {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 14px;
+            opacity: 0;
+            animation: fadeUp 0.5s ease 0.06s both;
+        }
+
+        .date-nav-btn {
+            flex-shrink: 0;
+            width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 20px; font-weight: 700;
+            cursor: pointer; transition: all 0.18s;
+            touch-action: manipulation; line-height: 1;
+        }
+
+        .date-nav-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .date-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+        .date-nav-center {
+            flex: 1; position: relative; text-align: center; cursor: pointer;
+        }
+
+        .date-display {
+            font-size: 14px; font-weight: 700; letter-spacing: -0.01em;
+        }
+
+        .date-display-sub {
+            font-size: 10px; color: var(--muted);
+            font-weight: 500; letter-spacing: 0.05em; margin-top: 2px;
+        }
+
+        .date-picker-overlay {
+            position: absolute; inset: 0;
+            opacity: 0; cursor: pointer;
+            width: 100%; height: 100%;
+            border: none; background: transparent; font-size: 0;
         }
 
         /* ── Tatlı listesi ── */
@@ -151,9 +192,7 @@
         }
 
         .dessert-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
+            display: flex; align-items: center; gap: 14px;
             padding: 16px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.045);
             opacity: 0;
@@ -162,7 +201,6 @@
 
         .dessert-row:last-child { border-bottom: none; }
 
-        /* stagger */
         .dessert-row:nth-child(1)  { animation-delay: 0.08s; }
         .dessert-row:nth-child(2)  { animation-delay: 0.14s; }
         .dessert-row:nth-child(3)  { animation-delay: 0.20s; }
@@ -189,28 +227,21 @@
         }
 
         .dessert-name {
-            flex: 1;
-            font-size: 15px; font-weight: 600;
-            letter-spacing: -0.01em;
-            min-width: 0;
+            flex: 1; font-size: 15px; font-weight: 600;
+            letter-spacing: -0.01em; min-width: 0;
         }
 
-        /* Sayı inputu */
         .num-input {
-            width: 80px;
-            height: 48px;
+            width: 80px; height: 48px;
             background: var(--acc-dim);
             border: 1.5px solid var(--acc-brd);
             border-radius: 12px;
             color: var(--text);
             font-size: 20px; font-weight: 700;
-            text-align: center;
-            outline: none;
-            transition: all 0.2s;
-            flex-shrink: 0;
+            text-align: center; outline: none;
+            transition: all 0.2s; flex-shrink: 0;
             font-variant-numeric: tabular-nums;
-            -webkit-appearance: none;
-            -moz-appearance: textfield;
+            -webkit-appearance: none; -moz-appearance: textfield;
         }
 
         .num-input::-webkit-inner-spin-button,
@@ -225,16 +256,12 @@
 
         /* ── Toplam ── */
         .total-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
             padding: 18px 22px;
             background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.04));
             border: 1px solid var(--acc-brd);
-            border-radius: 16px;
-            margin-bottom: 14px;
-            opacity: 0;
-            animation: fadeUp 0.6s ease 0.55s both;
+            border-radius: 16px; margin-bottom: 14px;
+            opacity: 0; animation: fadeUp 0.6s ease 0.55s both;
         }
 
         @keyframes fadeUp {
@@ -243,60 +270,41 @@
         }
 
         .total-label {
-            font-size: 12px; font-weight: 700;
-            color: var(--accent);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
+            font-size: 12px; font-weight: 700; color: var(--accent);
+            letter-spacing: 0.1em; text-transform: uppercase;
         }
 
         .total-value {
-            font-size: 40px; font-weight: 800;
-            color: var(--accent);
-            letter-spacing: -0.04em;
-            font-variant-numeric: tabular-nums;
+            font-size: 40px; font-weight: 800; color: var(--accent);
+            letter-spacing: -0.04em; font-variant-numeric: tabular-nums;
             transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
         }
 
         .total-value.bump { transform: scale(1.12); }
 
-        /* ── Kaydet butonu (sabit alt) ── */
+        /* ── Kaydet (sabit alt) ── */
         .save-bar {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
+            position: fixed; bottom: 0; left: 0; right: 0;
             padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
             background: linear-gradient(to top, rgba(7,13,26,0.98) 70%, transparent);
             z-index: 40;
         }
 
         .save-btn {
-            width: 100%;
-            max-width: 560px;
-            display: block;
-            margin: 0 auto;
+            width: 100%; max-width: 560px; display: block; margin: 0 auto;
             padding: 17px;
             background: linear-gradient(135deg, #f59e0b, #d97706);
-            border: none;
-            border-radius: 16px;
-            color: #0d0d0d;
-            font-size: 16px; font-weight: 800;
-            cursor: pointer;
-            letter-spacing: 0.01em;
+            border: none; border-radius: 16px;
+            color: #0d0d0d; font-size: 16px; font-weight: 800;
+            cursor: pointer; letter-spacing: 0.01em;
             box-shadow: 0 8px 28px rgba(245,158,11,0.35);
             transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
             touch-action: manipulation;
-            opacity: 0;
-            animation: fadeUp 0.6s ease 0.7s forwards;
+            opacity: 0; animation: fadeUp 0.6s ease 0.7s forwards;
         }
 
-        .save-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 36px rgba(245,158,11,0.48);
-        }
-
-        .save-btn:active {
-            transform: scale(0.98);
-            transition-duration: 0.1s;
-        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(245,158,11,0.48); }
+        .save-btn:active { transform: scale(0.98); transition-duration: 0.1s; }
 
         /* ── Skeleton ── */
         .skel {
@@ -305,12 +313,8 @@
             animation: shimmer 1.5s ease-in-out infinite;
         }
 
-        @keyframes shimmer {
-            0%, 100% { opacity: 0.4; }
-            50%       { opacity: 0.9; }
-        }
+        @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
 
-        /* ── Overlay & Toast ── */
         #loadingOverlay {
             display: none; position: fixed; inset: 0;
             background: rgba(7,13,26,0.75); z-index: 9999;
@@ -324,8 +328,7 @@
             width: 42px; height: 42px;
             border: 3px solid rgba(255,255,255,0.1);
             border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.75s linear infinite;
+            border-radius: 50%; animation: spin 0.75s linear infinite;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -350,7 +353,6 @@
     <div class="bg-orb-1"></div>
     <div class="bg-orb-2"></div>
 
-    <!-- Topbar -->
     <nav class="topbar">
         <button class="back-btn" onclick="window.location.href='branch-menu.html'">‹ Geri</button>
         <div class="topbar-info">
@@ -360,8 +362,20 @@
         <div class="topbar-badge">📦 GELEN</div>
     </nav>
 
-    <!-- İçerik -->
     <div class="content">
+
+        <!-- Tarih Navigatörü -->
+        <div class="date-nav">
+            <button class="date-nav-btn" id="prevDayBtn" onclick="changeDate(-1)">‹</button>
+            <div class="date-nav-center">
+                <div class="date-display" id="dateDisplay">—</div>
+                <div class="date-display-sub">📅 Tarih seçmek için dokun</div>
+                <input type="date" class="date-picker-overlay" id="datePicker"
+                       onchange="onDatePick(this.value)">
+            </div>
+            <button class="date-nav-btn" id="nextDayBtn" onclick="changeDate(1)">›</button>
+        </div>
+
         <!-- Tatlı Listesi -->
         <div class="dessert-list" id="dessertList">
             <div class="dessert-row" style="opacity:1;animation:none;">
@@ -388,7 +402,6 @@
         </div>
     </div>
 
-    <!-- Kaydet -->
     <div class="save-bar">
         <button class="save-btn" onclick="saveGelenData()">Kaydet</button>
     </div>
@@ -400,11 +413,45 @@
     <script>
         const branchId   = localStorage.getItem('branchId');
         const branchName = localStorage.getItem('branchName');
-        const today      = getTodayDate();
+        let   selectedDate = getTodayDate();
 
         if (!branchId) window.location.href = 'index.html';
 
-        document.getElementById('branchLabel').textContent = branchName + ' · ' + formatDateTurkish(today);
+        document.getElementById('branchLabel').textContent = branchName;
+
+        function toDateStr(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function updateDateUI() {
+            const today = getTodayDate();
+            document.getElementById('dateDisplay').textContent = formatDateTurkish(selectedDate);
+            document.getElementById('datePicker').value = selectedDate;
+            document.getElementById('datePicker').max   = today;
+            document.getElementById('nextDayBtn').disabled = (selectedDate >= today);
+        }
+
+        function changeDate(delta) {
+            const d = new Date(selectedDate + 'T12:00:00');
+            d.setDate(d.getDate() + delta);
+            const next  = toDateStr(d);
+            const today = getTodayDate();
+            if (next > today) return;
+            selectedDate = next;
+            updateDateUI();
+            loadDesserts();
+        }
+
+        function onDatePick(val) {
+            if (!val) return;
+            const today = getTodayDate();
+            selectedDate = val > today ? today : val;
+            updateDateUI();
+            loadDesserts();
+        }
 
         function updateTotal() {
             let total = 0;
@@ -418,7 +465,7 @@
         async function loadDesserts() {
             const [activeDesserts, existing] = await Promise.all([
                 getActiveDesserts(),
-                getDailyEntriesByBranch(branchId, today)
+                getDailyEntriesByBranch(branchId, selectedDate)
             ]);
 
             const list = document.getElementById('dessertList');
@@ -431,7 +478,7 @@
 
             activeDesserts.forEach((dessert, i) => {
                 const entry  = (existing || []).find(e => e.dessert_id === dessert.id);
-                const val    = entry?.received_amount ?? 0;
+                const val    = entry?.received_amount  ?? 0;
                 const kalan  = entry?.remaining_amount ?? 0;
 
                 const row = document.createElement('div');
@@ -464,7 +511,7 @@
                 const result = await saveDailyEntry(
                     branchId,
                     input.dataset.id,
-                    today,
+                    selectedDate,
                     parseInt(input.value) || 0,
                     parseInt(input.dataset.remaining) || 0,
                     0, ''
@@ -482,6 +529,7 @@
             }
         }
 
+        updateDateUI();
         loadDesserts();
     </script>
 </body>
