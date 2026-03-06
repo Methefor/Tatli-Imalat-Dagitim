@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Müdür İsim Güncelleme</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: monospace; background: #070d1a; color: #e2e8f0; padding: 24px; }
+        h2 { color: #f59e0b; margin-bottom: 16px; }
+        #log { white-space: pre-wrap; line-height: 1.8; font-size: 13px; }
+        .ok  { color: #22c55e; }
+        .err { color: #ef4444; }
+        #btn {
+            padding: 12px 28px; background: #f59e0b; color: #000;
+            border: none; border-radius: 10px; font-size: 15px;
+            font-weight: 700; cursor: pointer; margin-bottom: 24px;
+        }
+        #btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h2>👔 Müdür İsimleri Güncelleme</h2>
+    <button id="btn" onclick="run()">▶ Güncelle</button>
+    <div id="log"></div>
+    <script src="supabase-client.js"></script>
+    <script>
+        const managers = [
+            { branch: 'Millet Bahçesi',  name: 'Melis Boyalık'    },
+            { branch: 'Rumeli İskelesi', name: 'Metehan Arslan'    },
+            { branch: 'Sahil',           name: 'Bahtiyar Kurt'     },
+            { branch: 'Vagon',           name: 'Baturay Cimpiri'   },
+            { branch: 'TunaBoyu',        name: 'Semra Polat'       },
+            { branch: 'Yahya Kemal',     name: 'Berkay Nazlıgül'   },
+        ];
+
+        function log(msg, cls = '') {
+            document.getElementById('log').innerHTML += `<span class="${cls}">${msg}\n</span>`;
+        }
+
+        async function run() {
+            document.getElementById('btn').disabled = true;
+            const sb = window.supabaseInstance;
+
+            for (const m of managers) {
+                const { error } = await sb
+                    .from('branches')
+                    .update({ manager_name: m.name })
+                    .eq('name', m.branch);
+
+                if (error) {
+                    log(`✘ ${m.branch} — ${error.message}`, 'err');
+                } else {
+                    log(`✔ ${m.branch.padEnd(18)} → ${m.name}`, 'ok');
+                }
+            }
+
+            log('\n✅ Tamamlandı! Bu sayfayı kapatabilirsiniz.');
+            document.getElementById('btn').textContent = '✔ Bitti';
+        }
+    </script>
+</body>
+</html>
