@@ -467,9 +467,11 @@
         async function loadData() {
             const { startDate, endDate } = getMonthRange(selectedYear, selectedMonth);
 
-            const [activeDesserts, entries] = await Promise.all([
+            // latestStock: ay filtresinden bağımsız, gerçek güncel stok
+            const [activeDesserts, entries, latestStock] = await Promise.all([
                 getActiveDesserts(),
-                getBranchEntriesDateRange(branchId, startDate, endDate)
+                getBranchEntriesDateRange(branchId, startDate, endDate),
+                getBranchLatestStock(branchId)
             ]);
 
             if (!activeDesserts || activeDesserts.length === 0) {
@@ -488,12 +490,8 @@
                     (s, e) => s + (e.received_amount || 0), 0
                 );
 
-                // Güncel kalan: en son tarihteki remaining_amount
-                const latestEntry = dessertEntries.length > 0
-                    ? dessertEntries.reduce((latest, e) =>
-                        e.entry_date > latest.entry_date ? e : latest)
-                    : null;
-                const currentKalan = latestEntry?.remaining_amount ?? 0;
+                // Güncel kalan: ay filtresinden bağımsız, gerçek son stok
+                const currentKalan = latestStock[dessert.id] ?? 0;
 
                 // Aylık satılan: her gün için (gelen - kalan) toplamı
                 const monthlySatilan = dessertEntries.reduce(

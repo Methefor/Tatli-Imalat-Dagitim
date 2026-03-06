@@ -352,6 +352,77 @@ async function getLastSevenDays(branchId) {
 }
 
 /**
+ * Şube bazlı en son kalan stok (ay filtresinden bağımsız, son 60 gün)
+ * Dönüş: { dessert_id: remaining_amount }
+ */
+async function getBranchLatestStock(branchId) {
+    try {
+        const past = new Date()
+        past.setDate(past.getDate() - 60)
+        const pastDate = past.toISOString().split('T')[0]
+
+        const { data, error } = await supabaseClient
+            .from('daily_entries')
+            .select('dessert_id, remaining_amount, entry_date')
+            .eq('branch_id', branchId)
+            .gte('entry_date', pastDate)
+            .order('entry_date', { ascending: false })
+
+        if (error) throw error
+
+        // Her tatlı için en son tarihteki remaining_amount
+        const latestByDessert = {}
+        ;(data || []).forEach(e => {
+            if (!(e.dessert_id in latestByDessert)) {
+                latestByDessert[e.dessert_id] = e.remaining_amount || 0
+            }
+        })
+
+        return latestByDessert
+    } catch (err) {
+        console.error('Stok çekme hatası:', err)
+        return {}
+    }
+}
+
+/**
+ * Tüm şubelerin en son kalan stoku (üretim paneli için)
+ * Dönüş: { branch_id: { dessert_id: remaining_amount } }
+ */
+async function getAllLatestStock() {
+    try {
+        const past = new Date()
+        past.setDate(past.getDate() - 60)
+        const pastDate = past.toISOString().split('T')[0]
+
+        const { data, error } = await supabaseClient
+            .from('daily_entries')
+            .select('branch_id, dessert_id, remaining_amount, entry_date')
+            .gte('entry_date', pastDate)
+            .order('entry_date', { ascending: false })
+
+        if (error) throw error
+
+        // Her (şube, tatlı) için en son remaining_amount
+        const seen = new Set()
+        const result = {}
+        ;(data || []).forEach(e => {
+            const key = `${e.branch_id}-${e.dessert_id}`
+            if (!seen.has(key)) {
+                seen.add(key)
+                if (!result[e.branch_id]) result[e.branch_id] = {}
+                result[e.branch_id][e.dessert_id] = e.remaining_amount || 0
+            }
+        })
+
+        return result
+    } catch (err) {
+        console.error('Tüm stok çekme hatası:', err)
+        return {}
+    }
+}
+
+/**
  * Mevcut stok
  */
 async function getCurrentStock() {

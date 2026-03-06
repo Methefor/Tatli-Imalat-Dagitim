@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üretim Paneli</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:     #070d1a;
+            --glass:  rgba(255,255,255,0.035);
+            --border: rgba(255,255,255,0.07);
+            --text:   #f0f4ff;
+            --muted:  rgba(255,255,255,0.35);
+            --amber:  #f59e0b;
+            --green:  #10b981;
+            --red:    #ef4444;
+        }
+
+        html { height: 100%; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        /* ── Arka plan ── */
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none; z-index: 0;
+        }
+
+        .bg-orb-1 {
+            position: fixed; top: -15%; left: -10%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(245,158,11,0.09) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(100px);
+            pointer-events: none; z-index: 0;
+            animation: drift1 18s ease-in-out infinite alternate;
+        }
+
+        .bg-orb-2 {
+            position: fixed; bottom: -10%; right: -5%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(90px);
+            pointer-events: none; z-index: 0;
+            animation: drift2 22s ease-in-out infinite alternate;
+        }
+
+        @keyframes drift1 { 0% { transform: translate(0,0); } 100% { transform: translate(30px,40px); } }
+        @keyframes drift2 { 0% { transform: translate(0,0); } 100% { transform: translate(-25px,-35px); } }
+
+        /* ── Topbar ── */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            background: rgba(7,13,26,0.85);
+            animation: fadeDown 0.4s ease both;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .topbar-brand {
+            display: flex; align-items: center; gap: 10px; flex: 1;
+        }
+
+        .brand-emblem {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(245,158,11,0.06));
+            border: 1px solid rgba(245,158,11,0.25);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+        }
+
+        .brand-text {
+            font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
+        }
+
+        .brand-sub {
+            font-size: 10px; color: var(--muted); font-weight: 500;
+            letter-spacing: 0.04em; text-transform: uppercase; margin-top: 1px;
+        }
+
+        .topbar-right {
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .update-time {
+            font-size: 11px; color: var(--muted); font-weight: 500;
+            display: none;
+        }
+
+        .refresh-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 10px; color: var(--muted);
+            font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255,255,255,0.07);
+            color: var(--text); border-color: rgba(255,255,255,0.12);
+        }
+
+        .refresh-btn.spinning .ri { animation: spin 0.7s linear infinite; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── İçerik ── */
+        .content {
+            position: relative; z-index: 1;
+            padding: 20px 18px 40px;
+            max-width: 900px; width: 100%; margin: 0 auto;
+        }
+
+        /* ── Özet satırı ── */
+        .summary-bar {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 18px; flex-wrap: wrap;
+            opacity: 0; animation: fadeUp 0.5s ease 0.1s both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+            to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+        }
+
+        .summary-chip {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px; font-weight: 600;
+        }
+
+        .chip-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+        }
+
+        .chip-amber .chip-dot { background: var(--amber); }
+        .chip-green .chip-dot { background: var(--green); }
+
+        /* ── Matris tablo ── */
+        .matrix-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--glass);
+            opacity: 0;
+            animation: fadeUp 0.55s ease 0.2s both;
+        }
+
+        table.matrix {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 520px;
+        }
+
+        /* ── Başlık satırı ── */
+        .matrix thead th {
+            padding: 14px 10px;
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            white-space: nowrap;
+            background: rgba(255,255,255,0.02);
+            position: sticky; top: 0; z-index: 2;
+        }
+
+        .matrix thead th:first-child {
+            text-align: left;
+            padding-left: 20px;
+            min-width: 150px;
+        }
+
+        .branch-th {
+            min-width: 80px;
+        }
+
+        .branch-th .branch-abbr {
+            font-size: 12px; font-weight: 800;
+            color: var(--text); letter-spacing: 0;
+            text-transform: none;
+        }
+
+        .total-th {
+            color: rgba(245,158,11,0.6) !important;
+            min-width: 70px;
+        }
+
+        /* ── Tatlı satırları ── */
+        .matrix tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            opacity: 0;
+            animation: rowIn 0.45s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .matrix tbody tr:last-child { border-bottom: none; }
+
+        @keyframes rowIn {
+            from { opacity: 0; transform: translateX(-8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .matrix tbody td {
+            padding: 14px 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .dessert-td {
+            text-align: left !important;
+            padding-left: 20px !important;
+        }
+
+        .dessert-inner {
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .dessert-emoji {
+            font-size: 20px; flex-shrink: 0;
+            width: 34px; height: 34px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .dessert-label {
+            font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* ── Değer hücresi ── */
+        .val-td {
+            font-size: 18px; font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .val-zero  { color: rgba(255,255,255,0.2); }
+        .val-low   { color: var(--amber); }
+        .val-good  { color: var(--green); }
+
+        /* ── Toplam sütunu ── */
+        .row-total {
+            font-size: 16px; font-weight: 800;
+            color: rgba(245,158,11,0.7);
+            letter-spacing: -0.02em;
+        }
+
+        /* ── Alt toplam satırı ── */
+        .matrix tfoot tr {
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .matrix tfoot td {
+            padding: 12px 10px;
+            font-size: 13px; font-weight: 800;
+            color: rgba(245,158,11,0.6);
+            text-align: center;
+            background: rgba(255,255,255,0.015);
+        }
+
+        .matrix tfoot td:first-child {
+            text-align: left; padding-left: 20px;
+            font-size: 11px; letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .col-total {
+            font-size: 16px;
+            color: var(--amber);
+        }
+
+        .grand-total {
+            font-size: 16px; color: var(--amber);
+        }
+
+        /* ── Yükleniyor / Boş durum ── */
+        .skel {
+            background: rgba(255,255,255,0.06); border-radius: 6px;
+            animation: shimmer 1.5s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+
+        .empty-state {
+            padding: 64px 20px; text-align: center;
+        }
+
+        .empty-icon  { font-size: 48px; margin-bottom: 14px; opacity: 0.35; }
+        .empty-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.35); margin-bottom: 6px; }
+        .empty-sub   { font-size: 13px; color: rgba(255,255,255,0.2); }
+
+        /* ── Toast ── */
+        #toastContainer {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000; pointer-events: none;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .content { padding: 16px 12px 32px; }
+            .matrix tbody td { padding: 12px 6px; }
+            .matrix thead th { padding: 12px 6px; }
+            .dessert-td { padding-left: 12px !important; }
+            .matrix tfoot td:first-child { padding-left: 12px; }
+            .val-td { font-size: 15px; }
+            .dessert-emoji { width: 28px; height: 28px; font-size: 16px; border-radius: 7px; }
+            .dessert-label { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+    <div class="bg-orb-1"></div>
+    <div class="bg-orb-2"></div>
+
+    <!-- Topbar -->
+    <nav class="topbar">
+        <div class="topbar-brand">
+            <div class="brand-emblem">🏭</div>
+            <div>
+                <div class="brand-text">Üretim Paneli</div>
+                <div class="brand-sub">Güncel Şube Stokları</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <span class="update-time" id="updateTime"></span>
+            <button class="refresh-btn" id="refreshBtn" onclick="doRefresh()">
+                <span class="ri">↻</span>
+                <span>Yenile</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- İçerik -->
+    <div class="content">
+
+        <!-- Açıklama satırı -->
+        <div class="summary-bar">
+            <div class="summary-chip chip-green">
+                <div class="chip-dot"></div>
+                <span>4+ adet — yeterli stok</span>
+            </div>
+            <div class="summary-chip chip-amber">
+                <div class="chip-dot"></div>
+                <span>1–3 adet — az stok</span>
+            </div>
+            <div class="summary-chip">
+                <div class="chip-dot" style="background:rgba(255,255,255,0.2)"></div>
+                <span>— tükendi / girilmedi</span>
+            </div>
+        </div>
+
+        <!-- Matris -->
+        <div class="matrix-wrap" id="matrixWrap">
+            <!-- skeleton -->
+            <table class="matrix">
+                <thead>
+                    <tr>
+                        <th>Tatlı</th>
+                        <th class="branch-th"><span class="skel" style="width:40px;height:14px;"></span></th>
+                        <th class="branch-th"><span class="skel" style="width:40px;height:14px;"></span></th>
+                        <th class="branch-th"><span class="skel" style="width:40px;height:14px;"></span></th>
+                        <th class="total-th">Toplam</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="opacity:1;animation:none;">
+                        <td class="dessert-td"><div class="dessert-inner">
+                            <div class="skel" style="width:34px;height:34px;border-radius:9px;"></div>
+                            <span class="skel" style="width:80px;height:16px;"></span>
+                        </div></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                    </tr>
+                    <tr style="opacity:1;animation:none;">
+                        <td class="dessert-td"><div class="dessert-inner">
+                            <div class="skel" style="width:34px;height:34px;border-radius:9px;"></div>
+                            <span class="skel" style="width:100px;height:16px;"></span>
+                        </div></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                    </tr>
+                    <tr style="opacity:1;animation:none;">
+                        <td class="dessert-td"><div class="dessert-inner">
+                            <div class="skel" style="width:34px;height:34px;border-radius:9px;"></div>
+                            <span class="skel" style="width:70px;height:16px;"></span>
+                        </div></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                        <td><span class="skel" style="width:28px;height:22px;"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script src="supabase-client.js"></script>
+    <script>
+        async function loadMatrix() {
+            const [branches, desserts, stock] = await Promise.all([
+                getBranches(),
+                getActiveDesserts(),
+                getAllLatestStock()
+            ]);
+
+            if (!branches.length || !desserts.length) {
+                showEmpty();
+                return;
+            }
+
+            const wrap = document.getElementById('matrixWrap');
+
+            // ── Başlık satırı ──
+            let headRow = `
+                <thead>
+                    <tr>
+                        <th>Tatlı</th>
+            `;
+            branches.forEach(b => {
+                // Kısa ad: ilk 2 kelime veya ilk 8 karakter
+                const short = b.name.split(' ').map((w, i) => i < 2 ? w : '').join(' ').trim();
+                headRow += `
+                    <th class="branch-th">
+                        <div class="branch-abbr">${short}</div>
+                    </th>
+                `;
+            });
+            headRow += `<th class="total-th">Toplam</th></tr></thead>`;
+
+            // ── Gövde ──
+            const colTotals = new Array(branches.length).fill(0);
+            let grandTotal = 0;
+            let bodyRows = '<tbody>';
+
+            desserts.forEach((dessert, di) => {
+                let rowTotal = 0;
+                let rowCells = '';
+
+                branches.forEach((branch, bi) => {
+                    const branchStock = stock[branch.id] || {};
+                    const val = branchStock[dessert.id] ?? null;
+
+                    if (val !== null) {
+                        colTotals[bi] += val;
+                        rowTotal += val;
+                        grandTotal += val;
+                    }
+
+                    let cls = 'val-zero';
+                    let display = '—';
+
+                    if (val !== null && val > 0) {
+                        display = val;
+                        cls = val >= 4 ? 'val-good' : 'val-low';
+                    } else if (val === 0) {
+                        display = '—';
+                        cls = 'val-zero';
+                    }
+
+                    rowCells += `<td class="val-td ${cls}">${display}</td>`;
+                });
+
+                const delay = 0.24 + di * 0.06;
+                bodyRows += `
+                    <tr style="animation-delay:${delay}s">
+                        <td class="dessert-td">
+                            <div class="dessert-inner">
+                                <div class="dessert-emoji">${dessert.emoji || '🍰'}</div>
+                                <span class="dessert-label">${dessert.name}</span>
+                            </div>
+                        </td>
+                        ${rowCells}
+                        <td class="row-total">${rowTotal > 0 ? rowTotal : '—'}</td>
+                    </tr>
+                `;
+            });
+
+            bodyRows += '</tbody>';
+
+            // ── Toplam satırı ──
+            let footCells = colTotals.map(t =>
+                `<td class="col-total">${t > 0 ? t : '—'}</td>`
+            ).join('');
+
+            const foot = `
+                <tfoot>
+                    <tr>
+                        <td>Şube Toplamı</td>
+                        ${footCells}
+                        <td class="grand-total">${grandTotal > 0 ? grandTotal : '—'}</td>
+                    </tr>
+                </tfoot>
+            `;
+
+            wrap.innerHTML = `
+                <table class="matrix">
+                    ${headRow}
+                    ${bodyRows}
+                    ${foot}
+                </table>
+            `;
+
+            // Güncelleme zamanı
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            const timeEl = document.getElementById('updateTime');
+            timeEl.textContent = `Son güncelleme: ${timeStr}`;
+            timeEl.style.display = 'block';
+        }
+
+        function showEmpty() {
+            document.getElementById('matrixWrap').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <div class="empty-title">Stok verisi bulunamadı</div>
+                    <div class="empty-sub">Şubeler henüz veri girmemiş olabilir</div>
+                </div>
+            `;
+        }
+
+        async function doRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            btn.classList.add('spinning');
+            await loadMatrix();
+            btn.classList.remove('spinning');
+        }
+
+        // İlk yükleme
+        loadMatrix();
+
+        // 5 dakikada bir otomatik yenile
+        setInterval(() => loadMatrix(), 5 * 60 * 1000);
+    </script>
+</body>
+</html>
