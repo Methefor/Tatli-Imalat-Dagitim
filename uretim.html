@@ -167,59 +167,95 @@
         .chip-amber .chip-dot { background: var(--amber); }
         .chip-green .chip-dot { background: var(--green); }
 
-        /* ── Stok Kartları ── */
+        /* ── Şube Stok Kartları ── */
         .stock-section {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             opacity: 0; animation: fadeUp 0.5s ease 0.08s both;
         }
 
         .stock-section-title {
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.1em; text-transform: uppercase;
-            color: var(--muted); margin-bottom: 10px;
+            color: var(--muted); margin-bottom: 12px;
         }
 
         .stock-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
         }
 
-        .stock-card {
-            padding: 14px 16px;
+        /* Şube kartı */
+        .bsc {
             background: var(--glass);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            display: flex; flex-direction: column; gap: 4px;
+            border-radius: 18px;
+            overflow: hidden;
             transition: border-color 0.2s;
         }
 
-        .stock-card:hover { border-color: rgba(255,255,255,0.12); }
+        .bsc:hover { border-color: rgba(255,255,255,0.12); }
 
-        .stock-card-top {
+        .bsc-header {
+            padding: 12px 16px 10px;
+            font-size: 13px; font-weight: 700; letter-spacing: -0.01em;
+            border-bottom: 1px solid var(--border);
             display: flex; align-items: center; gap: 7px;
         }
 
-        .stock-card-emoji { font-size: 17px; flex-shrink: 0; }
+        .bsc-header::before {
+            content: '';
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--amber); flex-shrink: 0;
+        }
 
-        .stock-card-name {
-            font-size: 12px; font-weight: 600; color: var(--muted);
+        .bsc-rows { padding: 6px 0; }
+
+        /* Satır: emoji + ad + miktar */
+        .bsr {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 16px;
+        }
+
+        .bsr-emoji {
+            font-size: 16px; flex-shrink: 0;
+            width: 28px; height: 28px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .bsr-name {
+            flex: 1; font-size: 13px; font-weight: 500;
+            color: rgba(255,255,255,0.7);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
-        .stock-card-value {
-            font-size: 30px; font-weight: 800;
+        .bsr-val {
+            font-size: 16px; font-weight: 800;
             font-variant-numeric: tabular-nums;
-            letter-spacing: -0.04em; line-height: 1.1;
+            letter-spacing: -0.02em; flex-shrink: 0;
+            min-width: 28px; text-align: right;
         }
 
-        .sv-zero  { color: rgba(255,255,255,0.2); }
-        .sv-low   { color: var(--amber); }
-        .sv-good  { color: var(--green); }
+        .sv-zero { color: rgba(255,255,255,0.2); }
+        .sv-low  { color: var(--amber); }
+        .sv-good { color: var(--green); }
 
-        .stock-card-sub {
-            font-size: 10px; color: var(--muted);
-            font-weight: 500; letter-spacing: 0.03em;
+        .bsc-footer {
+            padding: 9px 16px;
+            border-top: 1px solid var(--border);
+            font-size: 11px; font-weight: 700;
+            color: var(--muted); letter-spacing: 0.04em;
+            text-transform: uppercase;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .bsc-footer strong {
+            font-size: 14px; font-weight: 800;
+            color: rgba(245,158,11,0.8);
+            letter-spacing: -0.02em;
         }
 
         /* ── Matris tablo ── */
@@ -434,26 +470,21 @@
             <div class="stock-section-title">Güncel Stok Durumu</div>
             <div class="stock-cards" id="stockCards">
                 <!-- skeleton -->
-                <div class="stock-card">
-                    <div class="stock-card-top">
-                        <span class="stock-card-emoji">🍰</span>
-                        <span class="stock-card-name skel" style="width:60px;height:12px;display:inline-block;"></span>
+                <div class="bsc">
+                    <div class="bsc-header"><span class="skel" style="width:90px;height:13px;display:inline-block;border-radius:4px;"></span></div>
+                    <div class="bsc-rows">
+                        <div class="bsr"><div class="bsr-emoji"></div><span class="skel" style="flex:1;height:12px;border-radius:4px;"></span><span class="skel" style="width:20px;height:16px;border-radius:4px;"></span></div>
+                        <div class="bsr"><div class="bsr-emoji"></div><span class="skel" style="flex:1;height:12px;border-radius:4px;"></span><span class="skel" style="width:20px;height:16px;border-radius:4px;"></span></div>
+                        <div class="bsr"><div class="bsr-emoji"></div><span class="skel" style="flex:1;height:12px;border-radius:4px;"></span><span class="skel" style="width:20px;height:16px;border-radius:4px;"></span></div>
                     </div>
-                    <div class="skel" style="width:40px;height:30px;border-radius:6px;margin-top:4px;"></div>
                 </div>
-                <div class="stock-card">
-                    <div class="stock-card-top">
-                        <span class="stock-card-emoji">🍰</span>
-                        <span class="stock-card-name skel" style="width:70px;height:12px;display:inline-block;"></span>
+                <div class="bsc">
+                    <div class="bsc-header"><span class="skel" style="width:80px;height:13px;display:inline-block;border-radius:4px;"></span></div>
+                    <div class="bsc-rows">
+                        <div class="bsr"><div class="bsr-emoji"></div><span class="skel" style="flex:1;height:12px;border-radius:4px;"></span><span class="skel" style="width:20px;height:16px;border-radius:4px;"></span></div>
+                        <div class="bsr"><div class="bsr-emoji"></div><span class="skel" style="flex:1;height:12px;border-radius:4px;"></span><span class="skel" style="width:20px;height:16px;border-radius:4px;"></span></div>
+                        <div class="bsr"><div class="bsr-emoji"></div><span class="skel" style="flex:1;height:12px;border-radius:4px;"></span><span class="skel" style="width:20px;height:16px;border-radius:4px;"></span></div>
                     </div>
-                    <div class="skel" style="width:40px;height:30px;border-radius:6px;margin-top:4px;"></div>
-                </div>
-                <div class="stock-card">
-                    <div class="stock-card-top">
-                        <span class="stock-card-emoji">🍰</span>
-                        <span class="stock-card-name skel" style="width:50px;height:12px;display:inline-block;"></span>
-                    </div>
-                    <div class="skel" style="width:40px;height:30px;border-radius:6px;margin-top:4px;"></div>
                 </div>
             </div>
         </div>
@@ -540,24 +571,38 @@
                 return;
             }
 
-            // ── Stok kartları ──
+            // ── Şube stok kartları ──
             const stockCards = document.getElementById('stockCards');
             let cardsHtml = '';
-            desserts.forEach(dessert => {
-                let total = 0;
-                branches.forEach(branch => {
-                    total += (stock[branch.id] || {})[dessert.id] ?? 0;
-                });
-                const cls     = total >= 4 ? 'sv-good' : (total > 0 ? 'sv-low' : 'sv-zero');
-                const display = total > 0 ? total : '—';
-                cardsHtml += `
-                    <div class="stock-card">
-                        <div class="stock-card-top">
-                            <span class="stock-card-emoji">${dessert.emoji || '🍰'}</span>
-                            <span class="stock-card-name">${dessert.name}</span>
+            branches.forEach(branch => {
+                const branchStock = stock[branch.id] || {};
+                let branchTotal = 0;
+                let rowsHtml = '';
+
+                desserts.forEach(dessert => {
+                    const val = branchStock[dessert.id] ?? null;
+                    const amount = (val !== null && val > 0) ? val : 0;
+                    branchTotal += amount;
+
+                    const cls     = val === null || val === 0 ? 'sv-zero' : (val >= 4 ? 'sv-good' : 'sv-low');
+                    const display = val !== null && val > 0 ? val : '—';
+                    rowsHtml += `
+                        <div class="bsr">
+                            <span class="bsr-emoji">${dessert.emoji || '🍰'}</span>
+                            <span class="bsr-name">${dessert.name}</span>
+                            <span class="bsr-val ${cls}">${display}</span>
                         </div>
-                        <div class="stock-card-value ${cls}">${display}</div>
-                        <div class="stock-card-sub">tüm şubeler</div>
+                    `;
+                });
+
+                cardsHtml += `
+                    <div class="bsc">
+                        <div class="bsc-header">${branch.name}</div>
+                        <div class="bsc-rows">${rowsHtml}</div>
+                        <div class="bsc-footer">
+                            <span>Toplam</span>
+                            <strong>${branchTotal > 0 ? branchTotal : '—'}</strong>
+                        </div>
                     </div>
                 `;
             });
