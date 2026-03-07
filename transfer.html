@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tatlı Takip">
+    <title>Şube Arası Transfer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent:  #a78bfa;
+            --acc-dim: rgba(167,139,250,0.12);
+            --acc-brd: rgba(167,139,250,0.22);
+            --bg:      #070d1a;
+            --glass:   rgba(255,255,255,0.035);
+            --border:  rgba(255,255,255,0.07);
+            --text:    #f0f4ff;
+            --muted:   rgba(255,255,255,0.35);
+        }
+
+        html { height: 100%; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex;
+            flex-direction: column; overflow-x: hidden;
+        }
+
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none; z-index: 0;
+        }
+
+        .bg-orb {
+            position: fixed; top: -15%; right: -10%;
+            width: 480px; height: 480px;
+            background: radial-gradient(circle, rgba(167,139,250,0.1) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(80px);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ── Topbar ── */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            background: rgba(7,13,26,0.8);
+        }
+
+        .back-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 10px; color: var(--muted);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            touch-action: manipulation; white-space: nowrap; flex-shrink: 0;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+
+        .topbar-info { flex: 1; min-width: 0; }
+        .topbar-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-sub   { font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 1px; }
+
+        .topbar-badge {
+            display: flex; align-items: center; gap: 5px;
+            padding: 5px 12px;
+            background: var(--acc-dim);
+            border: 1px solid var(--acc-brd);
+            border-radius: 20px;
+            font-size: 11px; font-weight: 700; color: var(--accent);
+            letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
+        }
+
+        /* ── İçerik ── */
+        .content {
+            flex: 1; position: relative; z-index: 1;
+            padding: 24px 18px 140px;
+            max-width: 520px; width: 100%; margin: 0 auto;
+        }
+
+        /* ── Tarih ── */
+        .date-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 14px; margin-bottom: 16px;
+        }
+
+        .date-label {
+            font-size: 13px; font-weight: 600; color: var(--muted);
+            flex: 1;
+        }
+
+        .date-input {
+            background: transparent; border: none;
+            color: var(--text); font-size: 14px; font-weight: 700;
+            outline: none; cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* ── Form kartları ── */
+        .form-section {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .form-row {
+            display: flex; align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.045);
+            gap: 14px;
+        }
+
+        .form-row:last-child { border-bottom: none; }
+
+        .form-row-label {
+            font-size: 13px; font-weight: 600; color: var(--muted);
+            width: 80px; flex-shrink: 0;
+        }
+
+        .form-select {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: var(--text);
+            font-size: 14px; font-weight: 600;
+            padding: 10px 14px;
+            outline: none; cursor: pointer;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+        .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(167,139,250,0.1);
+        }
+        .form-select option { background: #1e293b; color: var(--text); }
+
+        /* Miktar input */
+        .qty-input {
+            width: 100px; height: 52px;
+            background: var(--acc-dim);
+            border: 1.5px solid var(--acc-brd);
+            border-radius: 12px; color: var(--text);
+            font-size: 26px; font-weight: 800;
+            text-align: center; outline: none;
+            transition: all 0.2s;
+            font-variant-numeric: tabular-nums;
+            -webkit-appearance: none; -moz-appearance: textfield;
+        }
+        .qty-input::-webkit-inner-spin-button,
+        .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+        .qty-input:focus {
+            background: rgba(167,139,250,0.2);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(167,139,250,0.1);
+        }
+
+        /* ── Transfer oku (görsel) ── */
+        .transfer-arrow {
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px 0;
+            color: var(--accent); font-size: 22px;
+            opacity: 0.7;
+        }
+
+        /* ── Kaydet ── */
+        .save-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+            background: linear-gradient(to top, rgba(7,13,26,0.98) 70%, transparent);
+            z-index: 40;
+        }
+
+        .save-btn {
+            width: 100%; max-width: 520px; display: block; margin: 0 auto;
+            padding: 17px;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            border: none; border-radius: 16px; color: #fff;
+            font-size: 16px; font-weight: 800; cursor: pointer;
+            letter-spacing: 0.01em;
+            box-shadow: 0 8px 28px rgba(124,58,237,0.35);
+            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+            touch-action: manipulation;
+        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(124,58,237,0.48); }
+        .save-btn:active { transform: scale(0.98); transition-duration: 0.1s; }
+        .save-btn:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+
+        /* ── Geçmiş transferler ── */
+        .history-title {
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin-bottom: 10px; padding: 0 2px;
+        }
+
+        .history-list {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+        }
+
+        .history-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px;
+        }
+        .history-item:last-child { border-bottom: none; }
+
+        .history-emoji { font-size: 18px; flex-shrink: 0; }
+        .history-text  { flex: 1; color: rgba(255,255,255,0.7); }
+        .history-qty   { font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+        .history-date  { font-size: 11px; color: var(--muted); }
+
+        .empty-history {
+            padding: 28px; text-align: center;
+            color: rgba(255,255,255,0.2); font-size: 13px;
+        }
+
+        /* Loading */
+        #loadingOverlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(7,13,26,0.75); z-index: 9999;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(6px);
+        }
+        #loadingOverlay.active { display: flex; }
+        .spinner {
+            width: 42px; height: 42px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #toastContainer {
+            position: fixed; bottom: 90px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000; pointer-events: none;
+        }
+
+        @media (max-width: 400px) {
+            .form-row { padding: 13px 14px; gap: 10px; }
+            .form-row-label { width: 70px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+    <div class="bg-orb"></div>
+
+    <nav class="topbar">
+        <button class="back-btn" onclick="window.location.href='branch-menu.html'">‹ Geri</button>
+        <div class="topbar-info">
+            <div class="topbar-title">Şube Arası Transfer</div>
+            <div class="topbar-sub" id="branchLabel">Yükleniyor…</div>
+        </div>
+        <div class="topbar-badge">🔄 TRANSFERlER</div>
+    </nav>
+
+    <div class="content">
+
+        <!-- Tarih -->
+        <div class="date-row">
+            <span class="date-label">📅 Transfer Tarihi</span>
+            <input type="date" class="date-input" id="transferDate">
+        </div>
+
+        <!-- Form -->
+        <div class="form-section">
+
+            <!-- Kaynak şube (sadece gösterim) -->
+            <div class="form-row">
+                <span class="form-row-label">Gönderen</span>
+                <div style="flex:1; font-size:14px; font-weight:700; color:var(--text);" id="fromBranchLabel">—</div>
+            </div>
+
+            <div class="transfer-arrow">↓</div>
+
+            <!-- Hedef şube -->
+            <div class="form-row">
+                <span class="form-row-label">Alan Şube</span>
+                <select class="form-select" id="toBranchSelect">
+                    <option value="">Şube seç…</option>
+                </select>
+            </div>
+
+            <!-- Tatlı -->
+            <div class="form-row">
+                <span class="form-row-label">Tatlı</span>
+                <select class="form-select" id="dessertSelect">
+                    <option value="">Tatlı seç…</option>
+                </select>
+            </div>
+
+            <!-- Miktar -->
+            <div class="form-row">
+                <span class="form-row-label">Miktar</span>
+                <input type="number" class="qty-input" id="qtyInput"
+                       min="1" value="" placeholder="0" inputmode="numeric">
+            </div>
+
+        </div>
+
+        <!-- Geçmiş Transferler -->
+        <div class="history-title">Son Transferler</div>
+        <div class="history-list" id="historyList">
+            <div class="empty-history">Henüz transfer yapılmamış.</div>
+        </div>
+
+    </div>
+
+    <div class="save-bar">
+        <button class="save-btn" id="saveBtn" onclick="saveTransfer()">Transferi Kaydet</button>
+    </div>
+
+    <div id="loadingOverlay"><div class="spinner"></div></div>
+    <div id="toastContainer"></div>
+
+    <script src="supabase-client.js"></script>
+    <script>
+        const branchId   = localStorage.getItem('branchId');
+        const branchName = localStorage.getItem('branchName');
+        if (!branchId) window.location.href = 'index.html';
+
+        document.getElementById('branchLabel').textContent  = branchName;
+        document.getElementById('fromBranchLabel').textContent = branchName;
+
+        // Tarih
+        const dateInput = document.getElementById('transferDate');
+        dateInput.value = getTodayDate();
+        dateInput.max   = getTodayDate();
+
+        // Şube ve tatlıları yükle
+        async function loadSelects() {
+            const [branches, desserts] = await Promise.all([
+                getBranches(),
+                getActiveDesserts()
+            ]);
+
+            const toBranchSel = document.getElementById('toBranchSelect');
+            (branches || []).forEach(b => {
+                if (b.id === branchId) return; // Kendi şubesini gösterme
+                const opt = document.createElement('option');
+                opt.value = b.id;
+                opt.textContent = b.name;
+                toBranchSel.appendChild(opt);
+            });
+
+            const dessertSel = document.getElementById('dessertSelect');
+            (desserts || []).forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.dataset.emoji = d.emoji || '🍰';
+                opt.textContent = (d.emoji ? d.emoji + ' ' : '') + d.name;
+                dessertSel.appendChild(opt);
+            });
+        }
+
+        // Geçmiş transferleri yükle (son 30 gündeki bu şubenin transfer notları)
+        async function loadHistory() {
+            // daily_entries'de notes'u "Transfer:" ile başlayanlar
+            const past = new Date();
+            past.setDate(past.getDate() - 30);
+            const pastDate = past.toISOString().split('T')[0];
+
+            const { data } = await supabaseClient
+                .from('daily_entries')
+                .select(`
+                    entry_date, received_amount, notes,
+                    desserts(name, emoji),
+                    branches(name)
+                `)
+                .eq('branch_id', branchId)
+                .gte('entry_date', pastDate)
+                .like('notes', 'Transfer:%')
+                .order('entry_date', { ascending: false })
+                .limit(10);
+
+            const list = document.getElementById('historyList');
+            if (!data || data.length === 0) {
+                list.innerHTML = '<div class="empty-history">Henüz transfer yapılmamış.</div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            data.forEach(item => {
+                const fromName = item.notes.replace('Transfer: ', '').replace(' → ' + branchName, '');
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <span class="history-emoji">${item.desserts?.emoji || '🍰'}</span>
+                    <div class="history-text">${item.notes}</div>
+                    <span class="history-qty">+${item.received_amount}</span>
+                    <span class="history-date">${formatDateTurkish(item.entry_date)}</span>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function saveTransfer() {
+            const toBranchId  = document.getElementById('toBranchSelect').value;
+            const dessertId   = document.getElementById('dessertSelect').value;
+            const qty         = parseInt(document.getElementById('qtyInput').value) || 0;
+            const date        = document.getElementById('transferDate').value;
+
+            if (!toBranchId) { showToast('Lütfen alan şubeyi seçin.', 'error'); return; }
+            if (!dessertId)  { showToast('Lütfen tatlıyı seçin.', 'error'); return; }
+            if (qty <= 0)    { showToast('Miktar 0\'dan büyük olmalı.', 'error'); return; }
+            if (!date)       { showToast('Tarih seçin.', 'error'); return; }
+
+            const toBranchName = document.getElementById('toBranchSelect').selectedOptions[0].textContent;
+
+            toggleLoading(true);
+
+            // 1. Hedef şube için mevcut kaydı çek
+            const { data: existing } = await supabaseClient
+                .from('daily_entries')
+                .select('id, received_amount, remaining_amount')
+                .eq('branch_id', toBranchId)
+                .eq('dessert_id', dessertId)
+                .eq('entry_date', date)
+                .single();
+
+            const prevReceived = existing?.received_amount ?? 0;
+            const note = `Transfer: ${branchName} → ${toBranchName}`;
+
+            // 2. Hedef şubeye received_amount ekle
+            const result = await saveDailyEntry(
+                toBranchId,
+                dessertId,
+                date,
+                prevReceived + qty,
+                existing?.remaining_amount ?? null,
+                0,
+                note
+            );
+
+            toggleLoading(false);
+
+            if (result.success) {
+                showToast(`✅ ${qty} adet transfer edildi → ${toBranchName}`, 'success');
+                document.getElementById('qtyInput').value = '';
+                document.getElementById('toBranchSelect').value = '';
+                document.getElementById('dessertSelect').value = '';
+                await loadHistory();
+            } else {
+                showToast('❌ Transfer kaydedilemedi!', 'error');
+            }
+        }
+
+        loadSelects();
+        loadHistory();
+    </script>
+</body>
+</html>

@@ -318,6 +318,7 @@
         .action-card:nth-child(1) { animation: slideIn 0.65s cubic-bezier(0.16,1,0.3,1) 0.55s forwards; }
         .action-card:nth-child(2) { animation: slideIn 0.65s cubic-bezier(0.16,1,0.3,1) 0.68s forwards; }
         .action-card:nth-child(3) { animation: slideIn 0.65s cubic-bezier(0.16,1,0.3,1) 0.81s forwards; }
+        .action-card:nth-child(4) { animation: slideIn 0.65s cubic-bezier(0.16,1,0.3,1) 0.94s forwards; }
 
         /* Sol renk çizgisi */
         .action-card::before {
@@ -333,9 +334,10 @@
             top: 10%; bottom: 10%;
         }
 
-        .card-amber::before  { background: var(--gold); }
-        .card-blue::before   { background: #60a5fa; }
-        .card-green::before  { background: #34d399; }
+        .card-amber::before   { background: var(--gold); }
+        .card-blue::before    { background: #60a5fa; }
+        .card-green::before   { background: #34d399; }
+        .card-purple::before  { background: #a78bfa; }
 
         /* Hover arka plan parlaması */
         .action-card::after {
@@ -347,9 +349,10 @@
             border-radius: 16px;
         }
 
-        .card-amber::after { background: linear-gradient(120deg, rgba(245,158,11,0.07), transparent 60%); }
-        .card-blue::after  { background: linear-gradient(120deg, rgba(96,165,250,0.07), transparent 60%); }
-        .card-green::after { background: linear-gradient(120deg, rgba(52,211,153,0.07), transparent 60%); }
+        .card-amber::after  { background: linear-gradient(120deg, rgba(245,158,11,0.07), transparent 60%); }
+        .card-blue::after   { background: linear-gradient(120deg, rgba(96,165,250,0.07), transparent 60%); }
+        .card-green::after  { background: linear-gradient(120deg, rgba(52,211,153,0.07), transparent 60%); }
+        .card-purple::after { background: linear-gradient(120deg, rgba(167,139,250,0.07), transparent 60%); }
 
         .action-card:hover {
             border-color: rgba(255,255,255,0.13);
@@ -357,9 +360,10 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
         }
 
-        .card-amber:hover { box-shadow: 0 8px 32px rgba(245,158,11,0.12), inset 0 1px 0 rgba(255,255,255,0.06); }
-        .card-blue:hover  { box-shadow: 0 8px 32px rgba(96,165,250,0.12), inset 0 1px 0 rgba(255,255,255,0.06); }
-        .card-green:hover { box-shadow: 0 8px 32px rgba(52,211,153,0.12), inset 0 1px 0 rgba(255,255,255,0.06); }
+        .card-amber:hover  { box-shadow: 0 8px 32px rgba(245,158,11,0.12),  inset 0 1px 0 rgba(255,255,255,0.06); }
+        .card-blue:hover   { box-shadow: 0 8px 32px rgba(96,165,250,0.12),  inset 0 1px 0 rgba(255,255,255,0.06); }
+        .card-green:hover  { box-shadow: 0 8px 32px rgba(52,211,153,0.12),  inset 0 1px 0 rgba(255,255,255,0.06); }
+        .card-purple:hover { box-shadow: 0 8px 32px rgba(167,139,250,0.12), inset 0 1px 0 rgba(255,255,255,0.06); }
 
         .action-card:hover::after { opacity: 1; }
 
@@ -382,9 +386,10 @@
             z-index: 1;
         }
 
-        .card-amber .card-icon { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.15); }
-        .card-blue  .card-icon { background: rgba(96,165,250,0.12);  border: 1px solid rgba(96,165,250,0.15);  }
-        .card-green .card-icon { background: rgba(52,211,153,0.12);  border: 1px solid rgba(52,211,153,0.15);  }
+        .card-amber  .card-icon { background: rgba(245,158,11,0.12);  border: 1px solid rgba(245,158,11,0.15);  }
+        .card-blue   .card-icon { background: rgba(96,165,250,0.12);  border: 1px solid rgba(96,165,250,0.15);  }
+        .card-green  .card-icon { background: rgba(52,211,153,0.12);  border: 1px solid rgba(52,211,153,0.15);  }
+        .card-purple .card-icon { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.15); }
 
         /* Kart içerik */
         .card-body {
@@ -508,6 +513,15 @@
                 <div class="card-body">
                     <div class="card-title">Şubem</div>
                     <div class="card-desc">Günlük özet ve istatistikler</div>
+                </div>
+                <span class="card-arrow">›</span>
+            </button>
+
+            <button class="action-card card-purple" onclick="window.location.href='transfer.html'">
+                <div class="card-icon">🔄</div>
+                <div class="card-body">
+                    <div class="card-title">Şube Arası Transfer</div>
+                    <div class="card-desc">Tatlı başka şubeye gönder</div>
                 </div>
                 <span class="card-arrow">›</span>
             </button>
