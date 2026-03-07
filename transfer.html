@@ -440,33 +440,66 @@
 
             toggleLoading(true);
 
-            // 1. Hedef şube için mevcut kaydı çek
-            const { data: existing } = await supabaseClient
-                .from('daily_entries')
-                .select('id, received_amount, remaining_amount')
-                .eq('branch_id', toBranchId)
-                .eq('dessert_id', dessertId)
-                .eq('entry_date', date)
-                .single();
+            // Hedef ve kaynak şubelerin mevcut kayıtlarını paralel çek
+            const [{ data: destEntry }, { data: srcEntry }] = await Promise.all([
+                supabaseClient
+                    .from('daily_entries')
+                    .select('id, received_amount, remaining_amount')
+                    .eq('branch_id', toBranchId)
+                    .eq('dessert_id', dessertId)
+                    .eq('entry_date', date)
+                    .single(),
+                supabaseClient
+                    .from('daily_entries')
+                    .select('id, received_amount, remaining_amount')
+                    .eq('branch_id', branchId)
+                    .eq('dessert_id', dessertId)
+                    .eq('entry_date', date)
+                    .single()
+            ]);
 
-            const prevReceived = existing?.received_amount ?? 0;
+            // Kaynak şubenin güncel kalan stoğunu bul
+            // Önce o güne ait kayıt var mı; yoksa son bilinen stoku kullan
+            let srcRemaining;
+            if (srcEntry && srcEntry.remaining_amount != null) {
+                srcRemaining = srcEntry.remaining_amount;
+            } else {
+                // Son bilinen stoku çek
+                const latestStock = await getBranchLatestStock(branchId);
+                srcRemaining = latestStock[dessertId] ?? 0;
+            }
+
+            const newSrcRemaining = Math.max(0, srcRemaining - qty);
             const note = `Transfer: ${branchName} → ${toBranchName}`;
 
-            // 2. Hedef şubeye received_amount ekle
-            const result = await saveDailyEntry(
+            // 1. Hedef şubeye received_amount ekle
+            const prevReceived = destEntry?.received_amount ?? 0;
+            const destResult = await saveDailyEntry(
                 toBranchId,
                 dessertId,
                 date,
                 prevReceived + qty,
-                existing?.remaining_amount ?? null,
+                destEntry?.remaining_amount ?? null,
                 0,
                 note
             );
 
+            // 2. Kaynak şubenin remaining_amount'unu azalt
+            const srcReceived = srcEntry?.received_amount ?? 0;
+            const srcResult = await saveDailyEntry(
+                branchId,
+                dessertId,
+                date,
+                srcReceived,
+                newSrcRemaining,
+                0,
+                `Transfer çıkış: → ${toBranchName}`
+            );
+
             toggleLoading(false);
 
-            if (result.success) {
-                showToast(`✅ ${qty} adet transfer edildi → ${toBranchName}`, 'success');
+            if (destResult.success && srcResult.success) {
+                showToast(`✅ ${qty} adet transfer edildi → ${toBranchName} (Kalan: ${newSrcRemaining})`, 'success');
                 document.getElementById('qtyInput').value = '';
                 document.getElementById('toBranchSelect').value = '';
                 document.getElementById('dessertSelect').value = '';
