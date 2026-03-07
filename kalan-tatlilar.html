@@ -222,6 +222,15 @@
             font-size: 11px; font-weight: 700; color: #f59e0b;
         }
 
+        .onceki-badge {
+            display: inline-flex; align-items: center; gap: 3px;
+            margin-top: 4px; padding: 2px 8px;
+            background: rgba(99,102,241,0.1);
+            border: 1px solid rgba(99,102,241,0.2);
+            border-radius: 20px;
+            font-size: 11px; font-weight: 700; color: #818cf8;
+        }
+
         .num-input {
             width: 80px; height: 48px;
             background: var(--acc-dim);
@@ -451,9 +460,10 @@
         }
 
         async function loadDesserts() {
-            const [activeDesserts, existing] = await Promise.all([
+            const [activeDesserts, existing, latestStock] = await Promise.all([
                 getActiveDesserts(),
-                getDailyEntriesByBranch(branchId, selectedDate)
+                getDailyEntriesByBranch(branchId, selectedDate),
+                getBranchLatestStock(branchId)
             ]);
 
             const list = document.getElementById('dessertList');
@@ -464,22 +474,22 @@
                 return;
             }
 
-            // Sadece o gün gelen (received_amount > 0) olan tatlıları göster
-            const gelenDesserts = activeDesserts.filter(d => {
-                const e = (existing || []).find(x => x.dessert_id === d.id);
-                return (e?.received_amount ?? 0) > 0;
-            });
+            activeDesserts.forEach((dessert, i) => {
+                const entry        = (existing || []).find(e => e.dessert_id === dessert.id);
+                const gelenAmt     = entry?.received_amount ?? 0;
+                const hasEntryToday = !!entry;
 
-            if (gelenDesserts.length === 0) {
-                list.innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);font-size:14px;">Bu tarihte gelen tatlı kaydı yok.</div>';
-                updateTotal();
-                return;
-            }
+                // Bugün kalan girilmişse onu, yoksa önceki günden kalan stoğu kullan
+                const kalanAmt = entry?.remaining_amount != null
+                    ? entry.remaining_amount
+                    : (latestStock[dessert.id] ?? 0);
 
-            gelenDesserts.forEach((dessert, i) => {
-                const entry    = (existing || []).find(e => e.dessert_id === dessert.id);
-                const gelenAmt = entry?.received_amount  ?? 0;
-                const kalanAmt = entry?.remaining_amount ?? 0;
+                let badge = '';
+                if (gelenAmt > 0) {
+                    badge = `<div class="gelen-badge">📦 Gelen: ${gelenAmt}</div>`;
+                } else if (kalanAmt > 0) {
+                    badge = `<div class="onceki-badge">📋 Önceki Kalan: ${kalanAmt}</div>`;
+                }
 
                 const row = document.createElement('div');
                 row.className = 'dessert-row';
@@ -488,12 +498,13 @@
                     <div class="dessert-emoji">${dessert.emoji || '🍰'}</div>
                     <div class="dessert-meta">
                         <div class="dessert-name">${dessert.name}</div>
-                        ${gelenAmt > 0 ? `<div class="gelen-badge">📦 Gelen: ${gelenAmt}</div>` : ''}
+                        ${badge}
                     </div>
                     <input type="number" class="num-input"
                            value="${kalanAmt}" min="0"
                            data-id="${dessert.id}"
                            data-received="${gelenAmt}"
+                           data-has-entry="${hasEntryToday}"
                            inputmode="numeric"
                            oninput="updateTotal()">
                 `;
@@ -511,12 +522,18 @@
             let successCount = 0;
 
             for (const input of inputs) {
+                const remaining    = parseInt(input.value) || 0;
+                const hasEntryToday = input.dataset.hasEntry === 'true';
+
+                // Bugün girişi yoksa ve kalan 0 ise kaydetmeye gerek yok
+                if (!hasEntryToday && remaining === 0) continue;
+
                 const result = await saveDailyEntry(
                     branchId,
                     input.dataset.id,
                     selectedDate,
                     parseInt(input.dataset.received) || 0,
-                    parseInt(input.value) || 0,
+                    remaining,
                     0, ''
                 );
                 if (result.success) successCount++;

@@ -31,3 +31,7 @@ build/
 # Temporary files
 *.tmp
 temp/
+
+# Dev scripts
+generate-icons.js
+package.json

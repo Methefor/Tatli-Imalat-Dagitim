@@ -1,16 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- Arka plan -->
-  <rect width="32" height="32" rx="7" fill="#0f172a"/>
-  <!-- Pasta tabanı (alt) -->
-  <rect x="4" y="21" width="24" height="7" rx="3" fill="#f59e0b"/>
-  <!-- Pasta orta katmanı -->
-  <rect x="6" y="14" width="20" height="8" rx="2" fill="#fbbf24"/>
-  <!-- Krema süslemesi -->
-  <path d="M6 14 Q8.5 10.5 11 14 Q13.5 10.5 16 14 Q18.5 10.5 21 14 Q23.5 10.5 26 14"
-        stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  <!-- Mum -->
-  <rect x="14.5" y="6" width="3" height="8" rx="1.5" fill="#f8fafc"/>
-  <!-- Alev -->
-  <ellipse cx="16" cy="5.5" rx="1.8" ry="2.5" fill="#f59e0b"/>
-  <ellipse cx="16" cy="6" rx="0.9" ry="1.5" fill="#fef08a"/>
+  <rect width="32" height="32" rx="6" fill="#0f172a"/>
+  <!-- Tepsi -->
+  <rect x="3" y="18" width="26" height="8" rx="4" fill="#d97706"/>
+  <rect x="4" y="18" width="24" height="4" rx="2" fill="#fbbf24"/>
+  <!-- Baklava sol -->
+  <polygon points="9,18 13,14 17,18 13,22" fill="#0f172a"/>
+  <polygon points="9,18 13,14 17,18 13,22" fill="#1e293b" transform="scale(0.65) translate(8,8)"/>
+  <circle cx="13" cy="18" r="1.5" fill="#fef08a"/>
+  <!-- Baklava sağ -->
+  <polygon points="15,18 19,14 23,18 19,22" fill="#0f172a"/>
+  <circle cx="19" cy="18" r="1.5" fill="#fef08a"/>
 </svg>
