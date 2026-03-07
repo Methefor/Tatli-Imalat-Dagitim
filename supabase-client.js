@@ -166,28 +166,33 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
             throw checkError
         }
 
-        const entryData = {
+        // remaining === null → gelen kaydı, mevcut kalan_amount korunur
+        const baseData = {
             branch_id: branchId,
             dessert_id: dessertId,
             entry_date: date,
             received_amount: received,
-            remaining_amount: remaining,
             waste_amount: waste,
             notes: notes,
             entry_time: new Date().toISOString()
         }
 
         if (existing) {
+            // Güncelleme: remaining null ise remaining_amount'a dokunma
+            const updateData = (remaining !== null && remaining !== undefined)
+                ? { ...baseData, remaining_amount: remaining }
+                : baseData
             const { error: updateError } = await supabaseClient
                 .from('daily_entries')
-                .update(entryData)
+                .update(updateData)
                 .eq('id', existing.id)
 
             if (updateError) throw updateError
         } else {
+            // Yeni kayıt: remaining_amount null başlar (kalan girilene kadar)
             const { error: insertError } = await supabaseClient
                 .from('daily_entries')
-                .insert([entryData])
+                .insert([{ ...baseData, remaining_amount: remaining ?? null }])
 
             if (insertError) throw insertError
         }
@@ -366,6 +371,7 @@ async function getBranchLatestStock(branchId) {
             .select('dessert_id, remaining_amount, entry_date')
             .eq('branch_id', branchId)
             .gte('entry_date', pastDate)
+            .not('remaining_amount', 'is', null)
             .order('entry_date', { ascending: false })
 
         if (error) throw error
@@ -399,6 +405,7 @@ async function getAllLatestStock() {
             .from('daily_entries')
             .select('branch_id, dessert_id, remaining_amount, entry_date')
             .gte('entry_date', pastDate)
+            .not('remaining_amount', 'is', null)
             .order('entry_date', { ascending: false })
 
         if (error) throw error

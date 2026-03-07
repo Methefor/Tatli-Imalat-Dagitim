@@ -176,19 +176,6 @@
             border: none; background: transparent; font-size: 0;
         }
 
-        /* ── Uyarı notu ── */
-        .warn-note {
-            display: none; align-items: center; gap: 8px;
-            padding: 12px 16px;
-            background: rgba(239,68,68,0.08);
-            border: 1px solid rgba(239,68,68,0.2);
-            border-radius: 12px;
-            font-size: 13px; font-weight: 600; color: #fca5a5;
-            margin-bottom: 14px;
-        }
-
-        .warn-note.visible { display: flex; }
-
         /* ── Tatlı listesi ── */
         .dessert-list {
             background: var(--glass);
@@ -256,13 +243,6 @@
             box-shadow: 0 0 0 4px rgba(59,130,246,0.1), 0 0 24px rgba(59,130,246,0.15);
             transform: scale(1.04);
         }
-
-        .num-input.over-limit {
-            background: rgba(239,68,68,0.12);
-            border-color: rgba(239,68,68,0.45);
-        }
-
-        .num-input.over-limit:focus { box-shadow: 0 0 0 4px rgba(239,68,68,0.1); }
 
         /* ── Toplam ── */
         .total-card {
@@ -384,8 +364,6 @@
             <button class="date-nav-btn" id="nextDayBtn" onclick="changeDate(1)">›</button>
         </div>
 
-        <div class="warn-note" id="warnNote">⚠️ Kalan miktar gelenden fazla!</div>
-
         <div class="dessert-list" id="dessertList">
             <div class="dessert-row" style="opacity:1;animation:none;">
                 <div class="skel" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"></div>
@@ -462,20 +440,14 @@
         }
 
         function updateTotal() {
-            let total = 0, hasOver = false;
+            let total = 0;
             document.querySelectorAll('.num-input').forEach(inp => {
-                const val   = parseInt(inp.value) || 0;
-                const gelen = parseInt(inp.dataset.received) || 0;
-                total += val;
-                const over = val > gelen && gelen > 0;
-                inp.classList.toggle('over-limit', over);
-                if (over) hasOver = true;
+                total += parseInt(inp.value) || 0;
             });
             const el = document.getElementById('totalValue');
             el.textContent = total;
             el.classList.add('bump');
             setTimeout(() => el.classList.remove('bump'), 200);
-            document.getElementById('warnNote').classList.toggle('visible', hasOver);
         }
 
         async function loadDesserts() {
@@ -492,7 +464,19 @@
                 return;
             }
 
-            activeDesserts.forEach((dessert, i) => {
+            // Sadece o gün gelen (received_amount > 0) olan tatlıları göster
+            const gelenDesserts = activeDesserts.filter(d => {
+                const e = (existing || []).find(x => x.dessert_id === d.id);
+                return (e?.received_amount ?? 0) > 0;
+            });
+
+            if (gelenDesserts.length === 0) {
+                list.innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);font-size:14px;">Bu tarihte gelen tatlı kaydı yok.</div>';
+                updateTotal();
+                return;
+            }
+
+            gelenDesserts.forEach((dessert, i) => {
                 const entry    = (existing || []).find(e => e.dessert_id === dessert.id);
                 const gelenAmt = entry?.received_amount  ?? 0;
                 const kalanAmt = entry?.remaining_amount ?? 0;

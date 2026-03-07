@@ -167,6 +167,61 @@
         .chip-amber .chip-dot { background: var(--amber); }
         .chip-green .chip-dot { background: var(--green); }
 
+        /* ── Stok Kartları ── */
+        .stock-section {
+            margin-bottom: 20px;
+            opacity: 0; animation: fadeUp 0.5s ease 0.08s both;
+        }
+
+        .stock-section-title {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--muted); margin-bottom: 10px;
+        }
+
+        .stock-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .stock-card {
+            padding: 14px 16px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: flex; flex-direction: column; gap: 4px;
+            transition: border-color 0.2s;
+        }
+
+        .stock-card:hover { border-color: rgba(255,255,255,0.12); }
+
+        .stock-card-top {
+            display: flex; align-items: center; gap: 7px;
+        }
+
+        .stock-card-emoji { font-size: 17px; flex-shrink: 0; }
+
+        .stock-card-name {
+            font-size: 12px; font-weight: 600; color: var(--muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .stock-card-value {
+            font-size: 30px; font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.04em; line-height: 1.1;
+        }
+
+        .sv-zero  { color: rgba(255,255,255,0.2); }
+        .sv-low   { color: var(--amber); }
+        .sv-good  { color: var(--green); }
+
+        .stock-card-sub {
+            font-size: 10px; color: var(--muted);
+            font-weight: 500; letter-spacing: 0.03em;
+        }
+
         /* ── Matris tablo ── */
         .matrix-wrap {
             overflow-x: auto;
@@ -374,6 +429,35 @@
     <!-- İçerik -->
     <div class="content">
 
+        <!-- Güncel Stok -->
+        <div class="stock-section" id="stockSection">
+            <div class="stock-section-title">Güncel Stok Durumu</div>
+            <div class="stock-cards" id="stockCards">
+                <!-- skeleton -->
+                <div class="stock-card">
+                    <div class="stock-card-top">
+                        <span class="stock-card-emoji">🍰</span>
+                        <span class="stock-card-name skel" style="width:60px;height:12px;display:inline-block;"></span>
+                    </div>
+                    <div class="skel" style="width:40px;height:30px;border-radius:6px;margin-top:4px;"></div>
+                </div>
+                <div class="stock-card">
+                    <div class="stock-card-top">
+                        <span class="stock-card-emoji">🍰</span>
+                        <span class="stock-card-name skel" style="width:70px;height:12px;display:inline-block;"></span>
+                    </div>
+                    <div class="skel" style="width:40px;height:30px;border-radius:6px;margin-top:4px;"></div>
+                </div>
+                <div class="stock-card">
+                    <div class="stock-card-top">
+                        <span class="stock-card-emoji">🍰</span>
+                        <span class="stock-card-name skel" style="width:50px;height:12px;display:inline-block;"></span>
+                    </div>
+                    <div class="skel" style="width:40px;height:30px;border-radius:6px;margin-top:4px;"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Açıklama satırı -->
         <div class="summary-bar">
             <div class="summary-chip chip-green">
@@ -455,6 +539,29 @@
                 showEmpty();
                 return;
             }
+
+            // ── Stok kartları ──
+            const stockCards = document.getElementById('stockCards');
+            let cardsHtml = '';
+            desserts.forEach(dessert => {
+                let total = 0;
+                branches.forEach(branch => {
+                    total += (stock[branch.id] || {})[dessert.id] ?? 0;
+                });
+                const cls     = total >= 4 ? 'sv-good' : (total > 0 ? 'sv-low' : 'sv-zero');
+                const display = total > 0 ? total : '—';
+                cardsHtml += `
+                    <div class="stock-card">
+                        <div class="stock-card-top">
+                            <span class="stock-card-emoji">${dessert.emoji || '🍰'}</span>
+                            <span class="stock-card-name">${dessert.name}</span>
+                        </div>
+                        <div class="stock-card-value ${cls}">${display}</div>
+                        <div class="stock-card-sub">tüm şubeler</div>
+                    </div>
+                `;
+            });
+            stockCards.innerHTML = cardsHtml;
 
             const wrap = document.getElementById('matrixWrap');
 

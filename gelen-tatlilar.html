@@ -519,7 +519,7 @@
                     input.dataset.id,
                     selectedDate,
                     parseInt(input.value) || 0,
-                    parseInt(input.dataset.remaining) || 0,
+                    null,  // gelen kaydı: remaining_amount'a dokunma
                     0, ''
                 );
                 if (result.success) successCount++;
