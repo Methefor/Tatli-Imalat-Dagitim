@@ -1,0 +1,310 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#070d1a"/>
+      <stop offset="100%" style="stop-color:#0a1428"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="glowAmber" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(245,158,11,0.2)"/>
+      <stop offset="100%" style="stop-color:rgba(245,158,11,0)"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="screen-clip">
+      <rect x="0" y="0" width="900" height="420" rx="0"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="420" fill="url(#bg)"/>
+
+  <!-- Ambient glow top -->
+  <ellipse cx="450" cy="-20" rx="400" ry="120" fill="rgba(245,158,11,0.06)"/>
+  <ellipse cx="800" cy="420" rx="200" ry="100" fill="rgba(59,130,246,0.05)"/>
+
+  <!-- ═══ SLIDE 1: GİRİŞ EKRANI (0-5s) ═══ -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,0;0,-420;0,-420;0,-420;0,-420" dur="30s" repeatCount="indefinite" keyTimes="0;0.15;0.18;0.5;0.83;1"/>
+    <animate attributeName="opacity" values="1;1;0;0;0;1" dur="30s" repeatCount="indefinite" keyTimes="0;0.15;0.18;0.5;0.83;1"/>
+
+    <!-- Left Panel: Text -->
+    <text x="60" y="70" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="11" font-weight="700" letter-spacing="2">GİRİŞ EKRANI</text>
+    <text x="60" y="110" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="26" font-weight="800">Tatlı Takip</text>
+    <text x="60" y="145" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="26" font-weight="800">Sistemi</text>
+    <text x="60" y="180" fill="#64748b" font-family="system-ui,sans-serif" font-size="13">3 farklı giriş yolu ile</text>
+    <text x="60" y="200" fill="#64748b" font-family="system-ui,sans-serif" font-size="13">güvenli erişim sağlayın</text>
+
+    <!-- Role pills -->
+    <rect x="60" y="225" width="110" height="28" rx="14" fill="rgba(245,158,11,0.12)" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+    <text x="115" y="244" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle">👤 Müdür</text>
+    <rect x="180" y="225" width="110" height="28" rx="14" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+    <text x="235" y="244" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle">🏢 Yönetici</text>
+    <rect x="60" y="265" width="120" height="28" rx="14" fill="rgba(16,185,129,0.12)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+    <text x="120" y="284" fill="#34d399" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle">👨‍🍳 Tatlıcılar</text>
+
+    <!-- Screen mockup: Login -->
+    <rect x="440" y="30" width="420" height="360" rx="16" fill="#0f172a" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+    <!-- browser bar -->
+    <rect x="440" y="30" width="420" height="32" rx="16" fill="rgba(255,255,255,0.04)"/>
+    <rect x="440" y="46" width="420" height="16" fill="rgba(255,255,255,0.04)"/>
+    <circle cx="462" cy="46" r="5" fill="#ff5f57"/>
+    <circle cx="478" cy="46" r="5" fill="#febc2e"/>
+    <circle cx="494" cy="46" r="5" fill="#28c840"/>
+    <rect x="510" y="40" width="240" height="12" rx="6" fill="rgba(255,255,255,0.06)"/>
+    <!-- logo -->
+    <text x="650" y="120" text-anchor="middle" font-size="36" fill="#f59e0b" filter="url(#softglow)">🍰</text>
+    <text x="650" y="155" text-anchor="middle" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="16" font-weight="800">Tatlı Takip Sistemi</text>
+    <text x="650" y="175" text-anchor="middle" fill="#475569" font-family="system-ui,sans-serif" font-size="10">Mutlukent Esenlik Hizmetleri A.Ş.</text>
+    <!-- main button -->
+    <rect x="530" y="195" width="240" height="38" rx="10" fill="url(#amber)"/>
+    <text x="650" y="219" text-anchor="middle" fill="#0f172a" font-family="system-ui,sans-serif" font-size="13" font-weight="800">👤 Müdür Girişi</text>
+    <!-- small buttons -->
+    <rect x="530" y="244" width="115" height="30" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="587" y="264" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11" font-weight="600">🏢 Yönetici</text>
+    <rect x="655" y="244" width="115" height="30" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="712" y="264" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11" font-weight="600">👨‍🍳 Tatlıcılar</text>
+    <!-- branch grid -->
+    <text x="650" y="295" text-anchor="middle" fill="#334155" font-family="system-ui,sans-serif" font-size="9" letter-spacing="1">ŞUBELERI SEÇİN</text>
+    <rect x="530" y="305" width="110" height="24" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text x="585" y="321" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="10">🌊 Rumeli İskelesi</text>
+    <rect x="650" y="305" width="110" height="24" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text x="705" y="321" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="10">📚 Yahya Kemal</text>
+    <rect x="530" y="337" width="110" height="24" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text x="585" y="353" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="10">🚂 Vagon</text>
+    <rect x="650" y="337" width="110" height="24" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text x="705" y="353" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="10">🏖️ Sahil</text>
+  </g>
+
+  <!-- ═══ SLIDE 2: YÖNETİCİ PANELİ (10-20s) ═══ -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" dur="30s" repeatCount="indefinite" keyTimes="0;0.18;0.22;0.48;0.52;1"/>
+
+    <!-- Left Panel -->
+    <text x="60" y="70" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="11" font-weight="700" letter-spacing="2">YÖNETİCİ PANELİ</text>
+    <text x="60" y="110" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="26" font-weight="800">Tüm Şubeleri</text>
+    <text x="60" y="145" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="26" font-weight="800">Tek Ekranda</text>
+    <text x="60" y="185" fill="#64748b" font-family="system-ui,sans-serif" font-size="13">KPI kartları, satış grafikleri</text>
+    <text x="60" y="205" fill="#64748b" font-family="system-ui,sans-serif" font-size="13">ve şube performans tablosu</text>
+
+    <!-- Stats row left panel -->
+    <rect x="60" y="230" width="90" height="60" rx="10" fill="rgba(59,130,246,0.1)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+    <text x="105" y="254" text-anchor="middle" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="20" font-weight="900">1.165</text>
+    <text x="105" y="272" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Dağıtım</text>
+    <rect x="162" y="230" width="90" height="60" rx="10" fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.2)" stroke-width="1"/>
+    <text x="207" y="254" text-anchor="middle" fill="#34d399" font-family="system-ui,sans-serif" font-size="20" font-weight="900">502</text>
+    <text x="207" y="272" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Satış</text>
+    <rect x="60" y="303" width="192" height="60" rx="10" fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+    <text x="156" y="327" text-anchor="middle" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="20" font-weight="900">1.401</text>
+    <text x="156" y="345" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Mevcut Stok</text>
+
+    <!-- Screen: Admin Dashboard -->
+    <rect x="440" y="30" width="420" height="360" rx="16" fill="#060c18" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+    <rect x="440" y="30" width="420" height="32" rx="16" fill="rgba(255,255,255,0.04)"/>
+    <rect x="440" y="46" width="420" height="16" fill="rgba(255,255,255,0.04)"/>
+    <!-- topbar -->
+    <rect x="440" y="62" width="420" height="32" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.05)" stroke-width="0"/>
+    <text x="456" y="83" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="11" font-weight="800">Mutlukent Esenlik · Tatlı Takip</text>
+    <rect x="770" y="70" width="40" height="14" rx="7" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+    <circle cx="777" cy="77" r="3" fill="#34d399"/>
+    <text x="791" y="81" fill="#34d399" font-family="system-ui,sans-serif" font-size="8">Canlı</text>
+    <text x="836" y="81" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">09:42</text>
+    <!-- filter tabs -->
+    <rect x="456" y="100" width="50" height="18" rx="5" fill="rgba(255,255,255,0.05)"/>
+    <text x="481" y="113" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Bugün</text>
+    <rect x="512" y="100" width="60" height="18" rx="5" fill="url(#amber)"/>
+    <text x="542" y="113" text-anchor="middle" fill="#0f172a" font-family="system-ui,sans-serif" font-size="9" font-weight="700">Bu Hafta</text>
+    <rect x="578" y="100" width="50" height="18" rx="5" fill="rgba(255,255,255,0.05)"/>
+    <text x="603" y="113" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Bu Ay</text>
+    <!-- KPI cards -->
+    <rect x="456" y="124" width="118" height="60" rx="8" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.15)" stroke-width="1"/>
+    <rect x="456" y="124" width="118" height="3" rx="1" fill="#3b82f6"/>
+    <text x="470" y="143" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">📦 Toplam Dağıtım</text>
+    <text x="470" y="164" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="20" font-weight="900">1.165</text>
+    <rect x="582" y="124" width="118" height="60" rx="8" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.15)" stroke-width="1"/>
+    <rect x="582" y="124" width="118" height="3" rx="1" fill="#10b981"/>
+    <text x="596" y="143" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">📈 Toplam Satış</text>
+    <text x="596" y="164" fill="#34d399" font-family="system-ui,sans-serif" font-size="20" font-weight="900">502</text>
+    <rect x="708" y="124" width="118" height="60" rx="8" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.15)" stroke-width="1"/>
+    <rect x="708" y="124" width="118" height="3" rx="1" fill="#f59e0b"/>
+    <text x="722" y="143" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">📊 Mevcut Stok</text>
+    <text x="722" y="164" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="20" font-weight="900">1.401</text>
+    <!-- table header -->
+    <rect x="456" y="194" width="370" height="20" rx="4" fill="rgba(255,255,255,0.03)"/>
+    <text x="466" y="208" fill="#475569" font-family="system-ui,sans-serif" font-size="9" font-weight="600">ŞUBE</text>
+    <text x="586" y="208" fill="#475569" font-family="system-ui,sans-serif" font-size="9" font-weight="600">GELEN</text>
+    <text x="636" y="208" fill="#475569" font-family="system-ui,sans-serif" font-size="9" font-weight="600">SATILAN</text>
+    <text x="696" y="208" fill="#475569" font-family="system-ui,sans-serif" font-size="9" font-weight="600">KALAN</text>
+    <text x="746" y="208" fill="#475569" font-family="system-ui,sans-serif" font-size="9" font-weight="600">ORAN</text>
+    <!-- rows -->
+    <line x1="456" y1="215" x2="826" y2="215" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    <text x="466" y="228" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="10">🌊 Rumeli İskelesi</text>
+    <text x="586" y="228" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="10" font-weight="700">254</text>
+    <text x="636" y="228" fill="#34d399" font-family="system-ui,sans-serif" font-size="10" font-weight="700">46</text>
+    <text x="696" y="228" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="10" font-weight="700">133</text>
+    <rect x="746" y="220" width="36" height="14" rx="4" fill="rgba(239,68,68,0.15)"/>
+    <text x="764" y="231" text-anchor="middle" fill="#f87171" font-family="system-ui,sans-serif" font-size="9" font-weight="700">%18.1</text>
+    <line x1="456" y1="236" x2="826" y2="236" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    <text x="466" y="249" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="10">🌳 Millet Bahçesi</text>
+    <text x="586" y="249" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="10" font-weight="700">340</text>
+    <text x="636" y="249" fill="#34d399" font-family="system-ui,sans-serif" font-size="10" font-weight="700">85</text>
+    <text x="696" y="249" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="10" font-weight="700">347</text>
+    <rect x="746" y="241" width="36" height="14" rx="4" fill="rgba(239,68,68,0.15)"/>
+    <text x="764" y="252" text-anchor="middle" fill="#f87171" font-family="system-ui,sans-serif" font-size="9" font-weight="700">%25.0</text>
+    <line x1="456" y1="257" x2="826" y2="257" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    <text x="466" y="270" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="10">📚 Yahya Kemal</text>
+    <text x="586" y="270" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="10" font-weight="700">256</text>
+    <text x="636" y="270" fill="#34d399" font-family="system-ui,sans-serif" font-size="10" font-weight="700">256</text>
+    <text x="696" y="270" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="10" font-weight="700">0</text>
+    <rect x="746" y="262" width="44" height="14" rx="4" fill="rgba(16,185,129,0.15)"/>
+    <text x="768" y="273" text-anchor="middle" fill="#34d399" font-family="system-ui,sans-serif" font-size="9" font-weight="700">%100.0</text>
+    <line x1="456" y1="278" x2="826" y2="278" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    <text x="466" y="291" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="10">🏞️ TunaBoyu</text>
+    <text x="586" y="291" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="10" font-weight="700">91</text>
+    <text x="636" y="291" fill="#34d399" font-family="system-ui,sans-serif" font-size="10" font-weight="700">44</text>
+    <text x="696" y="291" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="10" font-weight="700">80</text>
+    <rect x="746" y="283" width="36" height="14" rx="4" fill="rgba(245,158,11,0.15)"/>
+    <text x="764" y="294" text-anchor="middle" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" font-weight="700">%48.4</text>
+    <!-- bar chart mini -->
+    <text x="456" y="320" fill="#475569" font-family="system-ui,sans-serif" font-size="9" font-weight="600">TATTI SATIŞ DAĞILIMI</text>
+    <rect x="456" y="325" width="370" height="48" rx="6" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    <rect x="470" y="355" width="18" height="12" rx="2" fill="#f59e0b"/>
+    <rect x="494" y="348" width="18" height="19" rx="2" fill="#3b82f6"/>
+    <rect x="518" y="342" width="18" height="25" rx="2" fill="#10b981"/>
+    <rect x="542" y="358" width="18" height="9" rx="2" fill="#a78bfa"/>
+    <rect x="566" y="355" width="18" height="12" rx="2" fill="#f87171"/>
+    <rect x="590" y="360" width="18" height="7" rx="2" fill="#34d399"/>
+    <text x="479" y="375" text-anchor="middle" fill="#334155" font-family="system-ui,sans-serif" font-size="7">Magnolya</text>
+    <text x="503" y="375" text-anchor="middle" fill="#334155" font-family="system-ui,sans-serif" font-size="7">Tiramisu</text>
+    <text x="527" y="375" text-anchor="middle" fill="#334155" font-family="system-ui,sans-serif" font-size="7">Truff</text>
+    <text x="551" y="375" text-anchor="middle" fill="#334155" font-family="system-ui,sans-serif" font-size="7">Trileçe</text>
+  </g>
+
+  <!-- ═══ SLIDE 3: MÜDÜR + TATLICI PANELİ (20-30s) ═══ -->
+  <g>
+    <animate attributeName="opacity" values="0;0;0;0;1;1" dur="30s" repeatCount="indefinite" keyTimes="0;0.18;0.5;0.52;0.56;1"/>
+
+    <!-- Left Panel -->
+    <text x="60" y="70" fill="#34d399" font-family="system-ui,sans-serif" font-size="11" font-weight="700" letter-spacing="2">MÜDÜR &amp; TATLILAR</text>
+    <text x="60" y="110" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="26" font-weight="800">Günlük Stok</text>
+    <text x="60" y="145" fill="#34d399" font-family="system-ui,sans-serif" font-size="26" font-weight="800">Takibi</text>
+    <text x="60" y="185" fill="#64748b" font-family="system-ui,sans-serif" font-size="13">Gelen tatlılar, kalan stok</text>
+    <text x="60" y="205" fill="#64748b" font-family="system-ui,sans-serif" font-size="13">ve tatlıcı paneli — anlık</text>
+
+    <!-- steps -->
+    <circle cx="72" cy="248" r="10" fill="url(#amber)"/>
+    <text x="72" y="252" text-anchor="middle" fill="#0f172a" font-family="system-ui,sans-serif" font-size="10" font-weight="800">1</text>
+    <text x="90" y="253" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="12">Gelen Tatlıları gir</text>
+    <circle cx="72" cy="283" r="10" fill="url(#blue)"/>
+    <text x="72" y="287" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="10" font-weight="800">2</text>
+    <text x="90" y="288" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="12">Akşam Kalan Stoku gir</text>
+    <circle cx="72" cy="318" r="10" fill="url(#green)"/>
+    <text x="72" y="322" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="10" font-weight="800">3</text>
+    <text x="90" y="323" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="12">Satış otomatik hesaplanır</text>
+
+    <!-- Screen: Confectioner Panel -->
+    <rect x="440" y="30" width="420" height="360" rx="16" fill="#0f172a" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+    <rect x="440" y="30" width="420" height="32" rx="16" fill="rgba(255,255,255,0.04)"/>
+    <rect x="440" y="46" width="420" height="16" fill="rgba(255,255,255,0.04)"/>
+    <!-- topbar -->
+    <rect x="440" y="62" width="420" height="28" fill="rgba(255,255,255,0.03)"/>
+    <text x="456" y="81" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">← Çıkış</text>
+    <text x="650" y="81" text-anchor="middle" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="11" font-weight="800">👨‍🍳 Tatlıcılar Paneli</text>
+    <text x="846" y="81" text-anchor="end" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">8 Mart 2026</text>
+    <!-- section title -->
+    <text x="456" y="107" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" font-weight="700" letter-spacing="1">GÜNCEL STOK DURUMU</text>
+    <!-- stock cards grid -->
+    <rect x="456" y="112" width="85" height="55" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="498" y="134" text-anchor="middle" font-size="14">🍮</text>
+    <text x="498" y="153" text-anchor="middle" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="18" font-weight="900">183</text>
+    <text x="498" y="164" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="8">Magnolya</text>
+
+    <rect x="548" y="112" width="85" height="55" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="590" y="134" text-anchor="middle" font-size="14">🍰</text>
+    <text x="590" y="153" text-anchor="middle" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="18" font-weight="900">39</text>
+    <text x="590" y="164" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="8">Tiramisu</text>
+
+    <rect x="640" y="112" width="85" height="55" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="682" y="134" text-anchor="middle" font-size="14">🎂</text>
+    <text x="682" y="153" text-anchor="middle" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="18" font-weight="900">40</text>
+    <text x="682" y="164" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="8">Truff</text>
+
+    <rect x="732" y="112" width="85" height="55" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="774" y="134" text-anchor="middle" font-size="14">🍰</text>
+    <text x="774" y="153" text-anchor="middle" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="18" font-weight="900">21</text>
+    <text x="774" y="164" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="8">Cheesecake</text>
+
+    <!-- total bar -->
+    <rect x="456" y="175" width="371" height="32" rx="8" fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+    <text x="470" y="196" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">Genel Toplam</text>
+    <text x="818" y="196" text-anchor="end" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="18" font-weight="900">331</text>
+
+    <!-- branch section -->
+    <text x="456" y="225" fill="#475569" font-family="system-ui,sans-serif" font-size="9" font-weight="700" letter-spacing="1">ŞUBE BAZLI STOK</text>
+    <!-- branch cards -->
+    <rect x="456" y="230" width="175" height="120" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="466" y="248" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="10" font-weight="700">🌊 Rumeli İskelesi</text>
+    <text x="622" y="248" text-anchor="end" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="11" font-weight="800">133</text>
+    <line x1="456" y1="254" x2="631" y2="254" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+    <text x="466" y="267" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Magnolya</text><text x="622" y="267" text-anchor="end" fill="#34d399" font-family="system-ui,sans-serif" font-size="9" font-weight="700">97</text>
+    <text x="466" y="281" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Tiramisu</text><text x="622" y="281" text-anchor="end" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" font-weight="700">3</text>
+    <text x="466" y="295" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Truff</text><text x="622" y="295" text-anchor="end" fill="#34d399" font-family="system-ui,sans-serif" font-size="9" font-weight="700">19</text>
+    <text x="466" y="309" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Cheesecake</text><text x="622" y="309" text-anchor="end" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" font-weight="700">8</text>
+    <text x="466" y="323" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Mozaik</text><text x="622" y="323" text-anchor="end" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" font-weight="700">1</text>
+    <text x="466" y="337" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Trileçe</text><text x="622" y="337" text-anchor="end" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" font-weight="700">4</text>
+
+    <rect x="644" y="230" width="183" height="120" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="654" y="248" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="10" font-weight="700">🌳 Millet Bahçesi</text>
+    <text x="818" y="248" text-anchor="end" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="11" font-weight="800">96</text>
+    <line x1="644" y1="254" x2="827" y2="254" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+    <text x="654" y="267" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Magnolya</text><text x="818" y="267" text-anchor="end" fill="#34d399" font-family="system-ui,sans-serif" font-size="9" font-weight="700">31</text>
+    <text x="654" y="281" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Tiramisu</text><text x="818" y="281" text-anchor="end" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" font-weight="700">10</text>
+    <text x="654" y="295" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Truff</text><text x="818" y="295" text-anchor="end" fill="#34d399" font-family="system-ui,sans-serif" font-size="9" font-weight="700">13</text>
+    <text x="654" y="309" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Cheesecake</text><text x="818" y="309" text-anchor="end" fill="#34d399" font-family="system-ui,sans-serif" font-size="9" font-weight="700">13</text>
+    <text x="654" y="323" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Mozaik</text><text x="818" y="323" text-anchor="end" fill="#34d399" font-family="system-ui,sans-serif" font-size="9" font-weight="700">22</text>
+    <text x="654" y="337" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Trileçe</text><text x="818" y="337" text-anchor="end" fill="#334155" font-family="system-ui,sans-serif" font-size="9" font-weight="700">—</text>
+
+    <!-- bottom pagination dots -->
+    <circle cx="610" cy="370" r="4" fill="#f59e0b"/>
+    <circle cx="626" cy="370" r="3" fill="rgba(255,255,255,0.2)"/>
+    <circle cx="640" cy="370" r="3" fill="rgba(255,255,255,0.2)"/>
+  </g>
+
+  <!-- ═══ BOTTOM BAR ═══ -->
+  <rect x="0" y="390" width="900" height="30" fill="rgba(0,0,0,0.4)"/>
+  <text x="450" y="409" text-anchor="middle" fill="#334155" font-family="system-ui,sans-serif" font-size="11">
+    🍮 Tatlı İmalat ve Dağıtım Takip Sistemi · Mutlukent Esenlik Hizmetleri A.Ş. · 2026
+  </text>
+
+  <!-- Slide indicator dots (bottom center, animated) -->
+  <circle cx="426" cy="409" r="4" fill="#f59e0b">
+    <animate attributeName="opacity" values="1;1;0;0;0;1" dur="30s" repeatCount="indefinite" keyTimes="0;0.15;0.18;0.5;0.83;1"/>
+  </circle>
+  <circle cx="440" cy="409" r="3" fill="rgba(255,255,255,0.15)">
+    <animate attributeName="fill" values="rgba(255,255,255,0.15);rgba(255,255,255,0.15);#f59e0b;#f59e0b;rgba(255,255,255,0.15);rgba(255,255,255,0.15)" dur="30s" repeatCount="indefinite" keyTimes="0;0.18;0.22;0.48;0.52;1"/>
+  </circle>
+  <circle cx="454" cy="409" r="3" fill="rgba(255,255,255,0.15)">
+    <animate attributeName="fill" values="rgba(255,255,255,0.15);rgba(255,255,255,0.15);rgba(255,255,255,0.15);rgba(255,255,255,0.15);#f59e0b;#f59e0b" dur="30s" repeatCount="indefinite" keyTimes="0;0.18;0.5;0.52;0.56;1"/>
+  </circle>
+</svg>

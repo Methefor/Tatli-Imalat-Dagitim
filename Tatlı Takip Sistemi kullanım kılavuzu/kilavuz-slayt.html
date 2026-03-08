@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tatlı Takip Sistemi — Kullanım Kılavuzu</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#f1f5f9}
+
+/* ── SLIDE ENGINE ── */
+.deck{width:100vw;height:100vh;position:relative}
+.slide{
+  position:absolute;inset:0;
+  opacity:0;pointer-events:none;
+  transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.4,0,.2,1);
+  transform:translateX(60px);
+  display:flex;align-items:stretch;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.slide.exit{opacity:0;transform:translateX(-60px)}
+
+/* ── LAYOUT HALVES ── */
+.left{
+  width:44%;padding:52px 48px;
+  display:flex;flex-direction:column;justify-content:center;gap:0;
+  position:relative;z-index:2;
+}
+.right{
+  width:56%;display:flex;align-items:center;justify-content:center;
+  padding:32px 40px 32px 20px;position:relative;overflow:hidden;
+}
+
+/* ── NAVIGATION ── */
+.nav-btn{
+  position:fixed;top:50%;transform:translateY(-50%);
+  z-index:200;width:46px;height:46px;border-radius:50%;
+  background:rgba(245,158,11,.15);border:1.5px solid rgba(245,158,11,.35);
+  color:#f59e0b;font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;backdrop-filter:blur(6px);
+}
+.nav-btn:hover{background:rgba(245,158,11,.35)}
+#prev{left:14px}
+#next{right:14px}
+.dots{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:200}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:.3s}
+.dot.on{background:#f59e0b;transform:scale(1.4)}
+.slide-no{position:fixed;bottom:18px;right:22px;font-size:11px;color:rgba(255,255,255,.25);z-index:200}
+.kb-hint{position:fixed;bottom:18px;left:22px;font-size:11px;color:rgba(255,255,255,.2);z-index:200}
+
+/* ── COMMON TEXT ── */
+.tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#f59e0b;margin-bottom:12px}
+.slide-title{font-size:32px;font-weight:800;line-height:1.2;margin-bottom:16px;color:#f8fafc}
+.slide-title span{color:#f59e0b}
+.slide-sub{font-size:15px;color:#94a3b8;line-height:1.65;margin-bottom:24px}
+.bullets{display:flex;flex-direction:column;gap:11px}
+.bullet{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.55;color:#cbd5e1}
+.bullet-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px}
+.bi-amber{background:rgba(245,158,11,.15);color:#f59e0b}
+.bi-blue{background:rgba(59,130,246,.15);color:#60a5fa}
+.bi-green{background:rgba(16,185,129,.15);color:#34d399}
+.bi-purple{background:rgba(167,139,250,.15);color:#a78bfa}
+.bi-red{background:rgba(239,68,68,.15);color:#f87171}
+strong{color:#f1f5f9;font-weight:600}
+
+/* ── SCREEN MOCKUP FRAME ── */
+.screen{
+  width:100%;max-width:540px;
+  background:#070d1a;
+  border-radius:16px;
+  border:1.5px solid rgba(255,255,255,.1);
+  box-shadow:0 24px 64px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);
+  overflow:hidden;
+  font-size:11px;
+}
+.screen-bar{
+  height:32px;background:rgba(255,255,255,.04);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;padding:0 12px;gap:6px;
+}
+.screen-dot{width:9px;height:9px;border-radius:50%}
+.screen-url{
+  flex:1;margin:0 10px;height:16px;
+  background:rgba(255,255,255,.07);border-radius:4px;
+  display:flex;align-items:center;padding:0 8px;
+  font-size:9px;color:rgba(255,255,255,.3);
+}
+.screen-body{padding:16px}
+
+/* ── TOPBAR ── */
+.mk-topbar{
+  background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;margin:-16px -16px 14px;
+}
+.mk-back{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:12px;color:#94a3b8}
+.mk-topbar-title{font-size:12px;font-weight:700;color:#f1f5f9;flex:1}
+.mk-badge{font-size:9px;font-weight:700;padding:3px 7px;border-radius:20px;letter-spacing:.05em}
+.badge-amber{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.25)}
+.badge-blue{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
+.badge-green{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+.badge-purple{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.25)}
+
+/* ── CARD ELEMENTS ── */
+.mk-card{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;padding:10px 12px;margin-bottom:8px;
+}
+.mk-card:last-child{margin-bottom:0}
+.mk-card-row{display:flex;justify-content:space-between;align-items:center}
+.mk-label{font-size:10px;color:#64748b;margin-bottom:3px}
+.mk-value{font-size:18px;font-weight:800;color:#f59e0b}
+.mk-value-blue{color:#60a5fa}
+.mk-value-green{color:#34d399}
+.mk-value-sm{font-size:13px;font-weight:700;color:#f1f5f9}
+
+/* ── INPUT ROWS ── */
+.mk-input-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);border-radius:8px;margin-bottom:6px;
+}
+.mk-emoji{font-size:16px;width:22px;text-align:center}
+.mk-name{flex:1;font-size:11px;color:#e2e8f0}
+.mk-num{
+  width:44px;height:26px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);border-radius:6px;
+  text-align:center;font-size:11px;font-weight:700;color:#f59e0b;
+  display:flex;align-items:center;justify-content:center;
+}
+.mk-badge-sm{font-size:8px;padding:2px 5px;border-radius:10px;font-weight:700}
+
+/* ── ACTION CARDS ── */
+.mk-action{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:8px;
+  position:relative;overflow:hidden;
+}
+.mk-action::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px}
+.ac-amber::before{background:#f59e0b}
+.ac-blue::before{background:#3b82f6}
+.ac-green::before{background:#34d399}
+.ac-purple::before{background:#a78bfa}
+.mk-action-icon{font-size:18px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.ai-amber{background:rgba(245,158,11,.12)}
+.ai-blue{background:rgba(59,130,246,.12)}
+.ai-green{background:rgba(52,211,153,.12)}
+.ai-purple{background:rgba(167,139,250,.12)}
+.mk-action-body{flex:1}
+.mk-action-title{font-size:11px;font-weight:700;color:#f1f5f9;margin-bottom:2px}
+.mk-action-desc{font-size:9px;color:#64748b}
+.mk-action-arr{color:#475569;font-size:14px}
+
+/* ── TABLE ── */
+.mk-table{width:100%;border-collapse:collapse;font-size:10px}
+.mk-table th{color:#64748b;font-size:9px;padding:5px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07)}
+.mk-table td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.mk-table tr:last-child td{border-bottom:none}
+.td-amber{color:#f59e0b;font-weight:700}
+.td-green{color:#34d399;font-weight:700}
+.td-blue{color:#60a5fa;font-weight:700}
+.td-dim{color:#475569}
+.pct-high{background:rgba(16,185,129,.15);color:#34d399;border-radius:4px;padding:2px 5px;font-size:8px;font-weight:700}
+.pct-mid{background:rgba(245,158,11,.15);color:#f59e0b;border-radius:4px;padding:2px 5px;font-size:8px;font-weight:700}
+.pct-low{background:rgba(239,68,68,.15);color:#f87171;border-radius:4px;padding:2px 5px;font-size:8px;font-weight:700}
+
+/* ── STAT CHIP ── */
+.stat-row{display:flex;gap:8px;margin-bottom:10px}
+.stat-chip{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px;text-align:center}
+.stat-chip-icon{font-size:16px;margin-bottom:4px}
+.stat-chip-val{font-size:16px;font-weight:800;margin-bottom:2px}
+.stat-chip-lbl{font-size:8px;color:#64748b}
+
+/* ── MATRIX ── */
+.mk-matrix{width:100%;font-size:9px;border-collapse:collapse}
+.mk-matrix th{background:rgba(255,255,255,.05);color:#64748b;padding:4px 6px;border:1px solid rgba(255,255,255,.07);text-align:center}
+.mk-matrix td{padding:4px 6px;border:1px solid rgba(255,255,255,.07);text-align:center;font-weight:700}
+.mv-good{color:#34d399}
+.mv-low{color:#f59e0b}
+.mv-zero{color:#334155}
+.mv-total{color:#f59e0b;background:rgba(245,158,11,.06)}
+.mk-matrix .row-name{text-align:left;color:#94a3b8}
+
+/* ── TRANSFER FORM ── */
+.mk-form-row{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.mk-form-lbl{font-size:9px;color:#64748b;width:70px;flex-shrink:0}
+.mk-form-val{
+  flex:1;height:26px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);border-radius:6px;
+  padding:0 8px;font-size:10px;color:#e2e8f0;
+  display:flex;align-items:center;
+}
+.mk-form-val.highlight{border-color:rgba(167,139,250,.3);color:#a78bfa}
+.transfer-arrow{text-align:center;font-size:18px;color:#a78bfa;margin:4px 0}
+
+/* ── HERO (title slide) ── */
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,.18) 0%, transparent 70%),
+             radial-gradient(ellipse 50% 40% at 90% 80%, rgba(59,130,246,.12) 0%, transparent 60%),
+             #070d1a;
+}
+.hero-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:100%;height:100%;text-align:center;padding:60px;
+}
+.hero-logo{font-size:72px;margin-bottom:24px;filter:drop-shadow(0 0 30px rgba(245,158,11,.5))}
+.hero-title{font-size:42px;font-weight:900;line-height:1.15;margin-bottom:12px}
+.hero-title span{color:#f59e0b}
+.hero-sub{font-size:16px;color:#64748b;margin-bottom:40px}
+.hero-company{font-size:12px;color:#334155;letter-spacing:.08em;text-transform:uppercase}
+.hero-pills{display:flex;gap:10px;justify-content:center;margin-bottom:36px}
+.pill{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid}
+.pill-amber{background:rgba(245,158,11,.1);color:#f59e0b;border-color:rgba(245,158,11,.3)}
+.pill-blue{background:rgba(59,130,246,.1);color:#60a5fa;border-color:rgba(59,130,246,.3)}
+.pill-green{background:rgba(16,185,129,.1);color:#34d399;border-color:rgba(16,185,129,.3)}
+
+/* ── ROLE CARDS ── */
+.roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:540px}
+.role-card{
+  background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:20px;position:relative;overflow:hidden;
+}
+.role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.rc-amber::before{background:linear-gradient(90deg,#f59e0b,#d97706)}
+.rc-blue::before{background:linear-gradient(90deg,#3b82f6,#2563eb)}
+.rc-green::before{background:linear-gradient(90deg,#10b981,#059669)}
+.rc-purple::before{background:linear-gradient(90deg,#a78bfa,#7c3aed)}
+.role-icon{font-size:28px;margin-bottom:10px}
+.role-name{font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:6px}
+.role-who{font-size:11px;color:#94a3b8;margin-bottom:10px}
+.role-tasks{display:flex;flex-direction:column;gap:5px}
+.role-task{font-size:10.5px;color:#64748b;display:flex;align-items:center;gap:6px}
+.role-task::before{content:'›';color:#f59e0b}
+
+/* ── FLOW DIAGRAM ── */
+.flow{display:flex;flex-direction:column;gap:0;width:100%;max-width:480px}
+.flow-step{
+  display:flex;gap:16px;align-items:flex-start;padding:16px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.flow-step:last-child{border-bottom:none}
+.flow-time{
+  width:72px;flex-shrink:0;text-align:right;
+  font-size:11px;font-weight:700;padding-top:3px;
+}
+.flow-dot-col{display:flex;flex-direction:column;align-items:center;gap:0;width:28px;flex-shrink:0}
+.flow-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:2.5px solid}
+.flow-line{width:2px;flex:1;min-height:24px}
+.flow-body{flex:1;padding-top:0}
+.flow-title{font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:5px}
+.flow-items{display:flex;flex-direction:column;gap:3px}
+.flow-item{font-size:11.5px;color:#94a3b8;display:flex;align-items:center;gap:7px}
+.flow-item::before{content:'•';color:#f59e0b;font-size:14px;line-height:1}
+.t-amber{color:#f59e0b}
+.t-blue{color:#60a5fa}
+.t-green{color:#34d399}
+.fd-amber{border-color:#f59e0b;background:rgba(245,158,11,.2)}
+.fd-blue{border-color:#3b82f6;background:rgba(59,130,246,.2)}
+.fd-green{border-color:#10b981;background:rgba(16,185,129,.2)}
+.fl-amber{background:rgba(245,158,11,.15)}
+.fl-blue{background:rgba(59,130,246,.15)}
+.fl-green{background:rgba(16,185,129,.15)}
+
+/* ── BRANCHES TABLE ── */
+.branch-table{width:100%;border-collapse:collapse;font-size:13px}
+.branch-table th{color:#64748b;font-size:11px;padding:10px 14px;text-align:left;border-bottom:1.5px solid rgba(255,255,255,.08);font-weight:600;letter-spacing:.05em}
+.branch-table td{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.05);color:#e2e8f0}
+.branch-table tr:hover td{background:rgba(255,255,255,.025)}
+.branch-table tr:last-child td{border-bottom:none}
+.b-emoji{font-size:20px}
+.b-name{font-weight:700;color:#f1f5f9}
+.b-manager{color:#94a3b8}
+
+/* ── LOGIN MOCKUP ── */
+.login-screen{
+  width:100%;max-width:440px;
+  background:#0f172a;border-radius:16px;
+  border:1.5px solid rgba(255,255,255,.1);
+  box-shadow:0 24px 64px rgba(0,0,0,.7);
+  overflow:hidden;
+}
+.login-header{
+  padding:28px 24px 20px;text-align:center;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(245,158,11,.15),transparent);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.login-logo{font-size:36px;margin-bottom:8px}
+.login-title{font-size:16px;font-weight:800;color:#f1f5f9;margin-bottom:3px}
+.login-company{font-size:9px;color:#475569;letter-spacing:.07em;text-transform:uppercase}
+.login-body{padding:20px 24px}
+.login-btn-main{
+  width:100%;padding:13px;border-radius:10px;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  font-size:12px;font-weight:700;color:#0f172a;
+  text-align:center;margin-bottom:10px;cursor:pointer;
+  box-shadow:0 4px 16px rgba(245,158,11,.25);
+}
+.login-btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.login-btn-sm{
+  padding:10px;border-radius:8px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  font-size:11px;font-weight:600;color:#94a3b8;text-align:center;
+}
+.branch-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.branch-item{
+  padding:9px 10px;border-radius:8px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);
+  font-size:10px;color:#cbd5e1;display:flex;align-items:center;gap:6px;
+}
+
+/* ── PIN SCREEN ── */
+.pin-overlay{
+  width:100%;max-width:320px;
+  background:#1e293b;border-radius:16px;
+  border:1.5px solid rgba(255,255,255,.1);
+  padding:28px 24px;text-align:center;
+  box-shadow:0 24px 64px rgba(0,0,0,.7);
+}
+.pin-icon{font-size:32px;margin-bottom:10px}
+.pin-title{font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:4px}
+.pin-sub{font-size:11px;color:#64748b;margin-bottom:20px}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:20px}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:#334155;border:2px solid rgba(255,255,255,.1)}
+.pin-dot.filled{background:#f59e0b}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pin-key{
+  aspect-ratio:1;border-radius:10px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);
+  font-size:16px;font-weight:700;color:#f1f5f9;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:rgba(255,255,255,.06);margin:14px 0}
+
+/* ── SLIDE BACKGROUNDS ── */
+.bg-dark{background:#070d1a}
+.bg-darker{background:#040912}
+.bg-panel{background:linear-gradient(135deg,#070d1a 0%,#0a1428 100%)}
+
+/* glow orbs */
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.orb-amber{background:rgba(245,158,11,.08)}
+.orb-blue{background:rgba(59,130,246,.07)}
+
+/* ── ADMIN PANEL ELEMENTS ── */
+.admin-topbar{
+  background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);
+  padding:9px 14px;display:flex;align-items:center;gap:10px;margin:-16px -16px 12px;
+}
+.admin-brand{font-size:11px;font-weight:800;color:#f1f5f9;flex:1}
+.live-pill{display:flex;align-items:center;gap:5px;font-size:9px;color:#34d399;
+  background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:20px;padding:3px 8px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#34d399}
+.clock-display{font-size:10px;color:#64748b;font-variant-numeric:tabular-nums}
+.filter-tabs{display:flex;gap:4px;margin-bottom:10px}
+.ftab{padding:5px 10px;border-radius:6px;font-size:9px;font-weight:600;color:#64748b;cursor:pointer}
+.ftab.active{background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a}
+
+/* ── TOTAL BAR ── */
+.total-bar{
+  background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(217,119,6,.08));
+  border:1px solid rgba(245,158,11,.2);border-radius:10px;
+  padding:10px 14px;display:flex;justify-content:space-between;align-items:center;
+  margin-top:10px;
+}
+.total-lbl{font-size:10px;color:#94a3b8}
+.total-val{font-size:20px;font-weight:900;color:#f59e0b}
+
+/* ── STEP CALLOUT ── */
+.steps{display:flex;flex-direction:column;gap:9px;margin-top:8px}
+.step{display:flex;gap:10px;align-items:flex-start}
+.step-num{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  font-size:11px;font-weight:800;color:#0f172a;
+  display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+.step-text{font-size:13px;color:#cbd5e1;line-height:1.5}
+.step-text strong{color:#f1f5f9}
+
+/* ── KALAN BADGES ── */
+.kb-gelen{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:2px 6px;font-size:8px;font-weight:700}
+.kb-onceki{background:rgba(129,140,248,.12);color:#818cf8;border:1px solid rgba(129,140,248,.2);border-radius:10px;padding:2px 6px;font-size:8px;font-weight:700}
+
+/* ── RESPONSIVE scale ── */
+@media(max-width:1024px){
+  .left{padding:36px 28px}
+  .slide-title{font-size:26px}
+  .right{padding:24px 20px 24px 12px}
+}
+@media(max-width:768px){
+  .slide{flex-direction:column}
+  .left,.right{width:100%;padding:24px 20px}
+  .right{padding-top:0}
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ═══════════════════════ SLIDE 1 — KAPAK ═══════════════════════ -->
+<section class="slide active bg-darker">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-logo">🍮</div>
+    <div class="hero-title">Tatlı İmalat ve<br><span>Dağıtım Takip</span> Sistemi</div>
+    <div class="hero-sub">Mutlukent Esenlik Hizmetleri A.Ş. · 2026</div>
+    <div class="hero-pills">
+      <div class="pill pill-amber">6 Şube</div>
+      <div class="pill pill-blue">4 Kullanıcı Rolü</div>
+      <div class="pill pill-green">Anlık Takip</div>
+    </div>
+    <div style="font-size:14px;color:#475569">Kullanım Kılavuzu</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 2 — SİSTEM NEDİR ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-amber" style="width:400px;height:400px;top:-100px;left:-100px"></div>
+  <div class="left">
+    <div class="tag">Sisteme Genel Bakış</div>
+    <div class="slide-title">Sistem <span>Ne İşe</span> Yarar?</div>
+    <div class="slide-sub">Tüm şubelerinizin tatlı stokunu, satışını ve dağıtımını tek ekrandan yönetin.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-amber">📦</div><div>Her şubeye <strong>gelen tatlı miktarlarını</strong> günlük olarak kayıt altına alır</div></div>
+      <div class="bullet"><div class="bullet-icon bi-blue">📊</div><div>Gün sonu <strong>kalan stoku</strong> girer; satış <strong>otomatik hesaplanır</strong> (Gelen − Kalan)</div></div>
+      <div class="bullet"><div class="bullet-icon bi-green">🔄</div><div>Şubeler arası <strong>transfer hareketlerini</strong> takip eder, iki şubeye birden yansıtır</div></div>
+      <div class="bullet"><div class="bullet-icon bi-purple">📈</div><div>Yönetici için <strong>günlük / haftalık / aylık</strong> satış raporları ve grafikler üretir</div></div>
+      <div class="bullet"><div class="bullet-icon bi-amber">🏭</div><div>Tatlıcı ekibine hangi şubede ne kadar stok kaldığını <strong>anlık</strong> gösterir</div></div>
+    </div>
+  </div>
+  <div class="right">
+    <div style="width:100%;max-width:440px">
+      <!-- Flow -->
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-time t-amber">Üretim</div>
+          <div class="flow-dot-col">
+            <div class="flow-dot fd-amber"></div>
+            <div class="flow-line fl-amber"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-title">Tatlıcı üretir</div>
+            <div class="flow-items">
+              <div class="flow-item">Tatlıcı Paneli'nde stok kontrolü</div>
+              <div class="flow-item">Hangi şube için ne kadar üretileceği planlanır</div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-time t-blue">Dağıtım</div>
+          <div class="flow-dot-col">
+            <div class="flow-dot fd-blue"></div>
+            <div class="flow-line fl-blue"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-title">Şubelere teslim edilir</div>
+            <div class="flow-items">
+              <div class="flow-item">Ürünler 6 şubeye dağıtılır</div>
+              <div class="flow-item">Müdür teslimi sisteme girer</div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-time t-green">Satış</div>
+          <div class="flow-dot-col">
+            <div class="flow-dot fd-green"></div>
+            <div class="flow-line fl-green"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-title">Gün içi satış & akşam kapanış</div>
+            <div class="flow-items">
+              <div class="flow-item">Akşam kalan stok girilir</div>
+              <div class="flow-item">Satış = Gelen − Kalan (otomatik)</div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-time t-amber">Rapor</div>
+          <div class="flow-dot-col">
+            <div class="flow-dot fd-amber"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-title">Yönetici analiz yapar</div>
+            <div class="flow-items">
+              <div class="flow-item">Admin Paneli'nden şube bazlı satış oranları</div>
+              <div class="flow-item">Aylık hedef takibi ve karşılaştırma</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 3 — ROLLER ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-blue" style="width:500px;height:500px;bottom:-150px;right:-100px"></div>
+  <div class="left">
+    <div class="tag">Kullanıcı Rolleri</div>
+    <div class="slide-title">4 Farklı <span>Erişim</span> Seviyesi</div>
+    <div class="slide-sub">Her kullanıcı yalnızca kendi göreviyle ilgili ekranlara erişir.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-amber">🏢</div><div><strong>Yönetici</strong> — tüm şubeleri, raporları ve hedefleri yönetir</div></div>
+      <div class="bullet"><div class="bullet-icon bi-blue">👤</div><div><strong>Müdür</strong> — kendi şubesinin stok girişini yapar</div></div>
+      <div class="bullet"><div class="bullet-icon bi-green">👨‍🍳</div><div><strong>Tatlıcı</strong> — stok görünürlüğüyle üretim planlar</div></div>
+      <div class="bullet"><div class="bullet-icon bi-purple">🏭</div><div><strong>Üretim Ekibi</strong> — şifresiz matris tablosuna erişir</div></div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="roles-grid">
+      <div class="role-card rc-amber">
+        <div class="role-icon">🏢</div>
+        <div class="role-name">Yönetici</div>
+        <div class="role-who">Merkez Yönetim · Admin Paneli</div>
+        <div class="role-tasks">
+          <div class="role-task">Tüm şube raporları</div>
+          <div class="role-task">Satış & hedef takibi</div>
+          <div class="role-task">Grafikler & analitik</div>
+          <div class="role-task">Şube karşılaştırması</div>
+        </div>
+      </div>
+      <div class="role-card rc-blue">
+        <div class="role-icon">👤</div>
+        <div class="role-name">Müdür</div>
+        <div class="role-who">Şube Sorumlusu · Şube Şifresi</div>
+        <div class="role-tasks">
+          <div class="role-task">Gelen tatlı girişi</div>
+          <div class="role-task">Gün sonu kalan girişi</div>
+          <div class="role-task">Şube arası transfer</div>
+          <div class="role-task">Aylık şube raporu</div>
+        </div>
+      </div>
+      <div class="role-card rc-green">
+        <div class="role-icon">👨‍🍳</div>
+        <div class="role-name">Tatlıcı</div>
+        <div class="role-who">İmalat Ekibi · PIN: 0000</div>
+        <div class="role-tasks">
+          <div class="role-task">Toplam stok görünümü</div>
+          <div class="role-task">Şube bazlı stok</div>
+          <div class="role-task">Üretim planlama</div>
+          <div class="role-task">60 sn. otomatik yenileme</div>
+        </div>
+      </div>
+      <div class="role-card rc-purple">
+        <div class="role-icon">🏭</div>
+        <div class="role-name">Üretim Ekibi</div>
+        <div class="role-who">Dağıtım & Sevkiyat · Şifresiz</div>
+        <div class="role-tasks">
+          <div class="role-task">Anlık stok matrisi</div>
+          <div class="role-task">Şube × tatlı tablosu</div>
+          <div class="role-task">Renk kodlu stok</div>
+          <div class="role-task">5 dak. otomatik yenileme</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 4 — GİRİŞ EKRANI ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-amber" style="width:300px;height:300px;top:50px;right:50px"></div>
+  <div class="left">
+    <div class="tag">Giriş Ekranı</div>
+    <div class="slide-title">Sisteme <span>Nasıl</span> Girilir?</div>
+    <div class="slide-sub">Ana sayfada 3 farklı giriş yolu bulunur.</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Müdür Girişi:</strong> Büyük turuncu butona tıkla → şubenizi seçin → 4 haneli PIN girin</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Yönetici:</strong> "Yönetici" butonuna tıkla → kullanıcı adı + şifre ile giriş</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Tatlıcılar:</strong> "Tatlıcılar" butonuna tıkla → 4 haneli PIN girin (varsayılan: <strong>0000</strong>)</div></div>
+    </div>
+    <div style="margin-top:20px;padding:12px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:12px;color:#94a3b8">
+      ⚠️ Her şubenin <strong style="color:#f59e0b">ayrı şifresi</strong> vardır. Şifreyi unutursanız yöneticiye başvurun.
+    </div>
+  </div>
+  <div class="right">
+    <div class="login-screen">
+      <div class="login-header">
+        <div class="login-logo">🍰</div>
+        <div class="login-title">Tatlı Takip Sistemi</div>
+        <div class="login-company">Mutlukent Esenlik Hizmetleri A.Ş.</div>
+      </div>
+      <div class="login-body">
+        <div class="login-btn-main">👤 Müdür Girişi</div>
+        <div class="login-btn-row">
+          <div class="login-btn-sm">🏢 Yönetici</div>
+          <div class="login-btn-sm">👨‍🍳 Tatlıcılar</div>
+        </div>
+        <div style="font-size:9px;color:#475569;margin-bottom:8px;text-align:center;text-transform:uppercase;letter-spacing:.07em">Şubenizi Seçin</div>
+        <div class="branch-grid">
+          <div class="branch-item">🌊 Rumeli İskelesi</div>
+          <div class="branch-item">📚 Yahya Kemal</div>
+          <div class="branch-item">🏞️ TunaBoyu</div>
+          <div class="branch-item">🏖️ Sahil</div>
+          <div class="branch-item">🚂 Vagon</div>
+          <div class="branch-item">🌳 Millet Bahçesi</div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <div class="pin-dot filled"></div>
+          <div class="pin-dot filled"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 5 — YÖNETİCİ PANELİ ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-blue" style="width:350px;height:350px;top:-80px;right:-50px"></div>
+  <div class="left">
+    <div class="tag">Yönetici Paneli</div>
+    <div class="slide-title">Admin <span>Kontrol</span> Paneli</div>
+    <div class="slide-sub">Tüm şubelerin verilerini tek ekranda görün.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-blue">📅</div><div><strong>Zaman Filtresi:</strong> Bugün / Bu Hafta / Bu Ay / Tümü sekmeleri ile dönemi değiştirin</div></div>
+      <div class="bullet"><div class="bullet-icon bi-amber">📦</div><div><strong>Toplam Dağıtım:</strong> Hedef 2.500 adede göre ilerleme çubuğu</div></div>
+      <div class="bullet"><div class="bullet-icon bi-green">📈</div><div><strong>Toplam Satış:</strong> Gelen − Kalan farkından hesaplanan satış ve oran</div></div>
+      <div class="bullet"><div class="bullet-icon bi-amber">📊</div><div><strong>Şube Tablosu:</strong> Satış oranı düşük şubeler <span style="color:#f87171">kırmızı</span> ile işaretlenir</div></div>
+      <div class="bullet"><div class="bullet-icon bi-purple">🔄</div><div>Panel her <strong>30 saniyede</strong> otomatik yenilenir</div></div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:520px">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">tli-takip.vercel.app/admin-dashboard.html</div>
+      </div>
+      <div class="screen-body">
+        <div class="admin-topbar">
+          <span style="font-size:14px">🏢</span>
+          <div class="admin-brand">Mutlukent Esenlik · Tatlı Takip</div>
+          <div class="live-pill"><div class="live-dot"></div>Canlı</div>
+          <div class="clock-display">09:42</div>
+        </div>
+        <div class="filter-tabs">
+          <div class="ftab active">Bugün</div>
+          <div class="ftab">Bu Hafta</div>
+          <div class="ftab">Bu Ay</div>
+          <div class="ftab">Tümü</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <div class="stat-chip-icon">📦</div>
+            <div class="stat-chip-val mk-value-blue" style="font-size:20px">312</div>
+            <div class="stat-chip-lbl">Toplam Dağıtım</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-chip-icon">📈</div>
+            <div class="stat-chip-val mk-value-green" style="font-size:20px">274</div>
+            <div class="stat-chip-lbl">Toplam Satış</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-chip-icon">📊</div>
+            <div class="stat-chip-val" style="font-size:20px">38</div>
+            <div class="stat-chip-lbl">Mevcut Stok</div>
+          </div>
+        </div>
+        <table class="mk-table">
+          <thead><tr><th>Şube</th><th>Gelen</th><th>Satılan</th><th>Kalan</th><th>Oran</th></tr></thead>
+          <tbody>
+            <tr><td>🌊 Rumeli</td><td class="td-amber">62</td><td class="td-green">58</td><td class="td-blue">4</td><td><span class="pct-high">93%</span></td></tr>
+            <tr><td>📚 Yahya K.</td><td class="td-amber">48</td><td class="td-green">44</td><td class="td-blue">4</td><td><span class="pct-high">91%</span></td></tr>
+            <tr><td>🏞️ TunaBoyu</td><td class="td-amber">55</td><td class="td-green">46</td><td class="td-blue">9</td><td><span class="pct-mid">83%</span></td></tr>
+            <tr><td>🏖️ Sahil</td><td class="td-amber">40</td><td class="td-green">28</td><td class="td-blue">12</td><td><span class="pct-low">70%</span></td></tr>
+            <tr><td>🚂 Vagon</td><td class="td-amber">58</td><td class="td-green">55</td><td class="td-blue">3</td><td><span class="pct-high">94%</span></td></tr>
+            <tr><td>🌳 Millet</td><td class="td-amber">49</td><td class="td-green">43</td><td class="td-blue">6</td><td><span class="pct-mid">87%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 6 — MÜDÜR ANA MENÜ ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-amber" style="width:300px;height:300px;bottom:0;left:-80px"></div>
+  <div class="left">
+    <div class="tag">Müdür Paneli</div>
+    <div class="slide-title">Müdür <span>Ana</span> Menüsü</div>
+    <div class="slide-sub">Giriş yaptıktan sonra 4 temel işlemden birini seçin.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-amber">📦</div><div><strong>Gelen Tatlılar —</strong> Teslim aldığınız tatlıları sabah veya teslimatta girin</div></div>
+      <div class="bullet"><div class="bullet-icon bi-blue">📊</div><div><strong>Kalan Tatlılar —</strong> Akşam kapanışta sayarak kalan stoku girin</div></div>
+      <div class="bullet"><div class="bullet-icon bi-green">🏪</div><div><strong>Şubem —</strong> Aylık geçmiş, satış toplamları ve şube istatistikleri</div></div>
+      <div class="bullet"><div class="bullet-icon bi-purple">🔄</div><div><strong>Şube Arası Transfer —</strong> Fazla tatlıyı başka şubeye gönderin</div></div>
+    </div>
+    <div style="margin-top:16px;padding:12px 14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;font-size:12px;color:#94a3b8">
+      💡 Sağ üstte şube adınız ve saati görebilirsiniz. Çıkış için "← Çıkış" butonunu kullanın.
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:400px">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">tli-takip.vercel.app/branch-menu.html</div>
+      </div>
+      <div class="screen-body">
+        <div class="mk-topbar">
+          <div class="mk-topbar-title" style="font-size:11px;color:#64748b">← Çıkış</div>
+          <div class="mk-topbar-title" style="text-align:center">🌊 Rumeli İskelesi</div>
+          <div style="font-size:9px;color:#475569">09:42</div>
+        </div>
+        <div style="text-align:center;padding:10px 0 16px">
+          <div style="font-size:28px;margin-bottom:6px">👤</div>
+          <div style="font-size:13px;font-weight:800;color:#f1f5f9">Merhaba, Metehan!</div>
+          <div style="font-size:10px;color:#475569;margin-top:2px">8 Mart 2026 — Cumartesi</div>
+        </div>
+        <div class="mk-action ac-amber">
+          <div class="mk-action-icon ai-amber">📦</div>
+          <div class="mk-action-body"><div class="mk-action-title">Gelen Tatlılar</div><div class="mk-action-desc">Bugün gelen ürünleri kaydet</div></div>
+          <div class="mk-action-arr">›</div>
+        </div>
+        <div class="mk-action ac-blue">
+          <div class="mk-action-icon ai-blue">📊</div>
+          <div class="mk-action-body"><div class="mk-action-title">Kalan Tatlılar</div><div class="mk-action-desc">Günün sonunda kalan ürünleri gir</div></div>
+          <div class="mk-action-arr">›</div>
+        </div>
+        <div class="mk-action ac-green">
+          <div class="mk-action-icon ai-green">🏪</div>
+          <div class="mk-action-body"><div class="mk-action-title">Şubem</div><div class="mk-action-desc">Günlük özet ve istatistikler</div></div>
+          <div class="mk-action-arr">›</div>
+        </div>
+        <div class="mk-action ac-purple">
+          <div class="mk-action-icon ai-purple">🔄</div>
+          <div class="mk-action-body"><div class="mk-action-title">Şube Arası Transfer</div><div class="mk-action-desc">Tatlı başka şubeye gönder</div></div>
+          <div class="mk-action-arr">›</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 7 — GELEN TATLILAR ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-amber" style="width:280px;height:280px;top:80px;right:80px"></div>
+  <div class="left">
+    <div class="tag">Gelen Tatlılar</div>
+    <div class="slide-title">Teslim Alınan <span>Ürünleri</span> Girin</div>
+    <div class="slide-sub">Her teslimat sonrası bu ekranı doldurun. Gün içinde birden fazla teslimat varsa son miktarı girin — sistem günceller.</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Menüden <strong>"Gelen Tatlılar"</strong>'a tıklayın</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Tarih doğruysa devam edin; değilse <strong>← →</strong> ile tarihi değiştirin</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Her tatlı türü için teslim aldığınız <strong>adet sayısını</strong> yazın</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Gelmeyen tatlıları <strong>0 bırakın</strong> (dokunmayın)</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text"><strong>"Kaydet"</strong> butonuna basın</div></div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:380px">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">…/gelen-tatlilar.html</div>
+      </div>
+      <div class="screen-body">
+        <div class="mk-topbar">
+          <div class="mk-back">←</div>
+          <div class="mk-topbar-title">Gelen Tatlılar</div>
+          <div class="mk-badge badge-amber">📦 GELEN</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:8px 10px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px">
+          <div style="font-size:16px;color:#475569;cursor:pointer">‹</div>
+          <div style="font-size:12px;font-weight:700;color:#f1f5f9">8 Mart 2026 — Cumartesi</div>
+          <div style="font-size:16px;color:#475569;cursor:pointer">›</div>
+        </div>
+        <div class="mk-input-row"><div class="mk-emoji">🍮</div><div class="mk-name">Magnolya</div><div class="mk-num" style="color:#f59e0b">50</div></div>
+        <div class="mk-input-row"><div class="mk-emoji">🍰</div><div class="mk-name">Cheesecake</div><div class="mk-num" style="color:#f59e0b">30</div></div>
+        <div class="mk-input-row"><div class="mk-emoji">🍡</div><div class="mk-name">Kadayıf</div><div class="mk-num" style="color:#64748b">0</div></div>
+        <div class="mk-input-row"><div class="mk-emoji">🧁</div><div class="mk-name">Sütlaç</div><div class="mk-num" style="color:#f59e0b">20</div></div>
+        <div class="mk-input-row"><div class="mk-emoji">🍮</div><div class="mk-name">Kazandibi</div><div class="mk-num" style="color:#64748b">0</div></div>
+        <div class="total-bar" style="margin-top:12px">
+          <div><div class="total-lbl">Toplam Gelen</div></div>
+          <div class="total-val">100</div>
+        </div>
+        <div style="margin-top:10px;padding:11px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:9px;text-align:center;font-size:12px;font-weight:800;color:#0f172a">Kaydet</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 8 — KALAN TATLILAR ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-blue" style="width:300px;height:300px;bottom:0;left:100px"></div>
+  <div class="left">
+    <div class="tag">Kalan Tatlılar</div>
+    <div class="slide-title">Gün Sonu <span>Stok</span> Girişi</div>
+    <div class="slide-sub">Her gün akşam kapanışta, sayım yapıp kalan miktarları girin. Satış otomatik hesaplanır.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-amber" style="font-size:11px">📦</div><div><strong>Turuncu rozet</strong> — o gün tatlı teslim alındı</div></div>
+      <div class="bullet"><div class="bullet-icon bi-purple" style="font-size:11px">📋</div><div><strong>Mor rozet</strong> — önceki günden kalan stok</div></div>
+      <div class="bullet"><div class="bullet-icon bi-blue">✏️</div><div>Gerçekte kalan adedi kutuya yazın. Biten ürünler için <strong>0</strong> yazın.</div></div>
+      <div class="bullet"><div class="bullet-icon bi-green">💡</div><div>Hiç dokunulmayan ve <strong>0 olan</strong> kutular kaydedilmez — sıfır ise 0 yazıp kaydedin</div></div>
+    </div>
+    <div style="margin-top:14px;padding:10px 12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;font-size:12px;color:#94a3b8">
+      ✅ <strong style="color:#34d399">Satılan = Gelen − Kalan</strong> — sistem otomatik hesaplar
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:380px">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">…/kalan-tatlilar.html</div>
+      </div>
+      <div class="screen-body">
+        <div class="mk-topbar">
+          <div class="mk-back">←</div>
+          <div class="mk-topbar-title">Kalan Tatlılar</div>
+          <div class="mk-badge badge-blue">📊 KALAN</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:8px 10px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:8px">
+          <div style="font-size:16px;color:#475569">‹</div>
+          <div style="font-size:12px;font-weight:700;color:#f1f5f9">8 Mart 2026</div>
+          <div style="font-size:16px;color:#475569">›</div>
+        </div>
+        <!-- row with gelen badge -->
+        <div class="mk-input-row" style="border-color:rgba(245,158,11,.2)">
+          <div class="mk-emoji">🍮</div>
+          <div class="mk-name" style="flex-direction:column;align-items:flex-start;display:flex;gap:3px">
+            <span>Magnolya</span>
+            <span class="kb-gelen">📦 Gelen: 50</span>
+          </div>
+          <div class="mk-num" style="color:#3b82f6">6</div>
+        </div>
+        <!-- row with onceki badge -->
+        <div class="mk-input-row">
+          <div class="mk-emoji">🍰</div>
+          <div class="mk-name" style="flex-direction:column;align-items:flex-start;display:flex;gap:3px">
+            <span>Cheesecake</span>
+            <span class="kb-onceki">📋 Önceki: 4</span>
+          </div>
+          <div class="mk-num" style="color:#3b82f6">4</div>
+        </div>
+        <div class="mk-input-row">
+          <div class="mk-emoji">🍡</div>
+          <div class="mk-name" style="flex-direction:column;align-items:flex-start;display:flex;gap:3px">
+            <span>Kadayıf</span>
+            <span class="kb-gelen">📦 Gelen: 20</span>
+          </div>
+          <div class="mk-num" style="color:#3b82f6">3</div>
+        </div>
+        <div class="mk-input-row">
+          <div class="mk-emoji">🧁</div>
+          <div class="mk-name">Sütlaç</div>
+          <div class="mk-num" style="color:#64748b">0</div>
+        </div>
+        <div class="total-bar">
+          <div><div class="total-lbl">Toplam Kalan</div></div>
+          <div class="total-val" style="color:#60a5fa">13</div>
+        </div>
+        <div style="margin-top:10px;padding:11px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:9px;text-align:center;font-size:12px;font-weight:800;color:#fff">Kaydet</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 9 — ŞUBEM ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-green" style="width:320px;height:320px;top:-60px;right:60px;background:rgba(16,185,129,.07)"></div>
+  <div class="left">
+    <div class="tag">Şubem</div>
+    <div class="slide-title">Aylık <span>Rapor</span> ve İstatistikler</div>
+    <div class="slide-sub">Şubenizin aylık performansını, tatlı bazında satış ve stok özetini buradan görün.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-amber">📦</div><div><strong>Bu Ay Gelen:</strong> Ayın başından bugüne teslim alınan toplam</div></div>
+      <div class="bullet"><div class="bullet-icon bi-green">✅</div><div><strong>Bu Ay Satılan:</strong> Hesaplanan satış toplamı</div></div>
+      <div class="bullet"><div class="bullet-icon bi-blue">📊</div><div><strong>Şu An Kalan:</strong> Güncel toplam stok (aya bağımsız)</div></div>
+      <div class="bullet"><div class="bullet-icon bi-purple">📅</div><div>‹ › butonlarıyla <strong>önceki aylara</strong> gidebilirsiniz</div></div>
+    </div>
+    <div style="margin-top:14px;padding:10px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:12px;color:#94a3b8">
+      Alt tabloda her tatlı türü için gelen, satılan ve kalan ayrı ayrı listelenir.
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:400px">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">…/subem.html</div>
+      </div>
+      <div class="screen-body">
+        <div class="mk-topbar">
+          <div class="mk-back">←</div>
+          <div class="mk-topbar-title">🌊 Rumeli İskelesi — Şubem</div>
+          <div style="font-size:14px;color:#64748b;cursor:pointer">🔄</div>
+        </div>
+        <!-- month nav -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:7px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px">
+          <div style="font-size:14px;color:#475569">‹</div>
+          <div style="font-size:11px;font-weight:700;color:#f1f5f9">Mart 2026</div>
+          <div style="font-size:14px;color:#334155">›</div>
+        </div>
+        <!-- stat cards -->
+        <div class="stat-row">
+          <div class="stat-chip" style="border-top:2px solid #f59e0b">
+            <div class="stat-chip-icon">📦</div>
+            <div class="stat-chip-val" style="color:#f59e0b;font-size:22px">312</div>
+            <div class="stat-chip-lbl">Bu Ay Gelen</div>
+          </div>
+          <div class="stat-chip" style="border-top:2px solid #10b981">
+            <div class="stat-chip-icon">✅</div>
+            <div class="stat-chip-val" style="color:#34d399;font-size:22px">287</div>
+            <div class="stat-chip-lbl">Bu Ay Satılan</div>
+          </div>
+          <div class="stat-chip" style="border-top:2px solid #3b82f6">
+            <div class="stat-chip-icon">📊</div>
+            <div class="stat-chip-val" style="color:#60a5fa;font-size:22px">25</div>
+            <div class="stat-chip-lbl">Şu An Kalan</div>
+          </div>
+        </div>
+        <!-- summary table -->
+        <table class="mk-table" style="margin-top:6px">
+          <thead><tr><th>Tatlı</th><th>Gelen</th><th>Satılan</th><th>Kalan</th></tr></thead>
+          <tbody>
+            <tr><td>🍮 Magnolya</td><td class="td-amber">150</td><td class="td-green">144</td><td class="td-blue">6</td></tr>
+            <tr><td>🍰 Cheesecake</td><td class="td-amber">80</td><td class="td-green">76</td><td class="td-blue">4</td></tr>
+            <tr><td>🍡 Kadayıf</td><td class="td-amber">60</td><td class="td-green">50</td><td class="td-blue">10</td></tr>
+            <tr><td>🧁 Sütlaç</td><td class="td-amber">22</td><td class="td-green">17</td><td class="td-blue">5</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 10 — TRANSFER ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-purple" style="width:300px;height:300px;bottom:30px;right:60px;background:rgba(167,139,250,.07)"></div>
+  <div class="left">
+    <div class="tag">Şube Arası Transfer</div>
+    <div class="slide-title">Fazla Stoku <span>Paylaşın</span></div>
+    <div class="slide-sub">Bir şubede fazla, başka şubede az tatlı varsa transfer ile dengeyi sağlayın.</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Menüden <strong>"Şube Arası Transfer"</strong>'e tıklayın</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Alan Şube</strong>'yi seçin (kendi şubeniz otomatik "Gönderen" olur)</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Transfer edilecek <strong>tatlı türünü</strong> ve <strong>miktarı</strong> girin</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text"><strong>"Transferi Kaydet"</strong> butonuna basın</div></div>
+    </div>
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:7px">
+      <div style="padding:9px 12px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;font-size:12px;color:#94a3b8">
+        🔄 <strong style="color:#a78bfa">Gönderen şube:</strong> Kalan stoğu azalır
+      </div>
+      <div style="padding:9px 12px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;font-size:12px;color:#94a3b8">
+        📦 <strong style="color:#a78bfa">Alan şube:</strong> Gelen miktarı artar
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:380px">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">…/transfer.html</div>
+      </div>
+      <div class="screen-body">
+        <div class="mk-topbar">
+          <div class="mk-back">←</div>
+          <div class="mk-topbar-title">Şube Arası Transfer</div>
+          <div class="mk-badge badge-purple">🔄 TRANSFER</div>
+        </div>
+        <div class="mk-form-row">
+          <div class="mk-form-lbl">📅 Tarih</div>
+          <div class="mk-form-val">08.03.2026</div>
+        </div>
+        <div class="mk-form-row">
+          <div class="mk-form-lbl">📤 Gönderen</div>
+          <div class="mk-form-val" style="color:#64748b;border-style:dashed">🌊 Rumeli İskelesi</div>
+        </div>
+        <div class="transfer-arrow">↓</div>
+        <div class="mk-form-row">
+          <div class="mk-form-lbl">📥 Alan Şube</div>
+          <div class="mk-form-val highlight">🏖️ Sahil</div>
+        </div>
+        <div class="mk-form-row">
+          <div class="mk-form-lbl">🍮 Tatlı</div>
+          <div class="mk-form-val highlight">🍮 Magnolya</div>
+        </div>
+        <div class="mk-form-row">
+          <div class="mk-form-lbl">📦 Miktar</div>
+          <div class="mk-form-val highlight" style="font-weight:800;font-size:14px">10</div>
+        </div>
+        <div style="margin-top:12px;padding:11px;background:linear-gradient(135deg,#a78bfa,#7c3aed);border-radius:9px;text-align:center;font-size:12px;font-weight:800;color:#fff">Transferi Kaydet</div>
+        <div class="divider"></div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:8px;font-weight:600;letter-spacing:.05em">SON TRANSFERLER</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:rgba(255,255,255,.04);border-radius:7px;font-size:10px;margin-bottom:5px">
+          <span>🍮 Magnolya</span><span style="color:#a78bfa;font-weight:700">10 adet</span><span style="color:#64748b">→ Sahil</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:rgba(255,255,255,.04);border-radius:7px;font-size:10px">
+          <span>🍰 Cheesecake</span><span style="color:#a78bfa;font-weight:700">5 adet</span><span style="color:#64748b">→ Vagon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 11 — TATLILAR PANELİ ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-amber" style="width:280px;height:280px;top:80px;right:40px"></div>
+  <div class="left">
+    <div class="tag">Tatlıcı Paneli</div>
+    <div class="slide-title">Üretim İçin <span>Stok</span> Görünümü</div>
+    <div class="slide-sub">Tatlıcı ekibi bu panelden hangi şubede ne kadar tatlı kaldığını anlık takip eder.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-green">🔒</div><div><strong>PIN Korumalı:</strong> Varsayılan PIN <strong>0000</strong> — oturum tarayıcıda açık kaldıkça korunur</div></div>
+      <div class="bullet"><div class="bullet-icon bi-amber">📊</div><div><strong>Üst bölüm:</strong> Tüm şubeler birleşik — tatlı bazında toplam stok rakamları</div></div>
+      <div class="bullet"><div class="bullet-icon bi-blue">🏪</div><div><strong>Alt bölüm:</strong> Her şubenin kendi tatlı detayları ayrı kart olarak</div></div>
+      <div class="bullet"><div class="bullet-icon bi-purple">⏱️</div><div>Her <strong>60 saniyede</strong> otomatik yenilenir; manuel yenileme butonu da var</div></div>
+    </div>
+    <div style="margin-top:14px;padding:10px 12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;font-size:12px;color:#94a3b8">
+      🍳 Sabah üretim planlamadan önce bu paneli kontrol edin. Stok az olan şubelere önce üretin.
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:420px;background:#0f172a">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">…/tatlilar-panel.html</div>
+      </div>
+      <div class="screen-body">
+        <div class="mk-topbar" style="background:#0f172a;border-color:rgba(255,255,255,.06)">
+          <div class="mk-back" style="font-size:10px;color:#64748b">← Çıkış</div>
+          <div class="mk-topbar-title" style="text-align:center">👨‍🍳 Tatlıcılar Paneli</div>
+          <div style="font-size:9px;color:#475569">8 Mart</div>
+        </div>
+        <div style="font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Güncel Stok Durumu</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:10px">
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:10px;text-align:center">
+            <div style="font-size:13px;margin-bottom:3px">🍮</div>
+            <div style="font-size:20px;font-weight:900;color:#f59e0b">42</div>
+            <div style="font-size:8px;color:#64748b">Magnolya</div>
+          </div>
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:10px;text-align:center">
+            <div style="font-size:13px;margin-bottom:3px">🍰</div>
+            <div style="font-size:20px;font-weight:900;color:#f59e0b">18</div>
+            <div style="font-size:8px;color:#64748b">Cheesecake</div>
+          </div>
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:10px;text-align:center">
+            <div style="font-size:13px;margin-bottom:3px">🍡</div>
+            <div style="font-size:20px;font-weight:900;color:#ef4444">0</div>
+            <div style="font-size:8px;color:#64748b">Kadayıf</div>
+          </div>
+        </div>
+        <div class="total-bar" style="margin-bottom:12px">
+          <div class="total-lbl">Genel Toplam Stok</div>
+          <div class="total-val">60</div>
+        </div>
+        <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Şube Bazlı Stok</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:10px">
+            <div style="font-size:10px;font-weight:700;color:#f1f5f9;margin-bottom:7px">🌊 Rumeli <span style="float:right;color:#f59e0b">25</span></div>
+            <div style="font-size:9px;color:#64748b;display:flex;justify-content:space-between;margin-bottom:4px"><span>Magnolya</span><span style="color:#34d399">12</span></div>
+            <div style="font-size:9px;color:#64748b;display:flex;justify-content:space-between"><span>Cheesecake</span><span style="color:#34d399">13</span></div>
+          </div>
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:10px">
+            <div style="font-size:10px;font-weight:700;color:#f1f5f9;margin-bottom:7px">🏖️ Sahil <span style="float:right;color:#f59e0b">4</span></div>
+            <div style="font-size:9px;color:#64748b;display:flex;justify-content:space-between;margin-bottom:4px"><span>Magnolya</span><span style="color:#f59e0b">2</span></div>
+            <div style="font-size:9px;color:#64748b;display:flex;justify-content:space-between"><span>Cheesecake</span><span style="color:#f59e0b">2</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 12 — ÜRETİM PANELİ ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-blue" style="width:280px;height:280px;bottom:20px;left:60px"></div>
+  <div class="left">
+    <div class="tag">Üretim Paneli</div>
+    <div class="slide-title"><span>Şifresiz</span> Matris Tablosu</div>
+    <div class="slide-sub">Tüm şubelerin tüm tatlılarını tek tabloda görün. Sevkiyat ve dağıtım ekibi için tasarlandı.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-green">🟢</div><div><strong>Yeşil (4+):</strong> Yeterli stok, normal durum</div></div>
+      <div class="bullet"><div class="bullet-icon bi-amber">🟡</div><div><strong>Sarı (1–3):</strong> Az stok, yakın zamanda tükenir</div></div>
+      <div class="bullet"><div class="bullet-icon" style="background:rgba(100,116,139,.15);color:#64748b">—</div><div><strong>Gri (0 veya boş):</strong> Tükendi veya giriş yapılmamış</div></div>
+      <div class="bullet"><div class="bullet-icon bi-purple">⏱️</div><div>Her <strong>5 dakikada</strong> otomatik yenilenir</div></div>
+      <div class="bullet"><div class="bullet-icon bi-amber">🔓</div><div>Giriş gerektirmez — herkes açabilir</div></div>
+    </div>
+    <div style="margin-top:14px;padding:10px 12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;font-size:12px;color:#94a3b8">
+      Adres: <strong style="color:#60a5fa">tli-takip.vercel.app/uretim.html</strong>
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:480px">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">tli-takip.vercel.app/uretim.html</div>
+      </div>
+      <div class="screen-body">
+        <div class="mk-topbar">
+          <span style="font-size:14px">🏭</span>
+          <div class="mk-topbar-title">Üretim Paneli — Güncel Şube Stokları</div>
+        </div>
+        <!-- legend chips -->
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#64748b;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);border-radius:20px;padding:3px 8px">
+            <span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block"></span>4+ adet — yeterli
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#64748b;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);border-radius:20px;padding:3px 8px">
+            <span style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block"></span>1–3 adet — az
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#64748b;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:3px 8px">
+            <span style="font-size:10px">—</span> tükendi
+          </div>
+        </div>
+        <!-- matrix table -->
+        <table class="mk-matrix">
+          <thead>
+            <tr>
+              <th style="text-align:left">Tatlı</th>
+              <th>Rumeli</th>
+              <th>Y.Kemal</th>
+              <th>Vagon</th>
+              <th>Sahil</th>
+              <th>Tuna</th>
+              <th>Millet</th>
+              <th style="background:rgba(245,158,11,.1);color:#f59e0b">TOPLAM</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="row-name">🍮 Magnolya</td>
+              <td class="mv-good">12</td>
+              <td class="mv-good">8</td>
+              <td class="mv-good">10</td>
+              <td class="mv-low">2</td>
+              <td class="mv-good">4</td>
+              <td class="mv-good">6</td>
+              <td class="mv-total">42</td>
+            </tr>
+            <tr>
+              <td class="row-name">🍰 Cheesecake</td>
+              <td class="mv-good">5</td>
+              <td class="mv-low">3</td>
+              <td class="mv-good">4</td>
+              <td class="mv-low">2</td>
+              <td class="mv-low">2</td>
+              <td class="mv-low">2</td>
+              <td class="mv-total">18</td>
+            </tr>
+            <tr>
+              <td class="row-name">🍡 Kadayıf</td>
+              <td class="mv-zero">—</td>
+              <td class="mv-zero">—</td>
+              <td class="mv-zero">—</td>
+              <td class="mv-zero">—</td>
+              <td class="mv-zero">—</td>
+              <td class="mv-zero">—</td>
+              <td class="mv-zero">0</td>
+            </tr>
+            <tr>
+              <td class="row-name">🧁 Sütlaç</td>
+              <td class="mv-zero">—</td>
+              <td class="mv-good">5</td>
+              <td class="mv-good">4</td>
+              <td class="mv-zero">—</td>
+              <td class="mv-low">3</td>
+              <td class="mv-low">3</td>
+              <td class="mv-total">15</td>
+            </tr>
+            <tr style="background:rgba(245,158,11,.04);font-weight:800">
+              <td class="row-name" style="color:#f59e0b">TOPLAM</td>
+              <td class="mv-total">17</td>
+              <td class="mv-total">16</td>
+              <td class="mv-total">18</td>
+              <td class="mv-total">4</td>
+              <td class="mv-total">9</td>
+              <td class="mv-total">11</td>
+              <td class="mv-total" style="font-size:12px">75</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 13 — GÜNLÜK AKIŞ ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-amber" style="width:400px;height:400px;top:-100px;left:-100px"></div>
+  <div class="left">
+    <div class="tag">Günlük İş Akışı</div>
+    <div class="slide-title">Gün İçinde <span>Kim</span> Ne Yapar?</div>
+    <div class="slide-sub">Sistemin günlük kullanım döngüsü üç ana adımdan oluşur.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-amber">☀️</div><div><strong>Sabah:</strong> Tatlıcı stok kontrolü → üretim → teslimat → müdür giriş kaydı</div></div>
+      <div class="bullet"><div class="bullet-icon bi-blue">🌤️</div><div><strong>Gün İçi:</strong> Stok dengeleme için gerekirse şubeler arası transfer</div></div>
+      <div class="bullet"><div class="bullet-icon bi-green">🌙</div><div><strong>Akşam:</strong> Müdür kalan stoku girer → yönetici raporu inceler</div></div>
+    </div>
+    <div style="margin-top:16px;padding:12px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:12px;color:#94a3b8;line-height:1.7">
+      📌 <strong style="color:#f59e0b">Kritik hatırlatma:</strong><br>
+      Müdürler <strong style="color:#f1f5f9">"Kalan Tatlılar"</strong>'ı her gün akşam girmediği sürece satış rakamları hesaplanamaz ve yönetici raporları doğru olmaz.
+    </div>
+  </div>
+  <div class="right">
+    <div class="flow" style="max-width:400px">
+      <div class="flow-step">
+        <div class="flow-time t-amber">Sabah</div>
+        <div class="flow-dot-col">
+          <div class="flow-dot fd-amber"></div>
+          <div class="flow-line fl-amber"></div>
+        </div>
+        <div class="flow-body">
+          <div class="flow-title">Üretim & Teslimat</div>
+          <div class="flow-items">
+            <div class="flow-item">👨‍🍳 Tatlıcı — Tatlıcı Paneli'nde stok kontrol</div>
+            <div class="flow-item">👨‍🍳 Tatlıcı — Düşük şubeler için üretim planla</div>
+            <div class="flow-item">👤 Müdür — Teslimat al, <strong>"Gelen Tatlılar"</strong>'a gir</div>
+            <div class="flow-item">🏭 Üretim — Üretim Paneli'nden doğrula</div>
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-time t-blue">Gün İçi</div>
+        <div class="flow-dot-col">
+          <div class="flow-dot fd-blue"></div>
+          <div class="flow-line fl-blue"></div>
+        </div>
+        <div class="flow-body">
+          <div class="flow-title">Satış & Gerekirse Transfer</div>
+          <div class="flow-items">
+            <div class="flow-item">👤 Müdür — Tatlı satışı devam eder</div>
+            <div class="flow-item">👤 Müdür — Fazla stok varsa <strong>Transfer</strong> yap</div>
+            <div class="flow-item">🏢 Yönetici — Gün içi satış grafiğini izle</div>
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-time t-green">Akşam</div>
+        <div class="flow-dot-col">
+          <div class="flow-dot fd-green"></div>
+          <div class="flow-line fl-green"></div>
+        </div>
+        <div class="flow-body">
+          <div class="flow-title">Kapanış & Raporlama</div>
+          <div class="flow-items">
+            <div class="flow-item">👤 Müdür — Stok say, <strong>"Kalan Tatlılar"</strong>'a gir</div>
+            <div class="flow-item">🏢 Yönetici — Satış oranı kırmızı şubeleri kontrol et</div>
+            <div class="flow-item">👨‍🍳 Tatlıcı — Yarınki üretimi planla</div>
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-time t-amber">Haftalık</div>
+        <div class="flow-dot-col">
+          <div class="flow-dot fd-amber"></div>
+        </div>
+        <div class="flow-body">
+          <div class="flow-title">Şube Karşılaştırması</div>
+          <div class="flow-items">
+            <div class="flow-item">🏢 Yönetici — "Bu Hafta" sekmesiyle karşılaştır</div>
+            <div class="flow-item">🏢 Yönetici — Düşük satış oranı şubeleri uyar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SLIDE 14 — ŞUBELER ═══════════════════════ -->
+<section class="slide bg-panel">
+  <div class="orb orb-blue" style="width:350px;height:350px;top:-80px;right:-60px"></div>
+  <div class="left">
+    <div class="tag">Şubeler ve Sorumluları</div>
+    <div class="slide-title">6 Şube, <span>6 Müdür</span></div>
+    <div class="slide-sub">Her şubenin ayrı şifresi, ayrı sorumlu müdürü bulunur.</div>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-icon bi-amber">🔑</div><div>Her müdür yalnızca kendi şubesinin şifresiyle giriş yapabilir</div></div>
+      <div class="bullet"><div class="bullet-icon bi-blue">📊</div><div>Yönetici admin panelinden tüm şubeleri izler</div></div>
+      <div class="bullet"><div class="bullet-icon bi-green">🔄</div><div>Transfer işlemi herhangi iki şube arasında yapılabilir</div></div>
+    </div>
+    <div style="margin-top:20px;padding:12px 14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;font-size:12px;color:#94a3b8;line-height:1.7">
+      <strong style="color:#34d399">Şifre unutulursa:</strong> Yöneticiye başvurun. Şifreler Supabase veritabanından güncellenir.
+    </div>
+  </div>
+  <div class="right">
+    <div class="screen" style="max-width:460px">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f57"></div>
+        <div class="screen-dot" style="background:#febc2e"></div>
+        <div class="screen-dot" style="background:#28c840"></div>
+        <div class="screen-url">tli-takip.vercel.app</div>
+      </div>
+      <div class="screen-body">
+        <table class="branch-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Şube Adı</th>
+              <th>Müdür</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="b-emoji">🌊</td>
+              <td class="b-name">Rumeli İskelesi</td>
+              <td class="b-manager">Metehan Arslan</td>
+            </tr>
+            <tr>
+              <td class="b-emoji">📚</td>
+              <td class="b-name">Yahya Kemal</td>
+              <td class="b-manager">Berkay Nazlıgül</td>
+            </tr>
+            <tr>
+              <td class="b-emoji">🏞️</td>
+              <td class="b-name">TunaBoyu</td>
+              <td class="b-manager">Semra Polat</td>
+            </tr>
+            <tr>
+              <td class="b-emoji">🏖️</td>
+              <td class="b-name">Sahil</td>
+              <td class="b-manager">Bahtiyar Kurt</td>
+            </tr>
+            <tr>
+              <td class="b-emoji">🚂</td>
+              <td class="b-name">Vagon</td>
+              <td class="b-manager">Baturay Cimpiri</td>
+            </tr>
+            <tr>
+              <td class="b-emoji">🌳</td>
+              <td class="b-name">Millet Bahçesi</td>
+              <td class="b-manager">Melis Boyalık</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="padding:10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);border-radius:9px;text-align:center">
+            <div style="font-size:22px;font-weight:900;color:#f59e0b">6</div>
+            <div style="font-size:9px;color:#64748b">Toplam Şube</div>
+          </div>
+          <div style="padding:10px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:9px;text-align:center">
+            <div style="font-size:22px;font-weight:900;color:#60a5fa">4</div>
+            <div style="font-size:9px;color:#64748b">Kullanıcı Rolü</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<button class="nav-btn" id="prev">‹</button>
+<button class="nav-btn" id="next">›</button>
+<div class="dots" id="dots"></div>
+<div class="slide-no" id="slide-no"></div>
+<div class="kb-hint">← → Klavye · Kaydır</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dotsEl = document.getElementById('dots');
+const slideNo = document.getElementById('slide-no');
+let cur = 0;
+let isAnimating = false;
+
+// Build dots
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' on' : '');
+  d.onclick = () => goto(i);
+  dotsEl.appendChild(d);
+});
+
+function goto(n, dir) {
+  if (isAnimating || n === cur) return;
+  isAnimating = true;
+  const prev = cur;
+  cur = Math.max(0, Math.min(slides.length - 1, n));
+
+  slides[prev].classList.remove('active');
+  slides[prev].classList.add('exit');
+
+  // reset exit after transition
+  setTimeout(() => {
+    slides[prev].classList.remove('exit');
+    slides[prev].style.transform = '';
+    isAnimating = false;
+  }, 580);
+
+  slides[cur].style.transform = dir >= 0 ? 'translateX(60px)' : 'translateX(-60px)';
+  // force reflow
+  slides[cur].offsetHeight;
+  slides[cur].classList.add('active');
+
+  dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === cur));
+  slideNo.textContent = `${cur + 1} / ${slides.length}`;
+}
+
+// init
+slideNo.textContent = `1 / ${slides.length}`;
+
+document.getElementById('next').onclick = () => goto(cur + 1, 1);
+document.getElementById('prev').onclick = () => goto(cur - 1, -1);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goto(cur + 1, 1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); goto(cur - 1, -1); }
+});
+
+// Touch swipe
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) dx < 0 ? goto(cur + 1, 1) : goto(cur - 1, -1);
+}, {passive:true});
+</script>
+</body>
+</html>
