@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👨‍🍳 Tatlıcılar Paneli</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tatlı Takip">
+    <title>🚚 Dağıtım Paneli</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -13,7 +19,7 @@
             --bg:      #0f172a;
             --surface: #1e293b;
             --border:  rgba(255,255,255,0.08);
-            --primary: #f59e0b;
+            --primary: #3b82f6;
             --text:    #f1f5f9;
             --muted:   #64748b;
         }
@@ -66,13 +72,13 @@
         }
         .pin-digit:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
         }
 
         .pin-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             border: none;
             border-radius: 12px;
             color: white;
@@ -82,13 +88,24 @@
             transition: transform 0.2s, box-shadow 0.2s;
             touch-action: manipulation;
         }
-        .pin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
+        .pin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
 
         .pin-error {
             font-size: 13px;
             color: #ef4444;
             margin-top: 12px;
             min-height: 18px;
+        }
+
+        .pin-back {
+            margin-top: 14px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
         }
 
         /* ─── PANEL ─── */
@@ -134,8 +151,8 @@
             font-size: 12px;
             color: var(--primary);
             font-weight: 600;
-            background: rgba(245,158,11,0.1);
-            border: 1px solid rgba(245,158,11,0.2);
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.25);
             border-radius: 20px;
             padding: 5px 12px;
             white-space: nowrap;
@@ -158,10 +175,26 @@
         }
         .refresh-btn:hover { background: rgba(255,255,255,0.12); }
 
+        .print-btn {
+            padding: 8px 14px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.25);
+            border-radius: 8px;
+            color: #93c5fd;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+            touch-action: manipulation;
+            flex-shrink: 0;
+        }
+        .print-btn:hover { background: rgba(59,130,246,0.18); }
+
         /* ─── İÇERİK ─── */
         .content {
             padding: 24px 16px 48px;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             width: 100%;
         }
@@ -188,7 +221,7 @@
             background: var(--border);
         }
 
-        /* ─── TOPLAM STOK ALANI ─── */
+        /* ─── TOPLAM STOK ─── */
         .stock-summary {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -208,33 +241,19 @@
             text-align: center;
         }
 
-        .stock-card-emoji {
-            font-size: 28px;
-            line-height: 1;
-        }
-
-        .stock-card-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--muted);
-            letter-spacing: 0.02em;
-        }
-
+        .stock-card-emoji { font-size: 28px; line-height: 1; }
+        .stock-card-name  { font-size: 12px; font-weight: 600; color: var(--muted); }
         .stock-card-value {
-            font-size: 36px;
-            font-weight: 800;
+            font-size: 36px; font-weight: 800;
             letter-spacing: -0.04em;
             font-variant-numeric: tabular-nums;
-            color: var(--text);
-            line-height: 1;
+            color: var(--text); line-height: 1;
         }
-
         .stock-card-value.zero { color: rgba(255,255,255,0.2); }
 
-        /* Grand total */
         .grand-total-bar {
-            background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06));
-            border: 1px solid rgba(245,158,11,0.25);
+            background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.06));
+            border: 1px solid rgba(59,130,246,0.25);
             border-radius: 14px;
             padding: 16px 22px;
             display: flex;
@@ -244,25 +263,22 @@
         }
 
         .grand-total-label {
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: rgba(245,158,11,0.8);
+            font-size: 13px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: rgba(59,130,246,0.8);
         }
 
         .grand-total-value {
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            color: var(--primary);
+            font-size: 32px; font-weight: 800;
+            letter-spacing: -0.04em; color: var(--primary);
         }
 
-        /* ─── ŞUBE KARTLARI ─── */
+        /* ─── ŞUBE BAZLI ─── */
         .branches-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 12px;
+            margin-bottom: 32px;
         }
 
         .branch-card {
@@ -289,71 +305,147 @@
             font-size: 14px;
             color: rgba(255,255,255,0.3);
             transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
-            flex-shrink: 0;
-            margin-left: 2px;
+            flex-shrink: 0; margin-left: 2px;
         }
         .branch-card.open .branch-chevron { transform: rotate(180deg); }
 
-        .branch-card-emoji {
-            font-size: 22px;
-            line-height: 1;
-        }
+        .branch-card-emoji { font-size: 22px; line-height: 1; }
 
         .branch-card-name {
-            font-size: 15px;
-            font-weight: 700;
-            flex: 1;
+            font-size: 15px; font-weight: 700; flex: 1;
         }
 
         .branch-card-total {
-            font-size: 18px;
-            font-weight: 800;
+            font-size: 18px; font-weight: 800;
             color: var(--primary);
             font-variant-numeric: tabular-nums;
         }
 
         .branch-dessert-list {
-            overflow: hidden;
-            max-height: 0;
+            overflow: hidden; max-height: 0;
             transition: max-height 0.35s cubic-bezier(0.16,1,0.3,1);
         }
         .branch-card.open .branch-dessert-list { max-height: 800px; }
         .branch-dessert-inner { padding: 10px 0; }
 
         .branch-dessert-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display: flex; align-items: center; gap: 10px;
             padding: 9px 18px;
             border-bottom: 1px solid rgba(255,255,255,0.04);
         }
-
         .branch-dessert-row:last-child { border-bottom: none; }
+        .branch-dessert-emoji { font-size: 18px; width: 26px; text-align: center; flex-shrink: 0; }
+        .branch-dessert-name  { flex: 1; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.75); }
+        .branch-dessert-value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 32px; text-align: right; }
+        .branch-dessert-value.zero { color: rgba(255,255,255,0.18); }
 
-        .branch-dessert-emoji {
-            font-size: 18px;
-            width: 26px;
-            text-align: center;
-            flex-shrink: 0;
+        /* ─── DAĞITIM PLANI ─── */
+        .plan-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--border);
         }
 
-        .branch-dessert-name {
-            flex: 1;
-            font-size: 14px;
-            font-weight: 500;
-            color: rgba(255,255,255,0.75);
+        .plan-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
         }
 
-        .branch-dessert-value {
-            font-size: 18px;
+        .plan-table th {
+            padding: 10px 14px;
+            font-size: 11px;
             font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            min-width: 32px;
-            text-align: right;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+            white-space: nowrap;
         }
 
-        .branch-dessert-value.zero {
-            color: rgba(255,255,255,0.18);
+        .plan-table th:first-child {
+            text-align: left;
+            padding-left: 18px;
+        }
+
+        .plan-table th:not(:first-child) { text-align: center; }
+
+        .plan-table td {
+            padding: 10px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: middle;
+        }
+
+        .plan-table tr:last-child td { border-bottom: none; }
+
+        .plan-table td:first-child {
+            padding-left: 18px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .plan-table td:not(:first-child) { text-align: center; }
+
+        .plan-table tr.needs-delivery {
+            background: rgba(239,68,68,0.04);
+        }
+
+        .plan-table tr.needs-delivery td:first-child {
+            color: var(--text);
+        }
+
+        /* Hücre renk kodları */
+        .dt-critical {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 6px;
+            color: #fca5a5;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .dt-low {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(245,158,11,0.12);
+            border: 1px solid rgba(245,158,11,0.25);
+            border-radius: 6px;
+            color: #fcd34d;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .dt-ok {
+            color: rgba(255,255,255,0.15);
+            font-size: 16px;
+        }
+
+        /* Eşik bilgisi */
+        .threshold-note {
+            margin-top: 12px;
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .threshold-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
         }
 
         /* Yükleniyor */
@@ -381,6 +473,27 @@
             .stock-card { padding: 14px 10px; }
             .stock-card-value { font-size: 28px; }
             .branches-grid { grid-template-columns: 1fr; }
+            .print-btn { display: none; }
+        }
+
+        /* ─── BASKIYA ÖZEL ─── */
+        @media print {
+            body { background: white; color: black; }
+            #pinOverlay, .topbar, .back-btn, .refresh-btn, .print-btn { display: none !important; }
+            .content { padding: 0; max-width: 100%; }
+            .stock-summary { display: none; }
+            .grand-total-bar { display: none; }
+            .branches-grid { display: none; }
+            .plan-table { border: 1px solid #ccc; }
+            .plan-table th { background: #f5f5f5; color: #333; border-bottom: 1px solid #ccc; }
+            .plan-table td { border-bottom: 1px solid #eee; color: #111; }
+            .dt-critical { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+            .dt-low      { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+            .dt-ok       { color: #ccc; }
+            .grand-total-bar, .threshold-note, .threshold-legend { color: #555; }
+            .plan-wrap { border: 1px solid #ccc; }
+            .section-line { background: #ddd; }
+            .section-title { color: #555; }
         }
     </style>
 </head>
@@ -389,8 +502,8 @@
     <!-- ─── PIN ─── -->
     <div id="pinOverlay" class="active">
         <div class="pin-box">
-            <span class="pin-icon">👨‍🍳</span>
-            <h2 class="pin-title">Tatlıcılar Paneli</h2>
+            <span class="pin-icon">🚚</span>
+            <h2 class="pin-title">Dağıtım Paneli</h2>
             <p class="pin-sub">Şifrenizi girin</p>
             <div class="pin-inputs">
                 <input type="password" class="pin-digit" maxlength="1" id="pd1" inputmode="numeric">
@@ -400,6 +513,7 @@
             </div>
             <button class="pin-btn" onclick="checkPin()">Giriş</button>
             <div class="pin-error" id="pinError"></div>
+            <button class="pin-back" onclick="window.location.href='index.html'">← Ana Sayfaya Dön</button>
         </div>
     </div>
 
@@ -408,20 +522,20 @@
 
         <div class="topbar">
             <button class="back-btn" onclick="window.location.href='index.html'">← Geri</button>
-            <span class="topbar-title">👨‍🍳 Tatlıcılar Paneli</span>
+            <span class="topbar-title">🚚 Dağıtım Paneli</span>
             <span class="topbar-date" id="todayBadge">—</span>
             <button class="refresh-btn" onclick="loadData()">🔄 Yenile</button>
+            <button class="print-btn" onclick="window.print()">🖨️ Yazdır</button>
         </div>
 
         <div class="content">
 
-            <!-- Bölüm 1: Toplam Stok -->
+            <!-- Bölüm A: Güncel Stok Durumu -->
             <div class="section-header">
                 <span class="section-title">Güncel Stok Durumu</span>
                 <div class="section-line"></div>
             </div>
             <div class="stock-summary" id="stockSummary">
-                <!-- skeleton -->
                 <div class="stock-card">
                     <div class="skel" style="width:36px;height:36px;border-radius:8px;"></div>
                     <div class="skel" style="width:60px;height:10px;margin-top:4px;"></div>
@@ -440,27 +554,21 @@
             </div>
 
             <div class="grand-total-bar" id="grandTotalBar">
-                <span class="grand-total-label">Genel Toplam</span>
+                <span class="grand-total-label">Tüm Şubelerde Toplam</span>
                 <span class="grand-total-value" id="grandTotalVal">—</span>
             </div>
 
-            <!-- Bölüm 2: Şube Bazlı -->
+            <!-- Bölüm B: Şube Bazlı Stok -->
             <div class="section-header">
                 <span class="section-title">Şube Bazlı Stok</span>
                 <div class="section-line"></div>
             </div>
             <div class="branches-grid" id="branchesGrid">
-                <!-- skeleton -->
                 <div class="branch-card">
                     <div class="branch-card-header">
                         <div class="skel" style="width:28px;height:28px;border-radius:6px;flex-shrink:0;"></div>
                         <div class="skel" style="flex:1;height:16px;"></div>
                         <div class="skel" style="width:32px;height:22px;border-radius:6px;"></div>
-                    </div>
-                    <div class="branch-dessert-list" style="padding:14px 18px;display:flex;flex-direction:column;gap:10px;">
-                        <div class="skel" style="height:14px;border-radius:6px;"></div>
-                        <div class="skel" style="height:14px;border-radius:6px;width:80%;"></div>
-                        <div class="skel" style="height:14px;border-radius:6px;width:90%;"></div>
                     </div>
                 </div>
                 <div class="branch-card">
@@ -468,14 +576,26 @@
                         <div class="skel" style="width:28px;height:28px;border-radius:6px;flex-shrink:0;"></div>
                         <div class="skel" style="flex:1;height:16px;"></div>
                         <div class="skel" style="width:32px;height:22px;border-radius:6px;"></div>
-                    </div>
-                    <div class="branch-dessert-list" style="padding:14px 18px;display:flex;flex-direction:column;gap:10px;">
-                        <div class="skel" style="height:14px;border-radius:6px;"></div>
-                        <div class="skel" style="height:14px;border-radius:6px;width:70%;"></div>
-                        <div class="skel" style="height:14px;border-radius:6px;width:85%;"></div>
                     </div>
                 </div>
             </div>
+
+            <!-- Bölüm C: Dağıtım Planı -->
+            <div class="section-header">
+                <span class="section-title">Dağıtım Planı</span>
+                <div class="section-line"></div>
+            </div>
+            <div class="plan-wrap">
+                <table class="plan-table" id="planTable">
+                    <tr><td class="loading-state" colspan="99">Veriler yükleniyor…</td></tr>
+                </table>
+            </div>
+            <div class="threshold-legend">
+                <span class="legend-item"><span class="dt-critical">ACİL</span> Stok yok — hemen gönder</span>
+                <span class="legend-item"><span class="dt-low">+5</span> Eksik adet — tamamla</span>
+                <span class="legend-item"><span class="dt-ok">—</span> Yeterli stok</span>
+            </div>
+            <div class="threshold-note" id="thresholdNote"></div>
 
         </div>
     </div>
@@ -483,10 +603,10 @@
     <script src="supabase-client.js"></script>
     <script>
         // ─── PIN ───
-        const PANEL_PIN = '0000';
+        const PANEL_PIN = '1234'; // Değiştirmek için bu satırı düzenleyin
         const pinIds    = ['pd1','pd2','pd3','pd4'];
 
-        if (sessionStorage.getItem('tatlicilarAuth') === '1') {
+        if (sessionStorage.getItem('dagitimAuth') === '1') {
             document.getElementById('pinOverlay').classList.remove('active');
         }
 
@@ -511,7 +631,7 @@
         function checkPin() {
             const entered = pinIds.map(id => document.getElementById(id).value).join('');
             if (entered === PANEL_PIN) {
-                sessionStorage.setItem('tatlicilarAuth', '1');
+                sessionStorage.setItem('dagitimAuth', '1');
                 document.getElementById('pinOverlay').classList.remove('active');
                 loadData();
             } else {
@@ -532,6 +652,16 @@
             'Millet Bahçesi':  '🌳',
         };
 
+        // Şubeye özel minimum stok eşikleri
+        const BRANCH_THRESHOLDS = {
+            'Rumeli İskelesi': 8,
+            'Yahya Kemal':     5,
+            'TunaBoyu':        5,
+            'Sahil':           5,
+            'Vagon':           6,
+            'Millet Bahçesi':  6,
+        };
+
         const today = getTodayDate();
         document.getElementById('todayBadge').textContent = formatDateTurkish(today);
 
@@ -547,14 +677,10 @@
                     <div class="skel" style="width:36px;height:36px;border-radius:8px;"></div>
                     <div class="skel" style="width:60px;height:10px;margin-top:4px;"></div>
                     <div class="skel" style="width:48px;height:36px;margin-top:4px;border-radius:8px;"></div>
-                </div>
-                <div class="stock-card">
-                    <div class="skel" style="width:36px;height:36px;border-radius:8px;"></div>
-                    <div class="skel" style="width:60px;height:10px;margin-top:4px;"></div>
-                    <div class="skel" style="width:48px;height:36px;margin-top:4px;border-radius:8px;"></div>
                 </div>`;
             document.getElementById('grandTotalVal').textContent = '—';
-            document.getElementById('branchesGrid').innerHTML = '';
+            document.getElementById('planTable').innerHTML =
+                '<tr><td class="loading-state" colspan="99">Veriler yükleniyor…</td></tr>';
 
             const [branches, desserts, allStock] = await Promise.all([
                 getBranches(),
@@ -568,13 +694,12 @@
                 return;
             }
 
-            // ── Bölüm 1: Her tatlının toplam stoku ──
+            // ── Bölüm A: Tatlı bazlı toplam stok ──
             const summaryEl = document.getElementById('stockSummary');
             summaryEl.innerHTML = '';
             let grandTotal = 0;
 
             desserts.forEach(dessert => {
-                // Tüm şubelerdeki bu tatlının toplamı
                 let total = 0;
                 branches.forEach(branch => {
                     total += (allStock[branch.id]?.[dessert.id] ?? 0);
@@ -593,7 +718,7 @@
 
             document.getElementById('grandTotalVal').textContent = grandTotal;
 
-            // ── Bölüm 2: Şube bazlı ──
+            // ── Bölüm B: Şube bazlı açılır/kapanır kartlar ──
             const branchesEl = document.getElementById('branchesGrid');
             branchesEl.innerHTML = '';
 
@@ -634,19 +759,82 @@
                 `;
                 branchesEl.appendChild(card);
             });
+
+            // ── Bölüm C: Dağıtım planı tablosu ──
+            buildDeliveryTable(branches, desserts, allStock);
         }
 
         function toggleBranchCard(card) {
             card.classList.toggle('open');
         }
 
-        // Giriş yapılmışsa yükle
-        if (sessionStorage.getItem('tatlicilarAuth') === '1') loadData();
+        function buildDeliveryTable(branches, desserts, allStock) {
+            const table = document.getElementById('planTable');
 
-        // 60 saniyede bir yenile
+            // Başlık satırı
+            let thead = '<thead><tr><th>Şube</th>';
+            desserts.forEach(d => {
+                thead += `<th title="${d.name}">${d.emoji || '🍰'} ${d.name}</th>`;
+            });
+            thead += '<th>Durum</th></tr></thead>';
+
+            // Veri satırları
+            let tbody = '<tbody>';
+            branches.forEach(branch => {
+                const branchStock = allStock[branch.id] || {};
+                const threshold   = BRANCH_THRESHOLDS[branch.name] ?? 5;
+                const emoji       = branchEmojis[branch.name] || '🏪';
+
+                let hasCritical = false;
+                let hasLow      = false;
+
+                let cells = '';
+                desserts.forEach(dessert => {
+                    const stock = branchStock[dessert.id] ?? 0;
+                    if (stock === 0) {
+                        hasCritical = true;
+                        cells += `<td><span class="dt-critical">ACİL</span></td>`;
+                    } else if (stock < threshold) {
+                        hasLow = true;
+                        const needed = threshold - stock;
+                        cells += `<td><span class="dt-low">+${needed}</span></td>`;
+                    } else {
+                        cells += `<td><span class="dt-ok">—</span></td>`;
+                    }
+                });
+
+                const needsDelivery = hasCritical || hasLow;
+                const statusBadge   = hasCritical
+                    ? `<span class="dt-critical">ACİL</span>`
+                    : hasLow
+                        ? `<span class="dt-low">Eksik var</span>`
+                        : `<span class="dt-ok">✓</span>`;
+
+                tbody += `<tr class="${needsDelivery ? 'needs-delivery' : ''}">
+                    <td>${emoji} ${branch.name}</td>
+                    ${cells}
+                    <td>${statusBadge}</td>
+                </tr>`;
+            });
+            tbody += '</tbody>';
+
+            table.innerHTML = thead + tbody;
+
+            // Eşik bilgisi
+            let thresholdLines = Object.entries(BRANCH_THRESHOLDS)
+                .map(([name, val]) => `${branchEmojis[name] || '🏪'} ${name}: min ${val}`)
+                .join(' &nbsp;·&nbsp; ');
+            document.getElementById('thresholdNote').innerHTML =
+                `<strong>Şube eşikleri:</strong> ${thresholdLines}`;
+        }
+
+        // Giriş yapılmışsa yükle
+        if (sessionStorage.getItem('dagitimAuth') === '1') loadData();
+
+        // 5 dakikada bir yenile
         setInterval(() => {
-            if (sessionStorage.getItem('tatlicilarAuth') === '1') loadData();
-        }, 60000);
+            if (sessionStorage.getItem('dagitimAuth') === '1') loadData();
+        }, 300000);
     </script>
     <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>

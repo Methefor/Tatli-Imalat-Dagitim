@@ -177,7 +177,28 @@
             margin-bottom: 20px;
             opacity: 0;
             animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;
+            cursor: pointer;
         }
+
+        .branch-avatar:hover .avatar-bg {
+            border-color: rgba(245,158,11,0.45);
+            background: linear-gradient(145deg, rgba(245,158,11,0.22), rgba(245,158,11,0.08));
+        }
+
+        .subem-hint {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: rgba(245,158,11,0.45);
+            cursor: pointer;
+            margin-top: -6px;
+            margin-bottom: 6px;
+            opacity: 0;
+            animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.42s forwards;
+            transition: color 0.2s;
+        }
+
+        .subem-hint:hover { color: rgba(245,158,11,0.8); }
 
         .avatar-bg {
             width: 96px;
@@ -336,8 +357,8 @@
 
         .card-amber::before   { background: var(--gold); }
         .card-blue::before    { background: #60a5fa; }
-        .card-green::before   { background: #34d399; }
         .card-purple::before  { background: #a78bfa; }
+        .card-red::before     { background: #f87171; }
 
         /* Hover arka plan parlaması */
         .action-card::after {
@@ -351,8 +372,8 @@
 
         .card-amber::after  { background: linear-gradient(120deg, rgba(245,158,11,0.07), transparent 60%); }
         .card-blue::after   { background: linear-gradient(120deg, rgba(96,165,250,0.07), transparent 60%); }
-        .card-green::after  { background: linear-gradient(120deg, rgba(52,211,153,0.07), transparent 60%); }
         .card-purple::after { background: linear-gradient(120deg, rgba(167,139,250,0.07), transparent 60%); }
+        .card-red::after    { background: linear-gradient(120deg, rgba(239,68,68,0.07), transparent 60%); }
 
         .action-card:hover {
             border-color: rgba(255,255,255,0.13);
@@ -362,8 +383,8 @@
 
         .card-amber:hover  { box-shadow: 0 8px 32px rgba(245,158,11,0.12),  inset 0 1px 0 rgba(255,255,255,0.06); }
         .card-blue:hover   { box-shadow: 0 8px 32px rgba(96,165,250,0.12),  inset 0 1px 0 rgba(255,255,255,0.06); }
-        .card-green:hover  { box-shadow: 0 8px 32px rgba(52,211,153,0.12),  inset 0 1px 0 rgba(255,255,255,0.06); }
         .card-purple:hover { box-shadow: 0 8px 32px rgba(167,139,250,0.12), inset 0 1px 0 rgba(255,255,255,0.06); }
+        .card-red:hover    { box-shadow: 0 8px 32px rgba(239,68,68,0.12),   inset 0 1px 0 rgba(255,255,255,0.06); }
 
         .action-card:hover::after { opacity: 1; }
 
@@ -388,8 +409,8 @@
 
         .card-amber  .card-icon { background: rgba(245,158,11,0.12);  border: 1px solid rgba(245,158,11,0.15);  }
         .card-blue   .card-icon { background: rgba(96,165,250,0.12);  border: 1px solid rgba(96,165,250,0.15);  }
-        .card-green  .card-icon { background: rgba(52,211,153,0.12);  border: 1px solid rgba(52,211,153,0.15);  }
         .card-purple .card-icon { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.15); }
+        .card-red    .card-icon { background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.15);   }
 
         /* Kart içerik */
         .card-body {
@@ -473,7 +494,7 @@
 
         <!-- Hero -->
         <div class="hero">
-            <div class="branch-avatar">
+            <div class="branch-avatar" onclick="window.location.href='subem.html'" title="Şubem — Aylık Rapor">
                 <div class="avatar-bg">
                     <span id="branchEmoji">🏪</span>
                     <span class="avatar-ring"></span>
@@ -483,6 +504,7 @@
             <p class="welcome-line">Hoş geldin 👋</p>
             <h1 class="manager-name" id="managerNameText">—</h1>
             <p class="branch-name" id="branchNameText">— Müdürü</p>
+            <p class="subem-hint" onclick="window.location.href='subem.html'">📊 Şubem →</p>
             <p class="branch-date" id="todayDate">—</p>
             <div class="separator"></div>
         </div>
@@ -500,19 +522,10 @@
             </button>
 
             <button class="action-card card-blue" onclick="window.location.href='kalan-tatlilar.html'">
-                <div class="card-icon">📊</div>
+                <div class="card-icon">✅</div>
                 <div class="card-body">
                     <div class="card-title">Kalan Tatlılar</div>
                     <div class="card-desc">Günün sonunda kalan ürünleri gir</div>
-                </div>
-                <span class="card-arrow">›</span>
-            </button>
-
-            <button class="action-card card-green" onclick="window.location.href='subem.html'">
-                <div class="card-icon">🏪</div>
-                <div class="card-body">
-                    <div class="card-title">Şubem</div>
-                    <div class="card-desc">Günlük özet ve istatistikler</div>
                 </div>
                 <span class="card-arrow">›</span>
             </button>
@@ -522,6 +535,15 @@
                 <div class="card-body">
                     <div class="card-title">Şube Arası Transfer</div>
                     <div class="card-desc">Tatlı başka şubeye gönder</div>
+                </div>
+                <span class="card-arrow">›</span>
+            </button>
+
+            <button class="action-card card-red" onclick="window.location.href='zayiat.html'">
+                <div class="card-icon">⚠️</div>
+                <div class="card-body">
+                    <div class="card-title">Zayiat Girişi</div>
+                    <div class="card-desc">Fire, bozulma ve kayıpları kaydet</div>
                 </div>
                 <span class="card-arrow">›</span>
             </button>

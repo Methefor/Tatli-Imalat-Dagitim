@@ -188,6 +188,48 @@
             opacity: 0.6;
         }
 
+        /* Yönetici gizli link (footer altında) */
+        .admin-link-wrap {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .admin-link-btn {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            padding: 10px 24px;
+            cursor: pointer;
+            transition: all 0.25s;
+            touch-action: manipulation;
+        }
+
+        .admin-link-btn:hover {
+            border-color: rgba(245,158,11,0.22);
+            background: rgba(245,158,11,0.04);
+        }
+
+        .admin-link-label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.18);
+        }
+
+        .admin-link-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.38);
+        }
+
+        .admin-link-btn:hover .admin-link-label { color: rgba(245,158,11,0.5); }
+        .admin-link-btn:hover .admin-link-text  { color: rgba(255,255,255,0.7); }
+
         /* Modal ortak */
         .modal {
             display: none;
@@ -539,11 +581,11 @@
                 <span>Müdür Girişi</span>
             </button>
 
-            <!-- Yönetici + Tatlıcılar (Küçük, yan yana) -->
+            <!-- Dağıtım + Tatlıcılar (Küçük, yan yana) -->
             <div class="btn-row">
-                <button class="btn-secondary" onclick="openAdminLogin()">
-                    <span class="btn-icon">👔</span>
-                    <span>Yönetici</span>
+                <button class="btn-secondary" onclick="openDagitim()">
+                    <span class="btn-icon">🚚</span>
+                    <span>Dağıtım</span>
                 </button>
                 <button class="btn-secondary" onclick="openTatlicilar()">
                     <span class="btn-icon">👨‍🍳</span>
@@ -555,6 +597,14 @@
 
         <!-- Footer -->
         <div class="footer">© 2026 Mutlukent Esenlik Hizmetleri A.Ş</div>
+
+        <!-- Yönetici gizli erişim -->
+        <div class="admin-link-wrap">
+            <button class="admin-link-btn" onclick="openAdminLogin()">
+                <span class="admin-link-label">En Yetkili Erişim</span>
+                <span class="admin-link-text">👔 Yönetici</span>
+            </button>
+        </div>
     </div>
 
     <!-- ŞUBE SEÇİMİ MODAL -->
@@ -762,6 +812,11 @@
                 adminPinIds.forEach(id => document.getElementById(id).value = '');
                 document.getElementById('ap1').focus();
             }
+        }
+
+        // ─── Dağıtım ───
+        function openDagitim() {
+            window.location.href = 'dagitim.html';
         }
 
         // ─── Tatlıcılar ───
