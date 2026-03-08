@@ -522,11 +522,7 @@
             let successCount = 0;
 
             for (const input of inputs) {
-                const remaining    = parseInt(input.value) || 0;
-                const hasEntryToday = input.dataset.hasEntry === 'true';
-
-                // Bugün girişi yoksa ve kalan 0 ise kaydetmeye gerek yok
-                if (!hasEntryToday && remaining === 0) continue;
+                const remaining = parseInt(input.value) || 0;
 
                 const result = await saveDailyEntry(
                     branchId,
