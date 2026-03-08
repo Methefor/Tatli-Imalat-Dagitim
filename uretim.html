@@ -731,5 +731,6 @@
         // 5 dakikada bir otomatik yenile
         setInterval(() => loadMatrix(), 5 * 60 * 1000);
     </script>
+    <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>

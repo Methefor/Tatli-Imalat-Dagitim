@@ -621,5 +621,6 @@
             if (sessionStorage.getItem('tatlicilarAuth') === '1') loadData();
         }, 60000);
     </script>
+    <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>
