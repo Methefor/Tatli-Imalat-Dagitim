@@ -188,6 +188,55 @@
             border: none; background: transparent; font-size: 0;
         }
 
+        /* ── Mod çubuğu ── */
+        .mode-bar {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 10px;
+            opacity: 0; animation: fadeUp 0.5s ease 0.03s both;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .mode-bar.edit-active {
+            background: rgba(239,68,68,0.07);
+            border-color: rgba(239,68,68,0.25);
+        }
+
+        .mode-info { flex: 1; min-width: 0; }
+
+        .mode-title {
+            font-size: 12px; font-weight: 600; color: var(--muted);
+            transition: color 0.3s;
+        }
+
+        .mode-bar.edit-active .mode-title { color: #fca5a5; }
+
+        .mode-btn {
+            display: flex; align-items: center; gap: 5px;
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px; font-weight: 700; color: var(--muted);
+            cursor: pointer; transition: all 0.2s;
+            touch-action: manipulation; white-space: nowrap; flex-shrink: 0;
+        }
+
+        .mode-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+        /* Bugünkü mevcut gelen rozeti */
+        .existing-badge {
+            display: inline-flex; align-items: center; gap: 3px;
+            margin-top: 3px; padding: 2px 8px;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 20px;
+            font-size: 11px; font-weight: 700; color: #34d399;
+        }
+
         /* ── Tatlı listesi ── */
         .dessert-list {
             background: var(--glass);
@@ -382,6 +431,14 @@
             <button class="date-nav-btn" id="nextDayBtn" onclick="changeDate(1)">›</button>
         </div>
 
+        <!-- Mod Çubuğu -->
+        <div class="mode-bar" id="modeBar">
+            <div class="mode-info">
+                <div class="mode-title" id="modeTitle">➕ Yeni teslimat — girilen miktar üstüne eklenir</div>
+            </div>
+            <button class="mode-btn" id="modeBtn" onclick="toggleMode()">✏️ Düzelt</button>
+        </div>
+
         <!-- Tatlı Listesi -->
         <div class="dessert-list" id="dessertList">
             <div class="dessert-row" style="opacity:1;animation:none;">
@@ -403,7 +460,7 @@
 
         <!-- Toplam -->
         <div class="total-card">
-            <span class="total-label">Toplam Gelen</span>
+            <span class="total-label" id="totalLabel">Toplam Gelen</span>
             <span class="total-value" id="totalValue">0</span>
         </div>
     </div>
@@ -420,6 +477,27 @@
         const branchId   = localStorage.getItem('branchId');
         const branchName = localStorage.getItem('branchName');
         let   selectedDate = getTodayDate();
+        let   isEditMode   = false;
+
+        function toggleMode() {
+            isEditMode = !isEditMode;
+            const bar   = document.getElementById('modeBar');
+            const title = document.getElementById('modeTitle');
+            const btn   = document.getElementById('modeBtn');
+            const lbl   = document.getElementById('totalLabel');
+            if (isEditMode) {
+                bar.classList.add('edit-active');
+                title.textContent = '✏️ Düzeltme Modu — Doğru toplam miktarı yazın';
+                btn.textContent   = '✕ İptal';
+                lbl.textContent   = 'Toplam (Düzeltme)';
+            } else {
+                bar.classList.remove('edit-active');
+                title.textContent = '➕ Yeni teslimat — girilen miktar üstüne eklenir';
+                btn.textContent   = '✏️ Düzelt';
+                lbl.textContent   = 'Toplam Gelen';
+            }
+            loadDesserts();
+        }
 
         if (!branchId) window.location.href = 'index.html';
 
@@ -461,7 +539,11 @@
 
         function updateTotal() {
             let total = 0;
-            document.querySelectorAll('.num-input').forEach(inp => total += parseInt(inp.value) || 0);
+            document.querySelectorAll('.num-input').forEach(inp => {
+                const newAmt   = parseInt(inp.value) || 0;
+                const existing = parseInt(inp.dataset.existing) || 0;
+                total += isEditMode ? newAmt : existing + newAmt;
+            });
             const el = document.getElementById('totalValue');
             el.textContent = total;
             el.classList.add('bump');
@@ -469,7 +551,7 @@
         }
 
         async function loadDesserts() {
-            const [activeDesserts, existing] = await Promise.all([
+            const [activeDesserts, entries] = await Promise.all([
                 getActiveDesserts(),
                 getDailyEntriesByBranch(branchId, selectedDate)
             ]);
@@ -483,19 +565,30 @@
             }
 
             activeDesserts.forEach((dessert, i) => {
-                const entry  = (existing || []).find(e => e.dessert_id === dessert.id);
-                const val    = entry?.received_amount  ?? 0;
-                const kalan  = entry?.remaining_amount ?? 0;
+                const entry       = (entries || []).find(e => e.dessert_id === dessert.id);
+                const existingAmt = entry?.received_amount  ?? 0;
+                const kalan       = entry?.remaining_amount ?? 0;
+
+                // Normal mod: input 0'dan başlar (üstüne ekle)
+                // Düzeltme modu: input mevcut toplamla başlar (üzerine yaz)
+                const inputVal  = isEditMode ? existingAmt : 0;
+                const badgeHtml = (!isEditMode && existingAmt > 0)
+                    ? `<span class="existing-badge">✓ Bugün: ${existingAmt} adet</span>`
+                    : '';
 
                 const row = document.createElement('div');
                 row.className = 'dessert-row';
                 row.style.animationDelay = `${0.08 + i * 0.06}s`;
                 row.innerHTML = `
                     <div class="dessert-emoji">${dessert.emoji || '🍰'}</div>
-                    <span class="dessert-name">${dessert.name}</span>
+                    <div style="flex:1;min-width:0;">
+                        <div class="dessert-name">${dessert.name}</div>
+                        ${badgeHtml}
+                    </div>
                     <input type="number" class="num-input"
-                           value="${val}" min="0"
+                           value="${inputVal}" min="0"
                            data-id="${dessert.id}"
+                           data-existing="${existingAmt}"
                            data-remaining="${kalan}"
                            inputmode="numeric"
                            oninput="updateTotal()">
@@ -514,11 +607,19 @@
             let successCount = 0;
 
             for (const input of inputs) {
+                const newAmt   = parseInt(input.value) || 0;
+                const existing = parseInt(input.dataset.existing) || 0;
+
+                // Normal modda hiç girilmemişse atla
+                if (!isEditMode && newAmt === 0) continue;
+
+                const received = isEditMode ? newAmt : existing + newAmt;
+
                 const result = await saveDailyEntry(
                     branchId,
                     input.dataset.id,
                     selectedDate,
-                    parseInt(input.value) || 0,
+                    received,
                     null,  // gelen kaydı: remaining_amount'a dokunma
                     0, ''
                 );
@@ -528,8 +629,13 @@
             toggleLoading(false);
 
             if (successCount > 0) {
-                showToast(`✅ ${successCount} tatlı kaydedildi!`, 'success');
+                const msg = isEditMode
+                    ? `✅ ${successCount} tatlı düzeltildi!`
+                    : `✅ ${successCount} teslimat eklendi!`;
+                showToast(msg, 'success');
                 setTimeout(() => window.location.href = 'branch-menu.html', 1400);
+            } else if (!isEditMode) {
+                showToast('⚠️ Eklenecek teslimat girilmedi.', 'error');
             } else {
                 showToast('❌ Kayıt başarısız!', 'error');
             }
