@@ -430,48 +430,48 @@ async function getAllLatestStock() {
 }
 
 /**
- * Mevcut stok
+ * Mevcut stok (her şube+tatlı için en son null-olmayan kalan)
+ * getAllLatestStock() ile aynı veriyi kullanır, tatlı bazında toplar.
  */
 async function getCurrentStock() {
     try {
-        const today = new Date().toISOString().split('T')[0]
-        
+        const past = new Date()
+        past.setDate(past.getDate() - 60)
+        const pastDate = past.toISOString().split('T')[0]
+
         const { data, error } = await supabaseClient
             .from('daily_entries')
             .select(`
-                remaining_amount,
-                desserts (
-                    id,
-                    name,
-                    emoji,
-                    display_order
-                ),
-                branches (
-                    id,
-                    name
-                )
+                branch_id, dessert_id, remaining_amount, entry_date,
+                desserts (id, name, emoji, display_order)
             `)
-            .eq('entry_date', today)
+            .gte('entry_date', pastDate)
+            .not('remaining_amount', 'is', null)
+            .order('entry_date', { ascending: false })
 
         if (error) throw error
 
+        // Her (şube, tatlı) için en son remaining_amount, sonra tatlı bazında topla
+        const seen = new Set()
         const stockByDessert = {}
-        
-        if (data) {
-            data.forEach(entry => {
-                const dessertId = entry.desserts.id
-                if (!stockByDessert[dessertId]) {
-                    stockByDessert[dessertId] = {
-                        dessertId: dessertId,
-                        dessertName: entry.desserts.name,
-                        emoji: entry.desserts.emoji,
-                        displayOrder: entry.desserts.display_order,
-                        totalRemaining: 0
-                    }
+
+        ;(data || []).forEach(entry => {
+            const key = `${entry.branch_id}-${entry.dessert_id}`
+            if (seen.has(key)) return
+            seen.add(key)
+
+            const dId = entry.dessert_id
+            if (!stockByDessert[dId]) {
+                stockByDessert[dId] = {
+                    dessertId:     dId,
+                    dessertName:   entry.desserts.name,
+                    emoji:         entry.desserts.emoji,
+                    displayOrder:  entry.desserts.display_order,
+                    totalRemaining: 0
                 }
-                stockByDessert[dessertId].totalRemaining += entry.remaining_amount || 0
-            })
-        }
+            }
+            stockByDessert[dId].totalRemaining += entry.remaining_amount || 0
+        })
 
         return Object.values(stockByDessert).sort((a, b) => a.displayOrder - b.displayOrder)
     } catch (err) {
