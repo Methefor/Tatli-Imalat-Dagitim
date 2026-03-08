@@ -652,14 +652,24 @@
             'Millet Bahçesi':  '🌳',
         };
 
-        // Şubeye özel minimum stok eşikleri
+        // Şube satış hacmi sıralaması (yüksekten düşüğe)
+        const BRANCH_PRIORITY = [
+            'Rumeli İskelesi',
+            'Millet Bahçesi',
+            'Sahil',
+            'Yahya Kemal',
+            'TunaBoyu',
+            'Vagon',
+        ];
+
+        // Şubeye özel minimum stok eşikleri (satış hacmine göre)
         const BRANCH_THRESHOLDS = {
-            'Rumeli İskelesi': 8,
-            'Yahya Kemal':     5,
+            'Rumeli İskelesi': 10, // en yüksek satış
+            'Millet Bahçesi':  8,
+            'Sahil':           7,
+            'Yahya Kemal':     6,
             'TunaBoyu':        5,
-            'Sahil':           5,
-            'Vagon':           6,
-            'Millet Bahçesi':  6,
+            'Vagon':           5,
         };
 
         const today = getTodayDate();
@@ -722,7 +732,14 @@
             const branchesEl = document.getElementById('branchesGrid');
             branchesEl.innerHTML = '';
 
-            branches.forEach(branch => {
+            // Satış hacmine göre sırala
+            const sortedBranches = [...branches].sort((a, b) => {
+                const ai = BRANCH_PRIORITY.indexOf(a.name);
+                const bi = BRANCH_PRIORITY.indexOf(b.name);
+                return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+            });
+
+            sortedBranches.forEach(branch => {
                 const branchStock = allStock[branch.id] || {};
                 let branchTotal = 0;
                 desserts.forEach(d => { branchTotal += branchStock[d.id] ?? 0; });
@@ -778,9 +795,16 @@
             });
             thead += '<th>Durum</th></tr></thead>';
 
+            // Şubeleri satış hacmine göre sırala
+            const sortedBranches = [...branches].sort((a, b) => {
+                const ai = BRANCH_PRIORITY.indexOf(a.name);
+                const bi = BRANCH_PRIORITY.indexOf(b.name);
+                return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+            });
+
             // Veri satırları
             let tbody = '<tbody>';
-            branches.forEach(branch => {
+            sortedBranches.forEach(branch => {
                 const branchStock = allStock[branch.id] || {};
                 const threshold   = BRANCH_THRESHOLDS[branch.name] ?? 5;
                 const emoji       = branchEmojis[branch.name] || '🏪';

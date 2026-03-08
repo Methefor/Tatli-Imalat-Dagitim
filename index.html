@@ -188,47 +188,154 @@
             opacity: 0.6;
         }
 
-        /* Yönetici gizli link (footer altında) */
+        /* ─── VIP Yönetici Kartı ─── */
         .admin-link-wrap {
-            margin-top: 20px;
-            text-align: center;
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
         }
 
-        .admin-link-btn {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
+        .admin-vip-btn {
             background: transparent;
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 10px;
-            padding: 10px 24px;
+            border: none;
             cursor: pointer;
-            transition: all 0.25s;
             touch-action: manipulation;
+            position: relative;
+            width: 100%;
         }
 
-        .admin-link-btn:hover {
-            border-color: rgba(245,158,11,0.22);
-            background: rgba(245,158,11,0.04);
+        .admin-vip-card {
+            position: relative;
+            padding: 16px 22px;
+            background: linear-gradient(135deg, rgba(12,9,3,0.97), rgba(22,16,5,0.98));
+            border-radius: 18px;
+            border: 1px solid rgba(245,158,11,0.28);
+            box-shadow:
+                0 0 0 1px rgba(0,0,0,0.6),
+                0 8px 32px rgba(0,0,0,0.55),
+                0 0 60px rgba(245,158,11,0.05),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+            overflow: hidden;
+            text-align: left;
         }
 
-        .admin-link-label {
+        /* Üst amber çizgi */
+        .admin-vip-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(245,158,11,0.55), transparent);
+        }
+
+        /* Köşe ışıması */
+        .admin-vip-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 60%; height: 60%;
+            background: linear-gradient(135deg, rgba(245,158,11,0.07), transparent);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .admin-vip-btn:hover .admin-vip-card {
+            border-color: rgba(245,158,11,0.55);
+            box-shadow:
+                0 0 0 1px rgba(0,0,0,0.6),
+                0 12px 48px rgba(0,0,0,0.65),
+                0 0 80px rgba(245,158,11,0.12),
+                inset 0 1px 0 rgba(255,255,255,0.09);
+            transform: translateY(-2px);
+        }
+
+        .admin-vip-btn:hover .admin-vip-card::after { opacity: 1; }
+        .admin-vip-btn:active .admin-vip-card { transform: translateY(0); }
+
+        /* Pulsing dot */
+        .admin-vip-dot {
+            position: absolute;
+            top: 12px; right: 14px;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #f59e0b;
+            box-shadow: 0 0 8px rgba(245,158,11,0.7);
+            animation: vipDotPulse 2.4s ease-in-out infinite;
+        }
+
+        @keyframes vipDotPulse {
+            0%, 100% { opacity: 0.35; transform: scale(1); box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+            50%       { opacity: 1;    transform: scale(1.4); box-shadow: 0 0 14px rgba(245,158,11,0.8); }
+        }
+
+        /* İkon kutusu */
+        .admin-vip-icon-box {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(145deg, rgba(245,158,11,0.14), rgba(245,158,11,0.06));
+            border: 1px solid rgba(245,158,11,0.22);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+            position: relative; z-index: 1;
+            filter: drop-shadow(0 2px 8px rgba(245,158,11,0.25));
+            transition: filter 0.3s;
+        }
+
+        .admin-vip-btn:hover .admin-vip-icon-box {
+            filter: drop-shadow(0 4px 14px rgba(245,158,11,0.45));
+        }
+
+        /* Metinler */
+        .admin-vip-texts {
+            flex: 1; min-width: 0;
+            position: relative; z-index: 1;
+        }
+
+        .admin-vip-label {
             font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.18em;
+            font-weight: 800;
+            letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.18);
+            color: rgba(245,158,11,0.55);
+            margin-bottom: 3px;
         }
 
-        .admin-link-text {
-            font-size: 13px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.38);
+        .admin-vip-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.9);
+            letter-spacing: -0.02em;
+            margin-bottom: 2px;
         }
 
-        .admin-link-btn:hover .admin-link-label { color: rgba(245,158,11,0.5); }
-        .admin-link-btn:hover .admin-link-text  { color: rgba(255,255,255,0.7); }
+        .admin-vip-sub {
+            font-size: 11px;
+            color: rgba(255,255,255,0.28);
+            letter-spacing: 0.02em;
+            font-weight: 500;
+        }
+
+        /* Ok */
+        .admin-vip-arrow {
+            font-size: 22px;
+            color: rgba(245,158,11,0.3);
+            font-weight: 300;
+            position: relative; z-index: 1;
+            transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), color 0.25s;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .admin-vip-btn:hover .admin-vip-arrow {
+            transform: translateX(5px);
+            color: rgba(245,158,11,0.8);
+        }
 
         /* Modal ortak */
         .modal {
@@ -598,11 +705,19 @@
         <!-- Footer -->
         <div class="footer">© 2026 Mutlukent Esenlik Hizmetleri A.Ş</div>
 
-        <!-- Yönetici gizli erişim -->
+        <!-- VIP Yönetici Kartı -->
         <div class="admin-link-wrap">
-            <button class="admin-link-btn" onclick="openAdminLogin()">
-                <span class="admin-link-label">En Yetkili Erişim</span>
-                <span class="admin-link-text">👔 Yönetici</span>
+            <button class="admin-vip-btn" onclick="openAdminLogin()">
+                <div class="admin-vip-card">
+                    <div class="admin-vip-dot"></div>
+                    <div class="admin-vip-icon-box">👔</div>
+                    <div class="admin-vip-texts">
+                        <div class="admin-vip-label">Genel Müdür Girişi</div>
+                        <div class="admin-vip-title">Yönetici Paneli</div>
+                        <div class="admin-vip-sub">Tüm şubeler · KPI · Raporlar · Analitik</div>
+                    </div>
+                    <span class="admin-vip-arrow">›</span>
+                </div>
             </button>
         </div>
     </div>
