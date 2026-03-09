@@ -620,17 +620,42 @@
                 align-items: center;
                 gap: 10px;
                 padding: 13px 16px;
-                border-bottom: 1px solid var(--border);
+                cursor: pointer;
+                user-select: none;
+                transition: background 0.2s;
             }
+            .gc-header:active { background: rgba(255,255,255,0.04); }
 
             .gc-card.gc-missing .gc-header {
                 border-bottom-color: rgba(239,68,68,0.15);
             }
 
+            .gc-chevron {
+                font-size: 13px;
+                color: rgba(255,255,255,0.3);
+                transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+                flex-shrink: 0;
+            }
+            .gc-card.open .gc-chevron { transform: rotate(180deg); }
+
             .gc-branch-name {
                 flex: 1;
                 font-size: 15px;
                 font-weight: 700;
+            }
+
+            .gc-collapsible {
+                overflow: hidden;
+                max-height: 0;
+                transition: max-height 0.35s cubic-bezier(0.16,1,0.3,1);
+                border-top: 1px solid transparent;
+            }
+            .gc-card.open .gc-collapsible {
+                max-height: 1000px;
+                border-top-color: var(--border);
+            }
+            .gc-card.gc-missing.open .gc-collapsible {
+                border-top-color: rgba(239,68,68,0.15);
             }
 
             .gc-body {
@@ -1035,6 +1060,10 @@
             card.classList.toggle('open');
         }
 
+        function toggleGcCard(card) {
+            card.classList.toggle('open');
+        }
+
         function buildDeliveryTable(branches, desserts, allStock) {
             const table = document.getElementById('planTable');
 
@@ -1184,12 +1213,15 @@
                 if (!hasEntries) {
                     cardsHtml += `
                         <div class="gc-card gc-missing">
-                            <div class="gc-header">
+                            <div class="gc-header" onclick="toggleGcCard(this.closest('.gc-card'))">
                                 <span style="font-size:20px">${emoji}</span>
                                 <span class="gc-branch-name">${branch.name}</span>
                                 <span class="gt-status-none">⚠ Girilmedi</span>
+                                <span class="gc-chevron">▾</span>
                             </div>
-                            <div class="gc-missing-notice">Bu şube henüz bugün gelen tatlıları girmemiş.</div>
+                            <div class="gc-collapsible">
+                                <div class="gc-missing-notice">Bu şube henüz bugün gelen tatlıları girmemiş.</div>
+                            </div>
                         </div>`;
                     return;
                 }
@@ -1208,15 +1240,18 @@
 
                 cardsHtml += `
                     <div class="gc-card">
-                        <div class="gc-header">
+                        <div class="gc-header" onclick="toggleGcCard(this.closest('.gc-card'))">
                             <span style="font-size:20px">${emoji}</span>
                             <span class="gc-branch-name">${branch.name}</span>
                             <span class="gt-status-ok">✓ Girildi</span>
+                            <span class="gc-chevron">▾</span>
                         </div>
-                        <div class="gc-body">${rowsHtml}</div>
-                        <div class="gc-footer">
-                            <span class="gc-total-label">Toplam</span>
-                            <span class="gt-total">${branchTotal}</span>
+                        <div class="gc-collapsible">
+                            <div class="gc-body">${rowsHtml}</div>
+                            <div class="gc-footer">
+                                <span class="gc-total-label">Toplam</span>
+                                <span class="gt-total">${branchTotal}</span>
+                            </div>
                         </div>
                     </div>`;
             });
