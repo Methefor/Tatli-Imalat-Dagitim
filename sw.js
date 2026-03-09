@@ -1,5 +1,5 @@
 // Tatlı Takip — Service Worker
-const CACHE = 'tatli-takip-v1';
+const CACHE = 'tatli-takip-v3';
 
 const STATIC = [
     '/',
@@ -16,6 +16,8 @@ const STATIC = [
     '/manifest.json',
     '/icon-192.png',
     '/icon-512.png',
+    '/maskable-192.png',
+    '/maskable-512.png',
     '/favicon.svg',
     '/apple-touch-icon.png',
 ];

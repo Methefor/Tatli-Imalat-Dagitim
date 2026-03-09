@@ -698,6 +698,7 @@ function branchEmoji(name) {
 // ═══════════════════════════════════════════════
 // PIN AUTH
 // ═══════════════════════════════════════════════
+let loadedTabs     = new Set(); // Burada tanımlanmalı — IIFE'den önce
 let _superAdminPin = '9999'; // DB'den yüklenene kadar default
 getSetting('superAdminPin').then(val => { if (val) _superAdminPin = String(val); });
 
@@ -752,8 +753,6 @@ function showMainPanel() {
 // ═══════════════════════════════════════════════
 // TAB SWITCHING
 // ═══════════════════════════════════════════════
-let loadedTabs = new Set();
-
 function switchTab(btnEl, tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
