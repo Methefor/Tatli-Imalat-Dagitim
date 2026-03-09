@@ -588,136 +588,131 @@
             background: rgba(239,68,68,0.03);
         }
 
-        /* Masaüstü: tablo görünür, kartlar gizli */
-        .gelen-table-wrap  { display: block; }
-        .gelen-cards-wrap  { display: none; }
+        /* ─── GELEN GİRİŞLERİ KARTLARI (tüm ekranlar) ─── */
+        .gelen-table-wrap { display: none; }
+        .gelen-cards-wrap { display: block; margin-bottom: 32px; }
 
-        /* ─── MOBİL: Kart düzeni ─── */
+        .gc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 10px;
+        }
+
         @media (max-width: 700px) {
-            .gelen-table-wrap { display: none; }
-            .gelen-cards-wrap { display: block; margin-bottom: 32px; }
+            .gc-grid { grid-template-columns: 1fr; }
+        }
 
-            .gc-grid {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
+        .gc-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
 
-            .gc-card {
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: 16px;
-                overflow: hidden;
-            }
+        .gc-card.gc-missing {
+            border-color: rgba(239,68,68,0.25);
+            background: rgba(239,68,68,0.04);
+        }
 
-            .gc-card.gc-missing {
-                border-color: rgba(239,68,68,0.25);
-                background: rgba(239,68,68,0.04);
-            }
+        .gc-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 16px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .gc-header:active { background: rgba(255,255,255,0.04); }
 
-            .gc-header {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 13px 16px;
-                cursor: pointer;
-                user-select: none;
-                transition: background 0.2s;
-            }
-            .gc-header:active { background: rgba(255,255,255,0.04); }
+        .gc-card.gc-missing .gc-header {
+            border-bottom-color: rgba(239,68,68,0.15);
+        }
 
-            .gc-card.gc-missing .gc-header {
-                border-bottom-color: rgba(239,68,68,0.15);
-            }
+        .gc-chevron {
+            font-size: 13px;
+            color: rgba(255,255,255,0.3);
+            transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+            flex-shrink: 0;
+        }
+        .gc-card.open .gc-chevron { transform: rotate(180deg); }
 
-            .gc-chevron {
-                font-size: 13px;
-                color: rgba(255,255,255,0.3);
-                transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
-                flex-shrink: 0;
-            }
-            .gc-card.open .gc-chevron { transform: rotate(180deg); }
+        .gc-branch-name {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 700;
+        }
 
-            .gc-branch-name {
-                flex: 1;
-                font-size: 15px;
-                font-weight: 700;
-            }
+        .gc-collapsible {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.35s cubic-bezier(0.16,1,0.3,1);
+            border-top: 1px solid transparent;
+        }
+        .gc-card.open .gc-collapsible {
+            max-height: 1000px;
+            border-top-color: var(--border);
+        }
+        .gc-card.gc-missing.open .gc-collapsible {
+            border-top-color: rgba(239,68,68,0.15);
+        }
 
-            .gc-collapsible {
-                overflow: hidden;
-                max-height: 0;
-                transition: max-height 0.35s cubic-bezier(0.16,1,0.3,1);
-                border-top: 1px solid transparent;
-            }
-            .gc-card.open .gc-collapsible {
-                max-height: 1000px;
-                border-top-color: var(--border);
-            }
-            .gc-card.gc-missing.open .gc-collapsible {
-                border-top-color: rgba(239,68,68,0.15);
-            }
+        .gc-body { padding: 8px 0; }
 
-            .gc-body {
-                padding: 8px 0;
-            }
+        .gc-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .gc-row:last-child { border-bottom: none; }
 
-            .gc-row {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 8px 16px;
-                border-bottom: 1px solid rgba(255,255,255,0.04);
-            }
+        .gc-dessert-name {
+            flex: 1;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
 
-            .gc-row:last-child { border-bottom: none; }
+        .gc-amt-ok {
+            font-size: 16px;
+            font-weight: 700;
+            color: #86efac;
+            font-variant-numeric: tabular-nums;
+            min-width: 32px;
+            text-align: right;
+        }
 
-            .gc-dessert-name {
-                flex: 1;
-                font-size: 14px;
-                color: rgba(255,255,255,0.7);
-            }
+        .gc-amt-zero {
+            font-size: 16px;
+            color: rgba(255,255,255,0.2);
+            min-width: 32px;
+            text-align: right;
+        }
 
-            .gc-amt-ok {
-                font-size: 16px;
-                font-weight: 700;
-                color: #86efac;
-                font-variant-numeric: tabular-nums;
-                min-width: 32px;
-                text-align: right;
-            }
+        .gc-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02);
+        }
 
-            .gc-amt-zero {
-                font-size: 16px;
-                color: rgba(255,255,255,0.2);
-                min-width: 32px;
-                text-align: right;
-            }
+        .gc-total-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+        }
 
-            .gc-footer {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 10px 16px;
-                border-top: 1px solid rgba(255,255,255,0.06);
-                background: rgba(255,255,255,0.02);
-            }
-
-            .gc-total-label {
-                font-size: 12px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.06em;
-                color: var(--muted);
-            }
-
-            .gc-missing-notice {
-                text-align: center;
-                padding: 18px 16px;
-                color: #fca5a5;
-                font-size: 13px;
-                font-weight: 600;
-            }
+        .gc-missing-notice {
+            text-align: center;
+            padding: 18px 16px;
+            color: #fca5a5;
+            font-size: 13px;
+            font-weight: 600;
         }
 
         /* ─── BASKIYA ÖZEL ─── */
@@ -926,14 +921,21 @@
             'Vagon',
         ];
 
-        // Şubeye özel minimum stok eşikleri (satış hacmine göre)
-        const BRANCH_THRESHOLDS = {
-            'Rumeli İskelesi': 10, // en yüksek satış
-            'Millet Bahçesi':  8,
-            'Sahil':           7,
-            'Yahya Kemal':     6,
-            'TunaBoyu':        5,
-            'Vagon':           5,
+        // Yüksek hacimli şubeler
+        const HIGH_VOL_BRANCHES = new Set(['Rumeli İskelesi', 'Millet Bahçesi', 'Yahya Kemal']);
+
+        // Tatlı bazlı minimum stok eşikleri
+        // high = yüksek hacimli şubeler, other = diğer şubeler
+        const DESSERT_THRESHOLDS = {
+            'Magnolya':      { high: 40, other: 20 },
+            'Tiramisu':      { high: 25, other: 10 },
+            'İbiza':         { high: 10, other:  5 },
+            'Truff':         { high: 20, other: 10 },
+            'Cheesecake':    { high: 20, other: 10 },
+            'Mozaik':        { high: 20, other: 10 },
+            'Trileçe':       { high: 20, other: 10 },
+            'Gökkuşağı':     { high: 10, other:  0 },
+            'San Sebastian': { high: 30, other: 10 },
         };
 
         const today = getTodayDate();
@@ -1053,7 +1055,7 @@
             });
 
             // ── Bölüm C: Dağıtım planı tablosu ──
-            buildDeliveryTable(branches, desserts, allStock);
+            buildDeliveryTable(branches, desserts, allStock, savedThresholds);
         }
 
         function toggleBranchCard(card) {
@@ -1064,7 +1066,7 @@
             card.classList.toggle('open');
         }
 
-        function buildDeliveryTable(branches, desserts, allStock) {
+        function buildDeliveryTable(branches, desserts, allStock, savedThresholds) {
             const table = document.getElementById('planTable');
 
             // Başlık satırı
@@ -1086,16 +1088,18 @@
             sortedBranches.forEach(branch => {
                 const branchStock = allStock[branch.id] || {};
                 const emoji       = branchEmojis[branch.name] || '🏪';
+                const isHigh      = HIGH_VOL_BRANCHES.has(branch.name);
 
                 let hasCritical = false;
                 let hasLow      = false;
 
                 let cells = '';
                 desserts.forEach(dessert => {
-                    // Eşiği şu öncelikle bul: localStorage → BRANCH_THRESHOLDS → 5
-                    const threshold = savedThresholds[branch.id]?.[String(dessert.id)]
-                                   ?? BRANCH_THRESHOLDS[branch.name]
-                                   ?? 5;
+                    // Öncelik: DB'den kaydedilmiş → DESSERT_THRESHOLDS → fallback
+                    const tiers     = DESSERT_THRESHOLDS[dessert.name];
+                    const defaultTh = tiers ? (isHigh ? tiers.high : tiers.other) : (isHigh ? 10 : 5);
+                    const threshold = savedThresholds[branch.id]?.[String(dessert.id)] ?? defaultTh;
+
                     const stock = branchStock[dessert.id] ?? 0;
                     if (stock === 0) {
                         hasCritical = true;
@@ -1128,12 +1132,10 @@
 
             // Eşik notu
             const hasCustom = Object.keys(savedThresholds).length > 0;
+            const highList  = [...HIGH_VOL_BRANCHES].map(n => branchEmojis[n] + ' ' + n).join(', ');
             document.getElementById('thresholdNote').innerHTML = hasCustom
-                ? `<strong>Şube eşikleri:</strong> Süper admin panelinden özelleştirilmiş ✓`
-                : `<strong>Şube eşikleri:</strong> Varsayılan — ` +
-                  Object.entries(BRANCH_THRESHOLDS)
-                    .map(([name, val]) => `${branchEmojis[name] || '🏪'} ${name}: min ${val}`)
-                    .join(' &nbsp;·&nbsp; ');
+                ? `<strong>Eşikler:</strong> Süper admin panelinden özelleştirilmiş ✓`
+                : `<strong>Yüksek hacim</strong> (${highList}): tatlı bazlı özel eşik &nbsp;·&nbsp; <strong>Diğer şubeler:</strong> yarı eşik`;
         }
 
         function buildGelenTable(branches, desserts, entries) {
