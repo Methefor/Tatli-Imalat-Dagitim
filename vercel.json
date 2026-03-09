@@ -3,11 +3,7 @@
   "name": "mutlukent-tatli-takip",
   "builds": [
     {
-      "src": "**/*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.js",
+      "src": "**",
       "use": "@vercel/static"
     }
   ],
