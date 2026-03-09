@@ -698,6 +698,9 @@ function branchEmoji(name) {
 // ═══════════════════════════════════════════════
 // PIN AUTH
 // ═══════════════════════════════════════════════
+let _superAdminPin = '9999'; // DB'den yüklenene kadar default
+getSetting('superAdminPin').then(val => { if (val) _superAdminPin = String(val); });
+
 (function initPin() {
     // Auto-focus first digit
     document.getElementById('p0').focus();
@@ -727,8 +730,7 @@ function branchEmoji(name) {
 
 function checkPin() {
     const entered = ['p0','p1','p2','p3'].map(id => document.getElementById(id).value).join('');
-    const correctPin = localStorage.getItem('superAdminPin') || '9999';
-    if (entered === correctPin) {
+    if (entered === _superAdminPin) {
         sessionStorage.setItem('superAdminAuth', '1');
         showMainPanel();
     } else {
@@ -943,7 +945,7 @@ async function loadBranchStatus() {
             container.innerHTML = '<div class="loading-placeholder">Şube bulunamadı.</div>';
             return;
         }
-        const saved = JSON.parse(localStorage.getItem('branchActiveState') || '{}');
+        const saved = (await getSetting('branchActiveState')) || {};
         container.innerHTML = '';
         branches.forEach(branch => {
             const isActive = saved[branch.id] !== false; // default active
@@ -967,16 +969,20 @@ async function loadBranchStatus() {
     }
 }
 
-function saveBranchStatus(branchId, checkbox) {
-    const saved = JSON.parse(localStorage.getItem('branchActiveState') || '{}');
-    saved[branchId] = checkbox.checked;
-    localStorage.setItem('branchActiveState', JSON.stringify(saved));
-    const lbl = document.getElementById(`bstat-lbl-${branchId}`);
-    if (lbl) {
-        lbl.textContent = checkbox.checked ? 'Aktif' : 'Pasif';
-        lbl.style.color = checkbox.checked ? 'var(--green)' : 'var(--muted)';
+async function saveBranchStatus(branchId, checkbox) {
+    try {
+        const saved = (await getSetting('branchActiveState')) || {};
+        saved[branchId] = checkbox.checked;
+        await setSetting('branchActiveState', saved);
+        const lbl = document.getElementById(`bstat-lbl-${branchId}`);
+        if (lbl) {
+            lbl.textContent = checkbox.checked ? 'Aktif' : 'Pasif';
+            lbl.style.color = checkbox.checked ? 'var(--green)' : 'var(--muted)';
+        }
+        showToast(`Şube ${checkbox.checked ? 'aktif' : 'pasif'} edildi`, 'success');
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Kaydedilemedi'), 'error');
     }
-    showToast(`Şube ${checkbox.checked ? 'aktif' : 'pasif'} edildi`, 'success');
 }
 
 // ═══════════════════════════════════════════════
@@ -1118,7 +1124,7 @@ async function loadDessertPrices() {
             container.innerHTML = '<div class="loading-placeholder">Tatlı bulunamadı.</div>';
             return;
         }
-        const saved = JSON.parse(localStorage.getItem('dessertPrices') || '{}');
+        const saved = (await getSetting('dessertPrices')) || {};
         container.innerHTML = '';
         desserts.forEach(d => {
             const row = document.createElement('div');
@@ -1145,8 +1151,12 @@ async function saveDessertPrices() {
             if (!isNaN(val) && val > 0) prices[d.id] = val;
         }
     });
-    localStorage.setItem('dessertPrices', JSON.stringify(prices));
-    showToast('Fiyatlar kaydedildi ✓', 'success');
+    try {
+        await setSetting('dessertPrices', prices);
+        showToast('Fiyatlar kaydedildi ✓', 'success');
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Kaydedilemedi'), 'error');
+    }
 }
 
 // ═══════════════════════════════════════════════
@@ -1168,9 +1178,8 @@ async function loadThresholds() {
             return;
         }
 
-        // Read saved thresholds
-        let saved = {};
-        try { saved = JSON.parse(localStorage.getItem('dessertThresholds') || '{}'); } catch(e) {}
+        // Read saved thresholds from DB
+        const saved = (await getSetting('dessertThresholds')) || {};
 
         container.innerHTML = '';
         const wrapper = document.createElement('div');
@@ -1213,7 +1222,7 @@ async function loadThresholds() {
     }
 }
 
-function saveThresholds() {
+async function saveThresholds() {
     const inputs = document.querySelectorAll('.threshold-input');
     const result = {};
     inputs.forEach(input => {
@@ -1222,37 +1231,51 @@ function saveThresholds() {
         if (!result[branchId]) result[branchId] = {};
         result[branchId][dessertId] = parseInt(input.value) || 0;
     });
-    localStorage.setItem('dessertThresholds', JSON.stringify(result));
-    showToast('Eşik değerleri kaydedildi', 'success');
+    try {
+        await setSetting('dessertThresholds', result);
+        showToast('Eşik değerleri kaydedildi', 'success');
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Kaydedilemedi'), 'error');
+    }
 }
 
 // ═══════════════════════════════════════════════
 // TAB 5: SİSTEM
 // ═══════════════════════════════════════════════
-function loadSistemPins() {
-    document.getElementById('pin-tatlici').value    = localStorage.getItem('tatlicilarPin') || '0000';
-    document.getElementById('pin-dagitim').value    = localStorage.getItem('dagitimPin')    || '1234';
-    document.getElementById('pin-superadmin').value = localStorage.getItem('superAdminPin') || '9999';
+async function loadSistemPins() {
+    const s = await getAllSettings();
+    document.getElementById('pin-tatlici').value    = s['tatlicilarPin'] || '0000';
+    document.getElementById('pin-dagitim').value    = s['dagitimPin']    || '1234';
+    document.getElementById('pin-superadmin').value = s['superAdminPin'] || '9999';
 }
 
-function savePin(lsKey, inputId) {
+async function savePin(dbKey, inputId) {
     const val = document.getElementById(inputId).value.trim();
     if (!val || !/^\d{4}$/.test(val)) {
         showToast('PIN 4 haneli rakam olmalıdır', 'error');
         return;
     }
-    localStorage.setItem(lsKey, val);
-    showToast('PIN kaydedildi', 'success');
+    try {
+        await setSetting(dbKey, val);
+        showToast('PIN kaydedildi', 'success');
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Kaydedilemedi'), 'error');
+    }
 }
 
-function saveSuperAdminPin() {
+async function saveSuperAdminPin() {
     const val = document.getElementById('pin-superadmin').value.trim();
     if (!val || !/^\d{4}$/.test(val)) {
         showToast('PIN 4 haneli rakam olmalıdır', 'error');
         return;
     }
-    localStorage.setItem('superAdminPin', val);
-    showToast('Süper Admin PIN güncellendi', 'success');
+    try {
+        await setSetting('superAdminPin', val);
+        _superAdminPin = val; // Mevcut oturum için güncelle
+        showToast('Süper Admin PIN güncellendi', 'success');
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Kaydedilemedi'), 'error');
+    }
 }
 </script>
 

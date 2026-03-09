@@ -769,4 +769,57 @@ styleElement.textContent = `
 `
 document.head.appendChild(styleElement)
 
+// ====================================================================
+// SETTINGS FUNCTIONS — Paylaşılan ayarlar (tüm cihazlarda geçerli)
+// ====================================================================
+
+/**
+ * Tek bir ayarı Supabase'den okur.
+ * @param {string} key
+ * @returns {*} parsed JSON value or null
+ */
+async function getSetting(key) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('settings')
+            .select('value')
+            .eq('key', key)
+            .maybeSingle()
+        if (error || !data) return null
+        return data.value
+    } catch (e) {
+        console.error('getSetting error:', e)
+        return null
+    }
+}
+
+/**
+ * Tüm ayarları tek sorguda çeker.
+ * @returns {Object} { key: value, ... }
+ */
+async function getAllSettings() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('settings')
+            .select('key, value')
+        if (error || !data) return {}
+        return Object.fromEntries(data.map(r => [r.key, r.value]))
+    } catch (e) {
+        console.error('getAllSettings error:', e)
+        return {}
+    }
+}
+
+/**
+ * Bir ayarı Supabase'e kaydeder (upsert).
+ * @param {string} key
+ * @param {*} value  (JSON serileştirilebilir)
+ */
+async function setSetting(key, value) {
+    const { error } = await supabaseClient
+        .from('settings')
+        .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+    if (error) throw error
+}
+
 console.log('✅ Supabase Client yüklendi')

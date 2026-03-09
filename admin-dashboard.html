@@ -919,7 +919,7 @@
             updateCharts();
             updateTrendChart();
             updateZayiatTable();
-            updateCiroSection();
+            await updateCiroSection();
             await updateStockCards();
             updateLiveStatus();
         }
@@ -1189,8 +1189,8 @@
         }
 
         // ── Ciro Section ──────────────────────────────────
-        function updateCiroSection() {
-            const prices    = JSON.parse(localStorage.getItem('dessertPrices') || '{}');
+        async function updateCiroSection() {
+            const prices = (await getSetting('dessertPrices')) || {};
             const container = document.getElementById('ciroContent');
 
             if (Object.keys(prices).length === 0) {

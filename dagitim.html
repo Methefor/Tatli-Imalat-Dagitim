@@ -603,8 +603,10 @@
     <script src="supabase-client.js"></script>
     <script>
         // ─── PIN ───
-        const PANEL_PIN = '1234'; // Değiştirmek için bu satırı düzenleyin
-        const pinIds    = ['pd1','pd2','pd3','pd4'];
+        let _panelPin = '1234'; // DB yüklenene kadar default
+        getSetting('dagitimPin').then(val => { if (val) _panelPin = String(val); });
+
+        const pinIds = ['pd1','pd2','pd3','pd4'];
 
         if (sessionStorage.getItem('dagitimAuth') === '1') {
             document.getElementById('pinOverlay').classList.remove('active');
@@ -630,7 +632,7 @@
 
         function checkPin() {
             const entered = pinIds.map(id => document.getElementById(id).value).join('');
-            if (entered === PANEL_PIN) {
+            if (entered === _panelPin) {
                 sessionStorage.setItem('dagitimAuth', '1');
                 document.getElementById('pinOverlay').classList.remove('active');
                 loadData();
@@ -704,8 +706,8 @@
                 return;
             }
 
-            // Süper admin panelinden kaydedilen eşikler (branchId -> dessertId -> number)
-            const savedThresholds = JSON.parse(localStorage.getItem('dessertThresholds') || '{}');
+            // Süper admin panelinden kaydedilen eşikler (DB'den, tüm cihazlarda geçerli)
+            const savedThresholds = (await getSetting('dessertThresholds')) || {};
 
             // ── Bölüm A: Tatlı bazlı toplam stok ──
             const summaryEl = document.getElementById('stockSummary');
