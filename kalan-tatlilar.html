@@ -225,12 +225,14 @@
 
         .onceki-badge {
             display: inline-flex; align-items: center; gap: 3px;
-            margin-top: 4px; padding: 2px 8px;
+            margin-top: 4px; margin-right: 4px; padding: 2px 8px;
             background: rgba(99,102,241,0.1);
             border: 1px solid rgba(99,102,241,0.2);
             border-radius: 20px;
             font-size: 11px; font-weight: 700; color: #818cf8;
         }
+
+        .dessert-meta .gelen-badge { margin-top: 4px; }
 
         .num-input {
             width: 80px; height: 48px;
@@ -422,6 +424,12 @@
             return `${y}-${m}-${day}`;
         }
 
+        function getPrevDate(dateStr) {
+            const d = new Date(dateStr + 'T12:00:00');
+            d.setDate(d.getDate() - 1);
+            return toDateStr(d);
+        }
+
         function updateDateUI() {
             const today = getTodayDate();
             document.getElementById('dateDisplay').textContent = formatDateTurkish(selectedDate);
@@ -461,10 +469,12 @@
         }
 
         async function loadDesserts() {
-            const [activeDesserts, existing, latestStock] = await Promise.all([
+            const prevDate = getPrevDate(selectedDate);
+
+            const [activeDesserts, todayEntries, prevEntries] = await Promise.all([
                 getActiveDesserts(),
                 getDailyEntriesByBranch(branchId, selectedDate),
-                getBranchLatestStock(branchId)
+                getDailyEntriesByBranch(branchId, prevDate)
             ]);
 
             const list = document.getElementById('dessertList');
@@ -476,20 +486,22 @@
             }
 
             activeDesserts.forEach((dessert, i) => {
-                const entry        = (existing || []).find(e => e.dessert_id === dessert.id);
-                const gelenAmt     = entry?.received_amount ?? 0;
-                const hasEntryToday = !!entry;
+                const todayEntry  = (todayEntries || []).find(e => e.dessert_id === dessert.id);
+                const prevEntry   = (prevEntries  || []).find(e => e.dessert_id === dessert.id);
 
-                // Bugün kalan girilmişse onu, yoksa önceki günden kalan stoğu kullan
-                const kalanAmt = entry?.remaining_amount != null
-                    ? entry.remaining_amount
-                    : (latestStock[dessert.id] ?? 0);
+                const gelenAmt    = todayEntry?.received_amount  ?? 0;
+                const oncekiKalan = prevEntry?.remaining_amount  ?? 0;
 
-                let badge = '';
+                // Input: bugün kalan girilmişse onu göster, yoksa 0'dan başla
+                const inputVal = todayEntry?.remaining_amount ?? 0;
+
+                // Her ikisi de varsa ikisini de göster
+                let badges = '';
+                if (oncekiKalan > 0) {
+                    badges += `<div class="onceki-badge">📋 Önceki Kalan: ${oncekiKalan}</div>`;
+                }
                 if (gelenAmt > 0) {
-                    badge = `<div class="gelen-badge">📦 Gelen: ${gelenAmt}</div>`;
-                } else if (kalanAmt > 0) {
-                    badge = `<div class="onceki-badge">📋 Önceki Kalan: ${kalanAmt}</div>`;
+                    badges += `<div class="gelen-badge">📦 Bugün Gelen: ${gelenAmt}</div>`;
                 }
 
                 const row = document.createElement('div');
@@ -499,13 +511,12 @@
                     <div class="dessert-emoji">${dessert.emoji || '🍰'}</div>
                     <div class="dessert-meta">
                         <div class="dessert-name">${dessert.name}</div>
-                        ${badge}
+                        ${badges}
                     </div>
                     <input type="number" class="num-input"
-                           value="${kalanAmt}" min="0"
+                           value="${inputVal}" min="0"
                            data-id="${dessert.id}"
                            data-received="${gelenAmt}"
-                           data-has-entry="${hasEntryToday}"
                            inputmode="numeric"
                            oninput="updateTotal()">
                 `;
