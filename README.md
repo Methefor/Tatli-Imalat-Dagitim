@@ -16,7 +16,7 @@
 
 ## 📖 Hakkında
 
-6 farklı şubede günlük tatlı dağıtımını, stok girişini ve satış takibini merkezi bir platform üzerinden yöneten web uygulaması. Şube müdürleri sabah teslim alınan tatlıları, akşam kalan stoku sisteme girer; satış otomatik hesaplanır ve yönetici anlık raporlara erişir.
+6 farklı şubede günlük tatlı dağıtımını, stok girişini ve satış takibini merkezi bir platform üzerinden yöneten web uygulaması. Şube müdürleri sabah teslim alınan tatlıları, akşam kalan stoku sisteme girer; satış otomatik hesaplanır ve yönetici anlık raporlara erişir. Dağıtım personeli hangi şubeye kaç tatlı bıraktığını gerçek zamanlı takip eder.
 
 ```
 Tatlıcı üretir → Şubeye teslim → Müdür girer → Satış otomatik → Yönetici raporlar
@@ -28,39 +28,102 @@ Tatlıcı üretir → Şubeye teslim → Müdür girer → Satış otomatik → 
 
 | Özellik | Açıklama |
 |---------|----------|
-| 📦 **Gelen Tatlılar** | Her şubeye günlük teslim alınan ürünlerin miktarını kayıt altına al |
+| 📦 **Gelen Tatlılar** | Biriktirme + Düzeltme modu — mevcut girişin üstüne ekle veya sıfırdan yaz |
 | ✅ **Kalan Tatlılar** | Gün sonu stok sayımı — satış `Gelen − Kalan` ile otomatik hesaplanır |
+| 🚚 **Dağıtım Paneli** | PIN korumalı panel: şube giriş takibi, eşik bazlı dağıtım planı |
 | 🔄 **Şube Arası Transfer** | Fazla stoku başka şubeye gönder, iki şubeye birden anlık yansır |
-| 📊 **Aylık Rapor** | Şube bazlı aylık gelen / satılan / kalan istatistikleri |
-| 🏢 **Admin Dashboard** | Tüm şubelerin KPI kartları, bar grafiği ve performans tablosu |
-| 👨‍🍳 **Tatlıcı Paneli** | Üretim planlaması için PIN korumalı anlık stok görünümü |
+| 📊 **Aylık Rapor** | Şube bazlı aylık gelen / satılan / kalan / zayiat istatistikleri |
+| 🏢 **Admin Dashboard** | KPI kartları, satış trendi grafiği, zayiat raporu ve ciro tahmini |
+| 👨‍🍳 **Tatlıcı Paneli** | PIN korumalı anlık stok görünümü — şube bazlı açılır/kapanır kartlar |
 | 🏭 **Üretim Paneli** | Şifresiz erişimli şube × tatlı matris tablosu |
-| 📱 **PWA Desteği** | Ana ekrana eklenebilir, amber ikonlu — maskable PWA uyumlu |
-| 🔒 **Rol Bazlı Erişim** | Yönetici / Müdür / Tatlıcı / Üretim — her rol ayrı korumalı |
-| ⚡ **Anlık Güncelleme** | Otomatik yenileme: Tatlıcı 60sn · Üretim 5dak · Admin 30sn |
+| 🔑 **Süper Admin** | Tatlı yönetimi, şube müdür ataması, PIN yönetimi, eşik özelleştirme |
+| 🗑️ **Zayiat Takibi** | Şubeye özel zayiat girişi ve raporlama |
+| 📱 **PWA Desteği** | Ana ekrana eklenebilir, maskable ikon, Service Worker cache |
+| 🔒 **Rol Bazlı Erişim** | Yönetici / Müdür / Tatlıcı / Üretim / Dağıtım — her rol ayrı korumalı |
+
+---
+
+## 📸 Ekran Görüntüleri
+
+<div align="center">
+
+### Giriş & Navigasyon
+
+| Giriş Ekranı | Şube Seçimi | Müdür PIN |
+|:-----------:|:-----------:|:---------:|
+| <img src="docs/screenshots/01-login.png" width="260" alt="Giriş Ekranı"/> | <img src="docs/screenshots/02-branch-select.png" width="260" alt="Şube Seçimi"/> | <img src="docs/screenshots/03-pin-entry.png" width="260" alt="PIN Girişi"/> |
+
+### Müdür Paneli
+
+| Ana Menü | Gelen Tatlılar | Kalan Tatlılar |
+|:--------:|:--------------:|:--------------:|
+| <img src="docs/screenshots/04-manager-menu.png" width="260" alt="Müdür Menü"/> | <img src="docs/screenshots/05-incoming.png" width="260" alt="Gelen Tatlılar"/> | <img src="docs/screenshots/06-remaining.png" width="260" alt="Kalan Tatlılar"/> |
+
+| Şube İstatistikleri | Şube Arası Transfer | İşlem Kayıtları |
+|:------------------:|:-------------------:|:--------------:|
+| <img src="docs/screenshots/07-branch-stats.png" width="260" alt="İstatistikler"/> | <img src="docs/screenshots/08-transfer.png" width="260" alt="Transfer"/> | <img src="docs/screenshots/25-manager-logs.png" width="260" alt="İşlem Kayıtları"/> |
+
+### Dağıtım Paneli
+
+| Şube Girişleri | Dağıtım Planı | Güncel Stok |
+|:--------------:|:-------------:|:-----------:|
+| <img src="docs/screenshots/13-delivery-entries.png" width="260" alt="Gelen Girişler"/> | <img src="docs/screenshots/12-delivery-plan.png" width="260" alt="Dağıtım Planı"/> | <img src="docs/screenshots/11-delivery.png" width="260" alt="Dağıtım Paneli"/> |
+
+### Yönetici Paneli
+
+| Ana Görünüm | KPI & Performans | Stok & Satış Trendi |
+|:-----------:|:----------------:|:-------------------:|
+| <img src="docs/screenshots/10-admin.png" width="260" alt="Admin Panel"/> | <img src="docs/screenshots/15-admin-kpi.png" width="260" alt="KPI"/> | <img src="docs/screenshots/14-admin-stock.png" width="260" alt="Stok Trendi"/> |
+
+| Zayiat Raporu | Zayiat Girişi | Şube Stokları |
+|:-------------:|:-------------:|:-------------:|
+| <img src="docs/screenshots/16-admin-waste.png" width="260" alt="Zayiat Raporu"/> | <img src="docs/screenshots/17-waste-entry.png" width="260" alt="Zayiat Girişi"/> | <img src="docs/screenshots/18-branch-stocks.png" width="260" alt="Şube Stokları"/> |
+
+### Tatlıcı & Üretim Paneli
+
+| Tatlıcılar Paneli | Şube Bazlı Stoklar |
+|:-----------------:|:------------------:|
+| <img src="docs/screenshots/09-confectioner.png" width="430" alt="Tatlıcılar Paneli"/> | <img src="docs/screenshots/19-confectioner-stocks.png" width="430" alt="Şube Stokları"/> |
+
+### Süper Admin Yönetimi
+
+| Şube & Müdür Yönetimi | Tatlı Listesi | PIN Yönetimi |
+|:---------------------:|:-------------:|:------------:|
+| <img src="docs/screenshots/21-branch-mgmt.png" width="260" alt="Şube Yönetimi"/> | <img src="docs/screenshots/22-dessert-mgmt.png" width="260" alt="Tatlı Yönetimi"/> | <img src="docs/screenshots/23-pin-mgmt.png" width="260" alt="PIN Yönetimi"/> |
+
+### Sistem İş Akışı
+
+<img src="docs/screenshots/20-workflow.png" width="860" alt="Tatlı Takip Sistemi İş Akışı"/>
+
+</div>
 
 ---
 
 ## 👥 Kullanıcı Rolleri
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    KULLANICI ROL MATRİSİ                           │
-├──────────────┬─────────────┬───────────────┬──────────────────────┤
-│     Rol      │   Erişim    │  Kim Kullanır │       Yetkiler        │
-├──────────────┼─────────────┼───────────────┼──────────────────────┤
-│ 🏢 Yönetici  │ Kullanıcı + │  Merkez Mgmt  │ Tüm raporlar, KPI   │
-│              │   Şifre     │               │ analitik, grafikler  │
-├──────────────┼─────────────┼───────────────┼──────────────────────┤
-│ 👤 Müdür     │  Şube PIN   │  Şube Sorumlu │ Kendi şubesi stok   │
-│              │  (4 hane)   │               │ girişi, transfer     │
-├──────────────┼─────────────┼───────────────┼──────────────────────┤
-│ 👨‍🍳 Tatlıcı  │  PIN: 0000  │ İmalat Ekibi  │ Stok görüntüleme    │
-│              │  (session)  │               │ üretim planlama      │
-├──────────────┼─────────────┼───────────────┼──────────────────────┤
-│ 🏭 Üretim    │  Şifresiz   │ Sevkiyat Ekip │ Matris tablosu      │
-│              │   Erişim    │               │ anlık stok durumu    │
-└──────────────┴─────────────┴───────────────┴──────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        KULLANICI ROL MATRİSİ                            │
+├───────────────┬──────────────┬────────────────┬─────────────────────────┤
+│     Rol       │    Erişim    │  Kim Kullanır  │        Yetkiler          │
+├───────────────┼──────────────┼────────────────┼─────────────────────────┤
+│ 🔑 Süper Admin│ Özel şifre   │ Sistem Yönet.  │ Tam yönetim, eşik ayarı │
+├───────────────┼──────────────┼────────────────┼─────────────────────────┤
+│ 🏢 Yönetici   │ Kullanıcı +  │ Merkez Mgmt    │ Tüm raporlar, KPI,      │
+│               │ Şifre        │                │ analitik, grafikler      │
+├───────────────┼──────────────┼────────────────┼─────────────────────────┤
+│ 👤 Müdür      │ Şube PIN     │ Şube Sorumlusu │ Kendi şubesi stok girişi │
+│               │ (4 hane)     │                │ transfer, zayiat         │
+├───────────────┼──────────────┼────────────────┼─────────────────────────┤
+│ 🚚 Dağıtım    │ Dağıtım PIN  │ Sevkiyat Ekibi │ Şube girişleri, dağıtım  │
+│               │              │                │ planı, stok durumu       │
+├───────────────┼──────────────┼────────────────┼─────────────────────────┤
+│ 👨‍🍳 Tatlıcı  │ PIN: 0000    │ İmalat Ekibi   │ Stok görüntüleme,       │
+│               │ (session)    │                │ üretim planlama          │
+├───────────────┼──────────────┼────────────────┼─────────────────────────┤
+│ 🏭 Üretim     │ Şifresiz     │ Sevkiyat Ekip  │ Matris tablosu,         │
+│               │ Erişim       │                │ anlık stok durumu        │
+└───────────────┴──────────────┴────────────────┴─────────────────────────┘
 ```
 
 ---
@@ -78,45 +141,34 @@ Tatlıcı üretir → Şubeye teslim → Müdür girer → Satış otomatik → 
 
 ---
 
-## 📸 Ekran Görüntüleri
+## 🚚 Dağıtım Paneli Özellikleri
 
-<div align="center">
+Dağıtım personeli için özel PIN korumalı panel:
 
-### Giriş Ekranı & Şube Seçimi
+- **Bugün Gelen Girişleri** — Her şubenin gün içinde kaydettiği gelen tatlılar, tatlı bazlı kart düzeninde
+- **Açılır/Kapanır Kartlar** — Girdi yapılan şubeler otomatik açık gelir; girdi yapılmayanlar kırmızı uyarıyla kapalı
+- **Dağıtım Planı** — Şube × tatlı matris tablosu; eşiğin altındaki stoklarda `ACİL` veya `+N` uyarısı
+- **Akıllı Eşikler** — Yüksek hacimli şubeler (Rumeli, Millet B., Yahya K.) için farklı, diğerleri için farklı minimum stok eşiği
 
-| Ana Giriş | Şube Seçimi | PIN Girişi |
-|:---------:|:-----------:|:----------:|
-| <img src="docs/screenshots/01-login.png" width="280" alt="Ana Giriş"/> | <img src="docs/screenshots/02-branch-select.png" width="280" alt="Şube Seçimi"/> | <img src="docs/screenshots/03-pin-entry.png" width="280" alt="PIN Girişi"/> |
-
-### Müdür Paneli
-
-| Ana Menü | Gelen Tatlılar | Kalan Tatlılar |
-|:--------:|:--------------:|:--------------:|
-| <img src="docs/screenshots/04-manager-menu.png" width="280" alt="Müdür Menü"/> | <img src="docs/screenshots/05-incoming.png" width="280" alt="Gelen Tatlılar"/> | <img src="docs/screenshots/06-remaining.png" width="280" alt="Kalan Tatlılar"/> |
-
-### Raporlar & Özel Ekranlar
-
-| Şubem (Aylık Rapor) | Şube Arası Transfer | Yönetici Paneli |
-|:-------------------:|:-------------------:|:---------------:|
-| <img src="docs/screenshots/07-branch-stats.png" width="280" alt="Şubem"/> | <img src="docs/screenshots/08-transfer.png" width="280" alt="Transfer"/> | <img src="docs/screenshots/10-admin.png" width="280" alt="Admin"/> |
-
-### Üretim & Tatlıcılar
-
-<img src="docs/screenshots/09-confectioner.png" width="860" alt="Tatlıcılar Paneli"/>
-
-</div>
+| Tatlı | Yüksek Hacim | Diğer Şubeler |
+|-------|:---:|:---:|
+| Magnolya | 40 | 20 |
+| San Sebastian | 30 | 10 |
+| Tiramisu | 25 | 10 |
+| Truff / Cheesecake / Mozaik / Trileçe | 20 | 10 |
+| İbiza | 10 | 5 |
+| Gökkuşağı | 10 | 0 |
 
 ---
 
 ## 🛠️ Teknoloji Yığını
 
 ```
-Frontend        → HTML5 · CSS3 · Vanilla JavaScript
-Backend         → Supabase (PostgreSQL + Auth)
-Animasyon       → Anime.js
+Frontend        → HTML5 · CSS3 · Vanilla JavaScript (no framework)
+Backend         → Supabase (PostgreSQL + Row Level Security)
 Grafikler       → Chart.js
 Deploy          → Vercel (GitHub → otomatik CI/CD)
-PWA             → Web App Manifest · Service Worker
+PWA             → Web App Manifest · Service Worker (cache-first)
 ```
 
 ---
@@ -128,26 +180,27 @@ Tatli-Imalat-Dagitim/
 │
 ├── index.html                    # 🔐 Ana giriş (3 rol butonu)
 ├── branch-menu.html              # 👤 Müdür ana menüsü
-├── gelen-tatlilar.html           # 📦 Gelen tatlı girişi
+├── gelen-tatlilar.html           # 📦 Gelen tatlı girişi (2 mod)
 ├── kalan-tatlilar.html           # ✅ Kalan stok girişi
 ├── subem.html                    # 📊 Aylık şube raporu
 ├── transfer.html                 # 🔄 Şube arası transfer
 ├── admin-dashboard.html          # 🏢 Yönetici KPI paneli
+├── dagitim.html                  # 🚚 Dağıtım personel paneli
 ├── tatlilar-panel.html           # 👨‍🍳 Tatlıcı stok paneli
 ├── uretim.html                   # 🏭 Üretim matris tablosu
+├── superadmin.html               # 🔑 Süper admin yönetimi
+├── zayiat.html                   # 🗑️ Zayiat girişi
 │
 ├── supabase-client.js            # 🗄️ Tüm DB fonksiyonları
 ├── manifest.json                 # 📱 PWA manifest
 ├── sw.js                         # ⚡ Service Worker
-├── icon-512.png                  # 🍮 Amber arka planlı maskable ikon
 │
 ├── docs/
-│   ├── screenshots/              # 📸 Ekran görüntüleri
-│   └── demo.svg                  # 🎬 Animasyonlu demo
+│   └── screenshots/              # 📸 Ekran görüntüleri (25 adet)
 │
 └── Tatlı Takip Sistemi kullanım kılavuzu/
     ├── KULLANIM_KILAVUZU.md      # 📖 Detaylı kullanım kılavuzu
-    ├── kilavuz-slayt.html        # 📊 14 slaytlı interaktif sunum
+    ├── kilavuz-slayt.html        # 📊 İnteraktif sunum
     └── [screenshots + PDF]       # 📸 Tüm ekran görüntüleri
 ```
 
@@ -162,13 +215,28 @@ daily_entries   → id · branch_id · dessert_id · entry_date
                      received_amount · remaining_amount · waste_amount
                      notes · entry_time
 admins          → id · username · password · name
-
--- İlişkiler
-daily_entries.branch_id  → branches(id)
-daily_entries.dessert_id → desserts(id)
+settings        → key · value  -- Pin kodları, eşikler, genel ayarlar
 
 -- Otomatik hesaplama
 satilan = received_amount - remaining_amount
+```
+
+---
+
+## 📅 Günlük İş Akışı
+
+```
+☀️  SABAH    → Dağıtım personeli tatlıları şubelere teslim eder
+               Müdür "Gelen Tatlılar"ı girer (biriktirme modu)
+               Dağıtım Paneli'nde girişler canlı takip edilir
+
+🌤️  GÜN İÇİ → Satış devam eder
+               Gerekirse şubeler arası Transfer yapılır
+               Tatlıcı panelinde stok durumu izlenir
+
+🌙  AKŞAM   → Müdür "Kalan Tatlılar"ı girer
+               Satış otomatik hesaplanır
+               Yönetici KPI ve grafik raporları inceler
 ```
 
 ---
@@ -187,47 +255,6 @@ python -m http.server 8000
 # Deploy (GitHub main'e push → Vercel otomatik deploy)
 git push origin main
 ```
-
----
-
-## 📅 Günlük İş Akışı
-
-```
-☀️  SABAH    → Tatlıcı stok kontrol → Üretim → Teslimat
-               Müdür "Gelen Tatlılar"'ı girer
-
-🌤️  GÜN İÇİ → Satış devam eder
-               Gerekirse şubeler arası Transfer
-
-🌙  AKŞAM   → Müdür "Kalan Tatlılar"'ı girer
-               Satış otomatik hesaplanır
-               Yönetici raporları inceler
-```
-
----
-
-## 📝 Commit Mesajı Konvansiyonu
-
-```
-feat:     Yeni özellik ekle
-fix:      Hata düzelt
-style:    UI/CSS değişikliği
-refactor: Kod düzenlemesi
-docs:     Dokümantasyon güncelle
-deploy:   Deployment işlemleri
-```
-
----
-
-## 🎬 Canlı Demo
-
-<div align="center">
-
-<img src="docs/demo.svg" width="900" alt="Tatlı Takip Sistemi Demo — Giriş · Yönetici Paneli · Tatlıcılar Paneli"/>
-
-> *Demo 30 saniyede 3 ekranı otomatik döngü ile gösterir: Giriş Ekranı → Yönetici Paneli → Tatlıcı Paneli*
-
-</div>
 
 ---
 
