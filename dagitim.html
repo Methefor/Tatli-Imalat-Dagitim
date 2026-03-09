@@ -588,6 +588,113 @@
             background: rgba(239,68,68,0.03);
         }
 
+        /* Masaüstü: tablo görünür, kartlar gizli */
+        .gelen-table-wrap  { display: block; }
+        .gelen-cards-wrap  { display: none; }
+
+        /* ─── MOBİL: Kart düzeni ─── */
+        @media (max-width: 700px) {
+            .gelen-table-wrap { display: none; }
+            .gelen-cards-wrap { display: block; margin-bottom: 32px; }
+
+            .gc-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .gc-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                overflow: hidden;
+            }
+
+            .gc-card.gc-missing {
+                border-color: rgba(239,68,68,0.25);
+                background: rgba(239,68,68,0.04);
+            }
+
+            .gc-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 13px 16px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .gc-card.gc-missing .gc-header {
+                border-bottom-color: rgba(239,68,68,0.15);
+            }
+
+            .gc-branch-name {
+                flex: 1;
+                font-size: 15px;
+                font-weight: 700;
+            }
+
+            .gc-body {
+                padding: 8px 0;
+            }
+
+            .gc-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 16px;
+                border-bottom: 1px solid rgba(255,255,255,0.04);
+            }
+
+            .gc-row:last-child { border-bottom: none; }
+
+            .gc-dessert-name {
+                flex: 1;
+                font-size: 14px;
+                color: rgba(255,255,255,0.7);
+            }
+
+            .gc-amt-ok {
+                font-size: 16px;
+                font-weight: 700;
+                color: #86efac;
+                font-variant-numeric: tabular-nums;
+                min-width: 32px;
+                text-align: right;
+            }
+
+            .gc-amt-zero {
+                font-size: 16px;
+                color: rgba(255,255,255,0.2);
+                min-width: 32px;
+                text-align: right;
+            }
+
+            .gc-footer {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 16px;
+                border-top: 1px solid rgba(255,255,255,0.06);
+                background: rgba(255,255,255,0.02);
+            }
+
+            .gc-total-label {
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: var(--muted);
+            }
+
+            .gc-missing-notice {
+                text-align: center;
+                padding: 18px 16px;
+                color: #fca5a5;
+                font-size: 13px;
+                font-weight: 600;
+            }
+        }
+
         /* ─── BASKIYA ÖZEL ─── */
         @media print {
             body { background: white; color: black; }
@@ -647,10 +754,17 @@
                 <span class="section-title">📦 Bugün Gelen Girişleri</span>
                 <div class="section-line"></div>
             </div>
-            <div class="plan-wrap" style="margin-bottom:32px;">
+            <!-- Masaüstü: tablo -->
+            <div class="plan-wrap gelen-table-wrap" style="margin-bottom:32px;">
                 <table class="gelen-table" id="gelenTable">
                     <tr><td class="loading-state" colspan="99">Veriler yükleniyor…</td></tr>
                 </table>
+            </div>
+            <!-- Mobil: kart düzeni -->
+            <div class="gelen-cards-wrap">
+                <div class="gc-grid" id="gelenCards">
+                    <div class="loading-state">Veriler yükleniyor…</div>
+                </div>
             </div>
 
             <!-- Bölüm A: Güncel Stok Durumu -->
@@ -818,6 +932,8 @@
                 '<tr><td class="loading-state" colspan="99">Veriler yükleniyor…</td></tr>';
             document.getElementById('gelenTable').innerHTML =
                 '<tr><td class="loading-state" colspan="99">Veriler yükleniyor…</td></tr>';
+            document.getElementById('gelenCards').innerHTML =
+                '<div class="loading-state">Veriler yükleniyor…</div>';
 
             const [branches, desserts, allStock, todayEntries] = await Promise.all([
                 getBranches(),
@@ -993,9 +1109,11 @@
 
         function buildGelenTable(branches, desserts, entries) {
             const table = document.getElementById('gelenTable');
+            const cards = document.getElementById('gelenCards');
 
             if (!branches.length || !desserts.length) {
                 table.innerHTML = '<tr><td class="loading-state" style="color:#ef4444;">❌ Veri alınamadı.</td></tr>';
+                cards.innerHTML = '<div class="loading-state" style="color:#ef4444;">❌ Veri alınamadı.</div>';
                 return;
             }
 
@@ -1013,14 +1131,13 @@
                 return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
             });
 
-            // Başlık
+            // ── Masaüstü tablosu ──
             let thead = '<thead><tr><th>Şube</th>';
             desserts.forEach(d => {
                 thead += `<th title="${d.name}">${d.emoji || '🍰'} ${d.name}</th>`;
             });
             thead += '<th>Toplam</th><th>Durum</th></tr></thead>';
 
-            // Satırlar
             let tbody = '<tbody>';
             sortedBranches.forEach(branch => {
                 const branchData = byBranch[branch.id];
@@ -1035,11 +1152,9 @@
                     } else {
                         const amt = branchData[dessert.id] ?? 0;
                         branchTotal += amt;
-                        if (amt > 0) {
-                            cells += `<td><span class="gt-ok">${amt}</span></td>`;
-                        } else {
-                            cells += `<td><span class="gt-zero">—</span></td>`;
-                        }
+                        cells += amt > 0
+                            ? `<td><span class="gt-ok">${amt}</span></td>`
+                            : `<td><span class="gt-zero">—</span></td>`;
                     }
                 });
 
@@ -1052,14 +1167,60 @@
 
                 tbody += `<tr class="${hasEntries ? '' : 'row-none'}">
                     <td>${emoji} ${branch.name}</td>
-                    ${cells}
-                    ${totalCell}
-                    ${statusCell}
+                    ${cells}${totalCell}${statusCell}
                 </tr>`;
             });
             tbody += '</tbody>';
-
             table.innerHTML = thead + tbody;
+
+            // ── Mobil kartları ──
+            let cardsHtml = '';
+            sortedBranches.forEach(branch => {
+                const branchData = byBranch[branch.id];
+                const hasEntries  = !!branchData;
+                const emoji       = branchEmojis[branch.name] || '🏪';
+                let branchTotal   = 0;
+
+                if (!hasEntries) {
+                    cardsHtml += `
+                        <div class="gc-card gc-missing">
+                            <div class="gc-header">
+                                <span style="font-size:20px">${emoji}</span>
+                                <span class="gc-branch-name">${branch.name}</span>
+                                <span class="gt-status-none">⚠ Girilmedi</span>
+                            </div>
+                            <div class="gc-missing-notice">Bu şube henüz bugün gelen tatlıları girmemiş.</div>
+                        </div>`;
+                    return;
+                }
+
+                let rowsHtml = '';
+                desserts.forEach(dessert => {
+                    const amt = branchData[dessert.id] ?? 0;
+                    branchTotal += amt;
+                    rowsHtml += `
+                        <div class="gc-row">
+                            <span style="font-size:18px;width:26px;text-align:center;flex-shrink:0">${dessert.emoji || '🍰'}</span>
+                            <span class="gc-dessert-name">${dessert.name}</span>
+                            <span class="${amt > 0 ? 'gc-amt-ok' : 'gc-amt-zero'}">${amt > 0 ? amt : '—'}</span>
+                        </div>`;
+                });
+
+                cardsHtml += `
+                    <div class="gc-card">
+                        <div class="gc-header">
+                            <span style="font-size:20px">${emoji}</span>
+                            <span class="gc-branch-name">${branch.name}</span>
+                            <span class="gt-status-ok">✓ Girildi</span>
+                        </div>
+                        <div class="gc-body">${rowsHtml}</div>
+                        <div class="gc-footer">
+                            <span class="gc-total-label">Toplam</span>
+                            <span class="gt-total">${branchTotal}</span>
+                        </div>
+                    </div>`;
+            });
+            cards.innerHTML = cardsHtml;
         }
 
         // Giriş yapılmışsa yükle
