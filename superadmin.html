@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Yönetimi — Tatlı Takip</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:      #0f172a;
+            --surface: #1e293b;
+            --border:  rgba(255,255,255,0.08);
+            --primary: #f59e0b;
+            --text:    #f1f5f9;
+            --muted:   #64748b;
+            --red:     #ef4444;
+            --green:   #10b981;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ─── PIN EKRANI ─── */
+        #pinOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        #pinOverlay.active { display: flex; }
+
+        .pin-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 32px;
+            text-align: center;
+            width: 90%;
+            max-width: 340px;
+        }
+
+        .pin-icon  { font-size: 60px; margin-bottom: 16px; display: block; }
+        .pin-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+        .pin-sub   { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+        .pin-inputs { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+
+        .pin-digit {
+            width: 58px; height: 66px;
+            font-size: 26px; font-weight: 700;
+            text-align: center;
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.14);
+            border-radius: 12px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .pin-digit:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+        }
+
+        .pin-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            touch-action: manipulation;
+            margin-bottom: 10px;
+        }
+        .pin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
+
+        .pin-back-btn {
+            width: 100%;
+            padding: 11px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--muted);
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .pin-back-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+        .pin-error {
+            font-size: 13px;
+            color: var(--red);
+            margin-top: 12px;
+            min-height: 18px;
+        }
+
+        /* ─── ANA PANEL ─── */
+        #mainPanel { display: none; flex-direction: column; min-height: 100vh; }
+        #mainPanel.active { display: flex; }
+
+        /* ─── TOPBAR ─── */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 60px;
+            background: rgba(15,23,42,0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar-left { display: flex; align-items: center; gap: 8px; }
+
+        .topbar-back {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 7px 12px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .topbar-back:hover { background: rgba(255,255,255,0.1); }
+
+        .topbar-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .topbar-emblem {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            box-shadow: 0 4px 14px rgba(245,158,11,0.35);
+        }
+        .topbar-label { font-size: 15px; font-weight: 700; }
+
+        .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+        .icon-btn {
+            width: 36px; height: 36px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .icon-btn:hover { background: rgba(255,255,255,0.12); }
+
+        /* ─── TABS ─── */
+        .tabs-bar {
+            display: flex;
+            gap: 6px;
+            padding: 14px 20px 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+        .tabs-bar::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            flex-shrink: 0;
+            padding: 9px 16px;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: transparent;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* ─── TAB CONTENTS ─── */
+        .tab-content { display: none; padding: 24px 20px; max-width: 900px; margin: 0 auto; width: 100%; }
+        .tab-content.active { display: block; }
+
+        /* ─── SECTIONS ─── */
+        .sa-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sa-section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sa-section-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .sa-section-icon {
+            font-size: 18px;
+        }
+
+        /* ─── FORM ROWS ─── */
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .form-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .form-row:first-child { padding-top: 0; }
+
+        .form-label {
+            flex: 1;
+            min-width: 0;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .form-label-sub {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 400;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .form-input {
+            width: 160px;
+            flex-shrink: 0;
+            padding: 9px 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+        }
+        .form-input.wide { width: 200px; }
+        .form-input.small { width: 70px; text-align: center; }
+        .form-input.emoji-input { width: 54px; text-align: center; font-size: 18px; }
+
+        .save-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .save-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,158,11,0.35); }
+        .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .del-btn {
+            padding: 8px 12px;
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 10px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .del-btn:hover { background: rgba(239,68,68,0.2); }
+        .del-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ─── TOGGLE ─── */
+        .toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .toggle-label-text {
+            font-size: 11px;
+            color: var(--muted);
+            width: 36px;
+        }
+        .toggle {
+            position: relative;
+            width: 44px; height: 24px;
+            flex-shrink: 0;
+        }
+        .toggle input { display: none; }
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.25s;
+        }
+        .toggle input:checked + .toggle-track { background: var(--green); }
+        .toggle-thumb {
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 18px; height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.25s;
+            pointer-events: none;
+        }
+        .toggle input:checked ~ .toggle-thumb { left: 23px; }
+
+        /* ─── DESSERT ROW ─── */
+        .dessert-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            flex-wrap: wrap;
+        }
+        .dessert-row:last-child { border-bottom: none; }
+
+        /* ─── NEW DESSERT FORM ─── */
+        .new-item-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 14px;
+        }
+        .new-item-form .form-input { flex: 1; min-width: 100px; width: auto; }
+        .new-item-form .emoji-input { flex: 0 0 54px; }
+        .new-item-form .small { flex: 0 0 70px; }
+
+        /* ─── THRESHOLD TABLE ─── */
+        .threshold-table-wrapper {
+            overflow-x: auto;
+        }
+        .threshold-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .threshold-table th,
+        .threshold-table td {
+            padding: 10px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .threshold-table th {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+        .threshold-table td:first-child { text-align: left; font-weight: 600; white-space: nowrap; }
+        .threshold-table th:first-child { text-align: left; }
+        .threshold-table tr:last-child td { border-bottom: none; }
+        .threshold-input {
+            width: 60px;
+            padding: 6px 8px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .threshold-input:focus { border-color: var(--primary); }
+
+        .save-thresholds-btn {
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .save-thresholds-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
+
+        /* ─── SPINNER ─── */
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 32px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        /* ─── PIN SECTION IN SISTEM ─── */
+        .pin-setting-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .pin-setting-row:last-child { border-bottom: none; }
+        .pin-setting-label {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .pin-setting-label small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+        .pin-setting-input {
+            width: 110px;
+            padding: 9px 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 4px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .pin-setting-input:focus { border-color: var(--primary); }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 600px) {
+            .topbar { padding: 0 14px; }
+            .tab-content { padding: 16px 14px; }
+            .form-input { width: 120px; }
+            .form-input.wide { width: 140px; }
+            .dessert-row { gap: 6px; }
+            .topbar-label { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ PIN EKRANI ═══ -->
+<div id="pinOverlay" class="active">
+    <div class="pin-box">
+        <span class="pin-icon">⚙️</span>
+        <div class="pin-title">Sistem Yönetimi</div>
+        <div class="pin-sub">Yönetici erişimi gerekli</div>
+        <div class="pin-inputs">
+            <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" id="p0">
+            <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" id="p1">
+            <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" id="p2">
+            <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" id="p3">
+        </div>
+        <button class="pin-btn" onclick="checkPin()">Giriş Yap</button>
+        <button class="pin-back-btn" onclick="location.href='index.html'">← Geri Dön</button>
+        <div class="pin-error" id="pinError"></div>
+    </div>
+</div>
+
+<!-- ═══ ANA PANEL ═══ -->
+<div id="mainPanel">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <a class="topbar-back" href="index.html">← Geri</a>
+        </div>
+        <div class="topbar-title">
+            <div class="topbar-emblem">⚙️</div>
+            <span class="topbar-label">Sistem Yönetimi</span>
+        </div>
+        <div class="topbar-right">
+            <button class="icon-btn" onclick="refreshCurrentTab()" title="Yenile">🔄</button>
+        </div>
+    </header>
+
+    <!-- TABS BAR -->
+    <div class="tabs-bar">
+        <button class="tab-btn active" data-tab="tab-sifreler" onclick="switchTab(this, 'tab-sifreler')">🔑 Şifreler</button>
+        <button class="tab-btn" data-tab="tab-mudurler" onclick="switchTab(this, 'tab-mudurler')">👤 Müdürler</button>
+        <button class="tab-btn" data-tab="tab-tatlilar" onclick="switchTab(this, 'tab-tatlilar')">🍰 Tatlılar</button>
+        <button class="tab-btn" data-tab="tab-esikler" onclick="switchTab(this, 'tab-esikler')">📊 Eşikler</button>
+        <button class="tab-btn" data-tab="tab-sistem" onclick="switchTab(this, 'tab-sistem')">⚙️ Sistem</button>
+    </div>
+
+    <!-- ── TAB 1: ŞİFRELER ── -->
+    <div id="tab-sifreler" class="tab-content active">
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">🏪</span>
+                <span class="sa-section-title">Şube Şifreler</span>
+            </div>
+            <div id="branch-passwords-list">
+                <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
+            </div>
+        </div>
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">👑</span>
+                <span class="sa-section-title">Admin Şifreler</span>
+            </div>
+            <div id="admin-passwords-list">
+                <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TAB 2: MÜDÜRLER ── -->
+    <div id="tab-mudurler" class="tab-content">
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">👤</span>
+                <span class="sa-section-title">Şube Müdür Adları</span>
+            </div>
+            <div id="managers-list">
+                <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
+            </div>
+        </div>
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">🏪</span>
+                <span class="sa-section-title">Şube Durumu</span>
+            </div>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Pasife alınan şubeler tatlıcılar panelinde gösterilmez.</p>
+            <div id="branch-status-list">
+                <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TAB 3: TATLILAR ── -->
+    <div id="tab-tatlilar" class="tab-content">
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">🍰</span>
+                <span class="sa-section-title">Tatlı Listesi</span>
+            </div>
+            <div id="desserts-list">
+                <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
+            </div>
+        </div>
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">➕</span>
+                <span class="sa-section-title">Yeni Tatlı Ekle</span>
+            </div>
+            <div class="new-item-form">
+                <input class="form-input emoji-input" type="text" id="new-dessert-emoji" placeholder="🍮" maxlength="2">
+                <input class="form-input wide" type="text" id="new-dessert-name" placeholder="Tatlı adı">
+                <input class="form-input small" type="number" id="new-dessert-order" placeholder="Sıra" min="1" value="99">
+                <button class="save-btn" onclick="handleAddDessert()">Ekle</button>
+            </div>
+        </div>
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">💰</span>
+                <span class="sa-section-title">Tatlı Fiyatları</span>
+            </div>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Fiyatlar yönetici panelinde ciro tahmini hesaplaması için kullanılır (₺).</p>
+            <div id="prices-list">
+                <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
+            </div>
+            <button class="save-thresholds-btn" onclick="saveDessertPrices()" style="margin-top:16px;">💾 Fiyatları Kaydet</button>
+        </div>
+    </div>
+
+    <!-- ── TAB 4: EŞİKLER ── -->
+    <div id="tab-esikler" class="tab-content">
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">📊</span>
+                <span class="sa-section-title">Dağıtım Eşik Değerleri</span>
+            </div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+                Her şube için tatlı başına minimum dağıtım eşiğini belirleyin. Bu değerler dağıtım panelinde uyarı olarak gösterilir.
+            </p>
+            <div id="thresholds-grid">
+                <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
+            </div>
+            <button class="save-thresholds-btn" onclick="saveThresholds()">💾 Eşikleri Kaydet</button>
+        </div>
+    </div>
+
+    <!-- ── TAB 5: SİSTEM ── -->
+    <div id="tab-sistem" class="tab-content">
+        <div class="sa-section">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">🔐</span>
+                <span class="sa-section-title">PIN Yönetimi</span>
+            </div>
+            <div class="pin-setting-row">
+                <div class="pin-setting-label">
+                    Tatlıcı Paneli PIN
+                    <small>tatlilar-panel.html için giriş kodu</small>
+                </div>
+                <input class="pin-setting-input" type="text" id="pin-tatlici" inputmode="numeric" maxlength="4" placeholder="0000">
+                <button class="save-btn" onclick="savePin('tatlicilarPin', 'pin-tatlici')">Kaydet</button>
+            </div>
+            <div class="pin-setting-row">
+                <div class="pin-setting-label">
+                    Dağıtım Paneli PIN
+                    <small>dagitim.html için giriş kodu</small>
+                </div>
+                <input class="pin-setting-input" type="text" id="pin-dagitim" inputmode="numeric" maxlength="4" placeholder="1234">
+                <button class="save-btn" onclick="savePin('dagitimPin', 'pin-dagitim')">Kaydet</button>
+            </div>
+            <div class="pin-setting-row">
+                <div class="pin-setting-label">
+                    Süper Admin PIN
+                    <small>Bu sayfaya giriş kodu</small>
+                </div>
+                <input class="pin-setting-input" type="text" id="pin-superadmin" inputmode="numeric" maxlength="4" placeholder="9999">
+                <button class="save-btn" onclick="saveSuperAdminPin()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /mainPanel -->
+
+<script src="supabase-client.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+// BRANCH EMOJI MAP
+// ═══════════════════════════════════════════════
+const BRANCH_EMOJIS = {
+    'Rumeli İskelesi': '🌊',
+    'Yahya Kemal':     '📚',
+    'TunaBoyu':        '🏞️',
+    'Sahil':           '🏖️',
+    'Vagon':           '🚂',
+    'Millet Bahçesi':  '🌳',
+};
+
+function branchEmoji(name) {
+    for (const [key, emoji] of Object.entries(BRANCH_EMOJIS)) {
+        if (name && name.includes(key)) return emoji;
+    }
+    return '🏪';
+}
+
+// ═══════════════════════════════════════════════
+// PIN AUTH
+// ═══════════════════════════════════════════════
+(function initPin() {
+    // Auto-focus first digit
+    document.getElementById('p0').focus();
+
+    // Setup digit navigation
+    ['p0','p1','p2','p3'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(-1);
+            if (this.value && i < 3) {
+                document.getElementById('p' + (i + 1)).focus();
+            }
+        });
+        el.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && i > 0) {
+                document.getElementById('p' + (i - 1)).focus();
+            }
+            if (e.key === 'Enter') checkPin();
+        });
+    });
+
+    // If already authenticated in session
+    if (sessionStorage.getItem('superAdminAuth') === '1') {
+        showMainPanel();
+    }
+})();
+
+function checkPin() {
+    const entered = ['p0','p1','p2','p3'].map(id => document.getElementById(id).value).join('');
+    const correctPin = localStorage.getItem('superAdminPin') || '9999';
+    if (entered === correctPin) {
+        sessionStorage.setItem('superAdminAuth', '1');
+        showMainPanel();
+    } else {
+        const errEl = document.getElementById('pinError');
+        errEl.textContent = 'Hatalı PIN. Lütfen tekrar deneyin.';
+        ['p0','p1','p2','p3'].forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('p0').focus();
+        setTimeout(() => { errEl.textContent = ''; }, 2500);
+    }
+}
+
+function showMainPanel() {
+    document.getElementById('pinOverlay').classList.remove('active');
+    document.getElementById('mainPanel').classList.add('active');
+    loadTabData('tab-sifreler');
+    loadSistemPins();
+}
+
+// ═══════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════
+let loadedTabs = new Set();
+
+function switchTab(btnEl, tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btnEl.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+    if (!loadedTabs.has(tabId)) {
+        loadTabData(tabId);
+    }
+}
+
+function refreshCurrentTab() {
+    const activeTab = document.querySelector('.tab-content.active');
+    if (activeTab) {
+        loadedTabs.delete(activeTab.id);
+        loadTabData(activeTab.id);
+    }
+}
+
+function loadTabData(tabId) {
+    loadedTabs.add(tabId);
+    if (tabId === 'tab-sifreler') {
+        loadBranchPasswords();
+        loadAdminPasswords();
+    } else if (tabId === 'tab-mudurler') {
+        loadManagers();
+        loadBranchStatus();
+    } else if (tabId === 'tab-tatlilar') {
+        loadDesserts();
+        loadDessertPrices();
+    } else if (tabId === 'tab-esikler') {
+        loadThresholds();
+    } else if (tabId === 'tab-sistem') {
+        loadSistemPins();
+    }
+}
+
+// ═══════════════════════════════════════════════
+// TAB 1: ŞİFRELER
+// ═══════════════════════════════════════════════
+async function loadBranchPasswords() {
+    const container = document.getElementById('branch-passwords-list');
+    container.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>';
+    try {
+        const branches = await getBranches();
+        if (!branches || branches.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">Şube bulunamadı.</div>';
+            return;
+        }
+        container.innerHTML = '';
+        branches.forEach(branch => {
+            const row = document.createElement('div');
+            row.className = 'form-row';
+            row.innerHTML = `
+                <div class="form-label">
+                    ${branchEmoji(branch.name)} ${branch.name}
+                </div>
+                <input class="form-input" type="text" id="bp-${branch.id}" placeholder="••••" autocomplete="off">
+                <button class="save-btn" onclick="handleUpdateBranchPassword(${branch.id}, 'bp-${branch.id}', this)">Kaydet</button>
+            `;
+            container.appendChild(row);
+        });
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Hata: ' + (err.message || 'Yüklenemedi') + '</div>';
+    }
+}
+
+async function handleUpdateBranchPassword(branchId, inputId, btn) {
+    const input = document.getElementById(inputId);
+    const newVal = input.value.trim();
+    if (!newVal) { showToast('Şifre boş olamaz', 'error'); return; }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+    try {
+        await updateBranchPassword(branchId, newVal);
+        showToast('Şube şifresi güncellendi', 'success');
+        input.value = '';
+        input.placeholder = '••••';
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kaydet';
+    }
+}
+
+async function loadAdminPasswords() {
+    const container = document.getElementById('admin-passwords-list');
+    container.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>';
+    try {
+        const admins = await getAllAdmins();
+        if (!admins || admins.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">Admin bulunamadı.</div>';
+            return;
+        }
+        container.innerHTML = '';
+        admins.forEach(admin => {
+            const row = document.createElement('div');
+            row.className = 'form-row';
+            row.innerHTML = `
+                <div class="form-label">
+                    👑 ${admin.name || admin.username}
+                    <span class="form-label-sub">@${admin.username}</span>
+                </div>
+                <input class="form-input" type="text" id="ap-${admin.id}" placeholder="Yeni şifre" autocomplete="off">
+                <button class="save-btn" onclick="handleUpdateAdminPassword(${admin.id}, 'ap-${admin.id}', this)">Kaydet</button>
+            `;
+            container.appendChild(row);
+        });
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Hata: ' + (err.message || 'Yüklenemedi') + '</div>';
+    }
+}
+
+async function handleUpdateAdminPassword(adminId, inputId, btn) {
+    const input = document.getElementById(inputId);
+    const newVal = input.value.trim();
+    if (!newVal) { showToast('Şifre boş olamaz', 'error'); return; }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+    try {
+        await updateAdminPassword(adminId, newVal);
+        showToast('Admin şifresi güncellendi', 'success');
+        input.value = '';
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kaydet';
+    }
+}
+
+// ═══════════════════════════════════════════════
+// TAB 2: MÜDÜRLER
+// ═══════════════════════════════════════════════
+async function loadManagers() {
+    const container = document.getElementById('managers-list');
+    container.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>';
+    try {
+        const branches = await getBranches();
+        if (!branches || branches.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">Şube bulunamadı.</div>';
+            return;
+        }
+        container.innerHTML = '';
+        branches.forEach(branch => {
+            const row = document.createElement('div');
+            row.className = 'form-row';
+            row.innerHTML = `
+                <div class="form-label">
+                    ${branchEmoji(branch.name)} ${branch.name}
+                </div>
+                <input class="form-input wide" type="text" id="mgr-${branch.id}" value="${branch.manager_name || ''}" placeholder="Müdür adı" autocomplete="off">
+                <button class="save-btn" onclick="handleUpdateManager(${branch.id}, 'mgr-${branch.id}', this)">Kaydet</button>
+            `;
+            container.appendChild(row);
+        });
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Hata: ' + (err.message || 'Yüklenemedi') + '</div>';
+    }
+}
+
+async function handleUpdateManager(branchId, inputId, btn) {
+    const input = document.getElementById(inputId);
+    const newVal = input.value.trim();
+    if (!newVal) { showToast('Müdür adı boş olamaz', 'error'); return; }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+    try {
+        await updateBranchManager(branchId, newVal);
+        showToast('Müdür adı güncellendi', 'success');
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kaydet';
+    }
+}
+
+// ── Şube Aktif/Pasif ──
+async function loadBranchStatus() {
+    const container = document.getElementById('branch-status-list');
+    container.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>';
+    try {
+        const branches = await getBranches();
+        if (!branches || branches.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">Şube bulunamadı.</div>';
+            return;
+        }
+        const saved = JSON.parse(localStorage.getItem('branchActiveState') || '{}');
+        container.innerHTML = '';
+        branches.forEach(branch => {
+            const isActive = saved[branch.id] !== false; // default active
+            const row = document.createElement('div');
+            row.className = 'form-row';
+            row.innerHTML = `
+                <div class="form-label">${branchEmoji(branch.name)} ${branch.name}</div>
+                <label class="toggle" title="${isActive ? 'Aktif' : 'Pasif'}">
+                    <input type="checkbox" id="bstat-${branch.id}" ${isActive ? 'checked' : ''} onchange="saveBranchStatus(${branch.id}, this)">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                </label>
+                <span class="toggle-label-text" id="bstat-lbl-${branch.id}" style="min-width:40px;color:${isActive ? 'var(--green)' : 'var(--muted)'}">
+                    ${isActive ? 'Aktif' : 'Pasif'}
+                </span>
+            `;
+            container.appendChild(row);
+        });
+    } catch (err) {
+        container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Hata: ' + (err.message || 'Yüklenemedi') + '</div>';
+    }
+}
+
+function saveBranchStatus(branchId, checkbox) {
+    const saved = JSON.parse(localStorage.getItem('branchActiveState') || '{}');
+    saved[branchId] = checkbox.checked;
+    localStorage.setItem('branchActiveState', JSON.stringify(saved));
+    const lbl = document.getElementById(`bstat-lbl-${branchId}`);
+    if (lbl) {
+        lbl.textContent = checkbox.checked ? 'Aktif' : 'Pasif';
+        lbl.style.color = checkbox.checked ? 'var(--green)' : 'var(--muted)';
+    }
+    showToast(`Şube ${checkbox.checked ? 'aktif' : 'pasif'} edildi`, 'success');
+}
+
+// ═══════════════════════════════════════════════
+// TAB 3: TATLILAR
+// ═══════════════════════════════════════════════
+async function loadDesserts() {
+    const container = document.getElementById('desserts-list');
+    container.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>';
+    try {
+        const desserts = await getAllDesserts();
+        if (!desserts || desserts.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">Tatlı bulunamadı.</div>';
+            return;
+        }
+        container.innerHTML = '';
+        desserts.forEach(d => {
+            container.appendChild(buildDessertRow(d));
+        });
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Hata: ' + (err.message || 'Yüklenemedi') + '</div>';
+    }
+}
+
+function buildDessertRow(d) {
+    const row = document.createElement('div');
+    row.className = 'dessert-row';
+    row.id = 'drow-' + d.id;
+    const isActive = d.is_active !== false;
+    row.innerHTML = `
+        <label class="toggle">
+            <input type="checkbox" ${isActive ? 'checked' : ''} onchange="handleToggleDessert(${d.id}, this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+        </label>
+        <span class="toggle-label-text" style="color:${isActive ? 'var(--green)' : 'var(--muted)'}">
+            ${isActive ? 'Aktif' : 'Pasif'}
+        </span>
+        <input class="form-input emoji-input" type="text" id="de-${d.id}" value="${d.emoji || ''}" maxlength="2" title="Emoji">
+        <input class="form-input wide" type="text" id="dn-${d.id}" value="${d.name || ''}" placeholder="Tatlı adı">
+        <input class="form-input small" type="number" id="do-${d.id}" value="${d.display_order || 99}" min="1" title="Sıra">
+        <button class="save-btn" onclick="handleUpdateDessert(${d.id}, this)">Kaydet</button>
+        <button class="del-btn" id="del-${d.id}" ${isActive ? 'disabled title="Önce pasife alın"' : ''} onclick="handleDeactivateDessert(${d.id}, this)">Sil</button>
+    `;
+    return row;
+}
+
+async function handleToggleDessert(dessertId, checkbox) {
+    const isActive = checkbox.checked;
+    try {
+        await updateDessertActive(dessertId, isActive);
+        showToast(isActive ? 'Tatlı aktif edildi' : 'Tatlı pasife alındı', 'success');
+        // Update label and del button
+        const row = document.getElementById('drow-' + dessertId);
+        if (row) {
+            const label = row.querySelector('.toggle-label-text');
+            if (label) {
+                label.textContent = isActive ? 'Aktif' : 'Pasif';
+                label.style.color = isActive ? 'var(--green)' : 'var(--muted)';
+            }
+            const delBtn = document.getElementById('del-' + dessertId);
+            if (delBtn) {
+                delBtn.disabled = isActive;
+                delBtn.title = isActive ? 'Önce pasife alın' : '';
+            }
+        }
+    } catch (err) {
+        checkbox.checked = !isActive; // revert
+        showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');
+    }
+}
+
+async function handleUpdateDessert(dessertId, btn) {
+    const emoji = (document.getElementById('de-' + dessertId)?.value || '').trim();
+    const name  = (document.getElementById('dn-' + dessertId)?.value || '').trim();
+    const order = parseInt(document.getElementById('do-' + dessertId)?.value) || 99;
+    if (!name) { showToast('Tatlı adı boş olamaz', 'error'); return; }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+    try {
+        await updateDessert(dessertId, { name, emoji, display_order: order });
+        showToast('Tatlı güncellendi', 'success');
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kaydet';
+    }
+}
+
+async function handleDeactivateDessert(dessertId, btn) {
+    if (!confirm('Bu tatlıyı silmek (pasife almak) istediğinizden emin misiniz?')) return;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+    try {
+        await updateDessertActive(dessertId, false);
+        showToast('Tatlı pasife alındı', 'success');
+        // Reload desserts to reflect change
+        loadedTabs.delete('tab-tatlilar');
+        loadDesserts();
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');
+        btn.disabled = false;
+        btn.textContent = 'Sil';
+    }
+}
+
+async function handleAddDessert() {
+    const emoji = (document.getElementById('new-dessert-emoji').value || '').trim();
+    const name  = (document.getElementById('new-dessert-name').value || '').trim();
+    const order = parseInt(document.getElementById('new-dessert-order').value) || 99;
+    if (!name) { showToast('Tatlı adı zorunludur', 'error'); return; }
+    const btn = document.querySelector('.new-item-form .save-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+    try {
+        await addDessert(name, emoji, order);
+        showToast('Yeni tatlı eklendi', 'success');
+        document.getElementById('new-dessert-emoji').value = '';
+        document.getElementById('new-dessert-name').value = '';
+        document.getElementById('new-dessert-order').value = '99';
+        loadedTabs.delete('tab-tatlilar');
+        loadDesserts();
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Eklenemedi'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Ekle';
+    }
+}
+
+// ── Tatlı Fiyatları ──
+async function loadDessertPrices() {
+    const container = document.getElementById('prices-list');
+    container.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>';
+    try {
+        const desserts = await getActiveDesserts();
+        if (!desserts || desserts.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">Tatlı bulunamadı.</div>';
+            return;
+        }
+        const saved = JSON.parse(localStorage.getItem('dessertPrices') || '{}');
+        container.innerHTML = '';
+        desserts.forEach(d => {
+            const row = document.createElement('div');
+            row.className = 'form-row';
+            row.innerHTML = `
+                <div class="form-label">${d.emoji || '🍰'} ${d.name}</div>
+                <input class="form-input small" type="number" id="price-${d.id}" value="${saved[d.id] || ''}" placeholder="₺ fiyat" min="0" step="0.5">
+            `;
+            container.appendChild(row);
+        });
+    } catch (err) {
+        container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Hata: ' + (err.message || 'Yüklenemedi') + '</div>';
+    }
+}
+
+async function saveDessertPrices() {
+    const desserts = await getActiveDesserts();
+    if (!desserts) return;
+    const prices = {};
+    desserts.forEach(d => {
+        const input = document.getElementById(`price-${d.id}`);
+        if (input && input.value !== '') {
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) prices[d.id] = val;
+        }
+    });
+    localStorage.setItem('dessertPrices', JSON.stringify(prices));
+    showToast('Fiyatlar kaydedildi ✓', 'success');
+}
+
+// ═══════════════════════════════════════════════
+// TAB 4: EŞİKLER
+// ═══════════════════════════════════════════════
+let _thresholdBranches = [];
+let _thresholdDesserts = [];
+
+async function loadThresholds() {
+    const container = document.getElementById('thresholds-grid');
+    container.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>';
+    try {
+        const [branches, desserts] = await Promise.all([getBranches(), getActiveDesserts()]);
+        _thresholdBranches = branches || [];
+        _thresholdDesserts = desserts || [];
+
+        if (!_thresholdBranches.length || !_thresholdDesserts.length) {
+            container.innerHTML = '<div class="loading-placeholder">Veri bulunamadı.</div>';
+            return;
+        }
+
+        // Read saved thresholds
+        let saved = {};
+        try { saved = JSON.parse(localStorage.getItem('dessertThresholds') || '{}'); } catch(e) {}
+
+        container.innerHTML = '';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'threshold-table-wrapper';
+
+        const table = document.createElement('table');
+        table.className = 'threshold-table';
+
+        // Header
+        const thead = document.createElement('thead');
+        let headHtml = '<tr><th>Şube</th>';
+        _thresholdDesserts.forEach(d => {
+            headHtml += `<th>${d.emoji || ''} ${d.name}</th>`;
+        });
+        headHtml += '</tr>';
+        thead.innerHTML = headHtml;
+        table.appendChild(thead);
+
+        // Body
+        const tbody = document.createElement('tbody');
+        _thresholdBranches.forEach(branch => {
+            const tr = document.createElement('tr');
+            let rowHtml = `<td>${branchEmoji(branch.name)} ${branch.name}</td>`;
+            _thresholdDesserts.forEach(d => {
+                const val = (saved[branch.id] && saved[branch.id][d.id] !== undefined)
+                    ? saved[branch.id][d.id]
+                    : 5;
+                rowHtml += `<td><input class="threshold-input" type="number" min="0" data-branch="${branch.id}" data-dessert="${d.id}" value="${val}"></td>`;
+            });
+            tr.innerHTML = rowHtml;
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+
+        wrapper.appendChild(table);
+        container.appendChild(wrapper);
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Hata: ' + (err.message || 'Yüklenemedi') + '</div>';
+    }
+}
+
+function saveThresholds() {
+    const inputs = document.querySelectorAll('.threshold-input');
+    const result = {};
+    inputs.forEach(input => {
+        const branchId = input.dataset.branch;
+        const dessertId = input.dataset.dessert;
+        if (!result[branchId]) result[branchId] = {};
+        result[branchId][dessertId] = parseInt(input.value) || 0;
+    });
+    localStorage.setItem('dessertThresholds', JSON.stringify(result));
+    showToast('Eşik değerleri kaydedildi', 'success');
+}
+
+// ═══════════════════════════════════════════════
+// TAB 5: SİSTEM
+// ═══════════════════════════════════════════════
+function loadSistemPins() {
+    document.getElementById('pin-tatlici').value    = localStorage.getItem('tatlicilarPin') || '0000';
+    document.getElementById('pin-dagitim').value    = localStorage.getItem('dagitimPin')    || '1234';
+    document.getElementById('pin-superadmin').value = localStorage.getItem('superAdminPin') || '9999';
+}
+
+function savePin(lsKey, inputId) {
+    const val = document.getElementById(inputId).value.trim();
+    if (!val || !/^\d{4}$/.test(val)) {
+        showToast('PIN 4 haneli rakam olmalıdır', 'error');
+        return;
+    }
+    localStorage.setItem(lsKey, val);
+    showToast('PIN kaydedildi', 'success');
+}
+
+function saveSuperAdminPin() {
+    const val = document.getElementById('pin-superadmin').value.trim();
+    if (!val || !/^\d{4}$/.test(val)) {
+        showToast('PIN 4 haneli rakam olmalıdır', 'error');
+        return;
+    }
+    localStorage.setItem('superAdminPin', val);
+    showToast('Süper Admin PIN güncellendi', 'success');
+}
+</script>
+
+<script>
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+}
+</script>
+
+</body>
+</html>

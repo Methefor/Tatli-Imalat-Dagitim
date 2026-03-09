@@ -704,6 +704,9 @@
                 return;
             }
 
+            // Süper admin panelinden kaydedilen eşikler (branchId -> dessertId -> number)
+            const savedThresholds = JSON.parse(localStorage.getItem('dessertThresholds') || '{}');
+
             // ── Bölüm A: Tatlı bazlı toplam stok ──
             const summaryEl = document.getElementById('stockSummary');
             summaryEl.innerHTML = '';
@@ -806,7 +809,6 @@
             let tbody = '<tbody>';
             sortedBranches.forEach(branch => {
                 const branchStock = allStock[branch.id] || {};
-                const threshold   = BRANCH_THRESHOLDS[branch.name] ?? 5;
                 const emoji       = branchEmojis[branch.name] || '🏪';
 
                 let hasCritical = false;
@@ -814,6 +816,10 @@
 
                 let cells = '';
                 desserts.forEach(dessert => {
+                    // Eşiği şu öncelikle bul: localStorage → BRANCH_THRESHOLDS → 5
+                    const threshold = savedThresholds[branch.id]?.[String(dessert.id)]
+                                   ?? BRANCH_THRESHOLDS[branch.name]
+                                   ?? 5;
                     const stock = branchStock[dessert.id] ?? 0;
                     if (stock === 0) {
                         hasCritical = true;
@@ -844,12 +850,14 @@
 
             table.innerHTML = thead + tbody;
 
-            // Eşik bilgisi
-            let thresholdLines = Object.entries(BRANCH_THRESHOLDS)
-                .map(([name, val]) => `${branchEmojis[name] || '🏪'} ${name}: min ${val}`)
-                .join(' &nbsp;·&nbsp; ');
-            document.getElementById('thresholdNote').innerHTML =
-                `<strong>Şube eşikleri:</strong> ${thresholdLines}`;
+            // Eşik notu
+            const hasCustom = Object.keys(savedThresholds).length > 0;
+            document.getElementById('thresholdNote').innerHTML = hasCustom
+                ? `<strong>Şube eşikleri:</strong> Süper admin panelinden özelleştirilmiş ✓`
+                : `<strong>Şube eşikleri:</strong> Varsayılan — ` +
+                  Object.entries(BRANCH_THRESHOLDS)
+                    .map(([name, val]) => `${branchEmojis[name] || '🏪'} ${name}: min ${val}`)
+                    .join(' &nbsp;·&nbsp; ');
         }
 
         // Giriş yapılmışsa yükle

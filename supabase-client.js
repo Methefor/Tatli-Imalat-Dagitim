@@ -481,6 +481,132 @@ async function getCurrentStock() {
 }
 
 // ====================================================================
+// SUPER ADMIN — READ FUNCTIONS
+// ====================================================================
+
+/** Tüm tatlıları çek (aktif + pasif) */
+async function getAllDesserts() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('desserts')
+            .select('*')
+            .order('display_order', { ascending: true })
+        if (error) throw error
+        return data || []
+    } catch (err) {
+        console.error('Tatlı çekme hatası:', err)
+        return []
+    }
+}
+
+/** Tüm adminleri çek */
+async function getAllAdmins() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('admins')
+            .select('id, username, name, password')
+        if (error) throw error
+        return data || []
+    } catch (err) {
+        console.error('Admin çekme hatası:', err)
+        return []
+    }
+}
+
+// ====================================================================
+// SUPER ADMIN — UPDATE / INSERT FUNCTIONS
+// ====================================================================
+
+/** Şube şifresi güncelle */
+async function updateBranchPassword(branchId, newPassword) {
+    try {
+        const { error } = await supabaseClient
+            .from('branches')
+            .update({ password: newPassword })
+            .eq('id', branchId)
+        if (error) throw error
+        return { success: true }
+    } catch (err) {
+        console.error('Şifre güncelleme hatası:', err)
+        return { success: false, error: err.message }
+    }
+}
+
+/** Müdür adı güncelle */
+async function updateBranchManager(branchId, managerName) {
+    try {
+        const { error } = await supabaseClient
+            .from('branches')
+            .update({ manager_name: managerName })
+            .eq('id', branchId)
+        if (error) throw error
+        return { success: true }
+    } catch (err) {
+        console.error('Müdür güncelleme hatası:', err)
+        return { success: false, error: err.message }
+    }
+}
+
+/** Tatlı aktif/pasif toggle */
+async function updateDessertActive(dessertId, isActive) {
+    try {
+        const { error } = await supabaseClient
+            .from('desserts')
+            .update({ is_active: isActive })
+            .eq('id', dessertId)
+        if (error) throw error
+        return { success: true }
+    } catch (err) {
+        console.error('Tatlı aktif güncelleme hatası:', err)
+        return { success: false, error: err.message }
+    }
+}
+
+/** Tatlı bilgilerini güncelle (isim, emoji, sıra) */
+async function updateDessert(dessertId, updates) {
+    try {
+        const { error } = await supabaseClient
+            .from('desserts')
+            .update(updates)
+            .eq('id', dessertId)
+        if (error) throw error
+        return { success: true }
+    } catch (err) {
+        console.error('Tatlı güncelleme hatası:', err)
+        return { success: false, error: err.message }
+    }
+}
+
+/** Yeni tatlı ekle */
+async function addDessert(name, emoji, displayOrder) {
+    try {
+        const { error } = await supabaseClient
+            .from('desserts')
+            .insert([{ name, emoji, display_order: displayOrder, is_active: true }])
+        if (error) throw error
+        return { success: true }
+    } catch (err) {
+        console.error('Tatlı ekleme hatası:', err)
+        return { success: false, error: err.message }
+    }
+}
+
+/** Admin şifresi güncelle */
+async function updateAdminPassword(adminId, newPassword) {
+    try {
+        const { error } = await supabaseClient
+            .from('admins')
+            .update({ password: newPassword })
+            .eq('id', adminId)
+        if (error) throw error
+        return { success: true }
+    } catch (err) {
+        console.error('Admin şifre güncelleme hatası:', err)
+        return { success: false, error: err.message }
+    }
+}
+
+// ====================================================================
 // UI HELPER FUNCTIONS
 // ====================================================================
 

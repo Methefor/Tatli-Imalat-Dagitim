@@ -337,6 +337,22 @@
             color: rgba(245,158,11,0.8);
         }
 
+        /* Gizli sistem linki */
+        .sys-link {
+            margin-top: 28px;
+            text-align: center;
+        }
+
+        .sys-link a {
+            font-size: 10px;
+            color: rgba(255,255,255,0.06);
+            text-decoration: none;
+            letter-spacing: 0.15em;
+            transition: color 0.3s;
+        }
+
+        .sys-link a:hover { color: rgba(255,255,255,0.25); }
+
         /* Modal ortak */
         .modal {
             display: none;
@@ -706,7 +722,7 @@
         <div class="footer">© 2026 Mutlukent Esenlik Hizmetleri A.Ş</div>
 
         <!-- VIP Yönetici Kartı -->
-        <div class="admin-link-wrap">
+        <div class="admin-link-wrap" style="margin-bottom:0">
             <button class="admin-vip-btn" onclick="openAdminLogin()">
                 <div class="admin-vip-card">
                     <div class="admin-vip-dot"></div>
@@ -714,12 +730,13 @@
                     <div class="admin-vip-texts">
                         <div class="admin-vip-label">Genel Müdür Girişi</div>
                         <div class="admin-vip-title">Yönetici Paneli</div>
-                        <div class="admin-vip-sub">Tüm şubeler · KPI · Raporlar · Analitik</div>
                     </div>
                     <span class="admin-vip-arrow">›</span>
                 </div>
             </button>
         </div>
+        <!-- Gizli sistem erişimi -->
+        <div class="sys-link"><a href="superadmin.html">sys</a></div>
     </div>
 
     <!-- ŞUBE SEÇİMİ MODAL -->

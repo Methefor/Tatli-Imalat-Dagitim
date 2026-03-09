@@ -467,10 +467,115 @@
             z-index: 9999; pointer-events: none;
         }
 
+        /* ── Tutorial Akordiyonu ── */
+        .tutorial-wrap {
+            width: 100%;
+            max-width: 400px;
+            padding: 0 24px 24px;
+            margin: 0 auto;
+        }
+
+        .tutorial-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .tutorial-toggle:hover {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.6);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .tutorial-chevron {
+            font-size: 12px;
+            transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .tutorial-wrap.open .tutorial-chevron { transform: rotate(180deg); }
+
+        .tutorial-body {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .tutorial-wrap.open .tutorial-body { max-height: 600px; }
+
+        .tutorial-steps {
+            padding: 12px 0 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tutorial-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .step-icon {
+            font-size: 20px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .step-text { flex: 1; }
+
+        .step-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.75);
+            margin-bottom: 2px;
+        }
+
+        .step-desc {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 500;
+            line-height: 1.45;
+        }
+
+        .step-amber .step-icon { background: rgba(245,158,11,0.1); }
+        .step-blue  .step-icon { background: rgba(96,165,250,0.1); }
+        .step-red   .step-icon { background: rgba(239,68,68,0.1); }
+        .step-green .step-icon { background: rgba(52,211,153,0.1); }
+        .step-purple .step-icon { background: rgba(167,139,250,0.1); }
+
+        .step-amber .step-title { color: rgba(245,158,11,0.85); }
+        .step-blue  .step-title { color: rgba(147,197,253,0.85); }
+        .step-red   .step-title { color: rgba(252,165,165,0.85); }
+        .step-green .step-title { color: rgba(110,231,183,0.85); }
+        .step-purple .step-title { color: rgba(196,181,253,0.85); }
+
         @media (max-width: 400px) {
             .branch-name { font-size: 26px; }
             .topbar { padding: 14px 16px; }
             .actions { padding: 0 16px 28px; }
+            .tutorial-wrap { padding: 0 16px 20px; }
         }
     </style>
 </head>
@@ -551,6 +656,53 @@
         </div>
     </div>
 
+    <!-- Nasıl Kullanılır Tutorial -->
+    <div class="tutorial-wrap" id="tutorialWrap">
+        <button class="tutorial-toggle" onclick="toggleTutorial()">
+            <span>❓ Nasıl kullanılır?</span>
+            <span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-body">
+            <div class="tutorial-steps">
+                <div class="tutorial-step step-amber">
+                    <div class="step-icon">📦</div>
+                    <div class="step-text">
+                        <div class="step-title">Sabah — Gelen Tatlılar</div>
+                        <div class="step-desc">Teslimat geldiğinde her tatlının kaç adet geldiğini gir. Aynı gün birden fazla teslimat gelirse tekrar açıp üstüne ekleyebilirsin.</div>
+                    </div>
+                </div>
+                <div class="tutorial-step step-blue">
+                    <div class="step-icon">🔄</div>
+                    <div class="step-text">
+                        <div class="step-title">Gün İçi — Transfer (Gerekirse)</div>
+                        <div class="step-desc">Başka şubede fazla stok varsa transfer al. Ya da fazla stokunu başka şubeye gönder. Her iki şubeye anlık yansır.</div>
+                    </div>
+                </div>
+                <div class="tutorial-step step-red">
+                    <div class="step-icon">⚠️</div>
+                    <div class="step-text">
+                        <div class="step-title">Gün İçi — Zayiat (Gerekirse)</div>
+                        <div class="step-desc">Bozulan veya fire veren ürünleri zayiat olarak kaydet. Gün sonunda veya ay sonunda toplu girebilirsin.</div>
+                    </div>
+                </div>
+                <div class="tutorial-step step-green">
+                    <div class="step-icon">✅</div>
+                    <div class="step-text">
+                        <div class="step-title">Akşam — Kalan Tatlılar</div>
+                        <div class="step-desc">Gün sonu sayım yap, her tatlının kaç adet kaldığını gir. Satış otomatik hesaplanır: Gelen − Kalan = Satılan.</div>
+                    </div>
+                </div>
+                <div class="tutorial-step step-purple">
+                    <div class="step-icon">📊</div>
+                    <div class="step-text">
+                        <div class="step-title">İstatistik — Şubem</div>
+                        <div class="step-desc">Yukarıdaki şube ikonuna veya "📊 Şubem →" yazısına tıklayarak aylık satış ve istatistiklerini görüntüle.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toastContainer"></div>
 
     <script src="supabase-client.js"></script>
@@ -581,6 +733,10 @@
         }
         tick();
         setInterval(tick, 1000);
+
+        function toggleTutorial() {
+            document.getElementById('tutorialWrap').classList.toggle('open');
+        }
 
         function logout() {
             localStorage.clear();

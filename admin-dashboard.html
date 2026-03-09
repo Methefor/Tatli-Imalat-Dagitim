@@ -386,6 +386,38 @@
             letter-spacing: 0.05em;
         }
 
+        .panel-badge--red {
+            color: var(--red);
+            background: rgba(239,68,68,0.12);
+            border-color: rgba(239,68,68,0.2);
+        }
+        .panel-badge--green {
+            color: var(--green);
+            background: var(--green-dim);
+            border-color: rgba(16,185,129,0.2);
+        }
+
+        /* ── ZAYIAT TABLE ────────────────────────────── */
+        .zayiat-table { width: 100%; border-collapse: collapse; }
+        .zayiat-table th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border); background: var(--surface); }
+        .zayiat-table td { padding: 11px 16px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .zayiat-table tr:last-child td { border-bottom: none; }
+        .zayiat-table tr:hover td { background: var(--panel-hover); }
+        .num-red { color: var(--red); font-weight: 700; }
+
+        /* ── CIRO GRID ───────────────────────────────── */
+        .ciro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1px; background: var(--border); }
+        .ciro-card { background: var(--panel); padding: 18px 16px; display: flex; flex-direction: column; gap: 4px; transition: background 0.2s; }
+        .ciro-card:hover { background: var(--panel-hover); }
+        .ciro-dessert { font-size: 12px; font-weight: 600; color: var(--text-2); }
+        .ciro-price-note { font-size: 11px; color: var(--text-3); }
+        .ciro-amount { font-size: 22px; font-weight: 800; color: var(--green); letter-spacing: -0.02em; margin-top: 4px; }
+        .ciro-total-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid var(--border); background: rgba(16,185,129,0.05); }
+        .ciro-total-label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+        .ciro-total-val { font-size: 20px; font-weight: 800; color: var(--green); }
+        .ciro-no-price { font-size: 13px; color: var(--text-3); text-align: center; padding: 40px 16px; }
+        .chart-wrap-trend { padding: 20px 24px 24px; height: 260px; position: relative; }
+
         /* ── TABLE ───────────────────────────────────── */
         .table-wrap {
             overflow-x: auto;
@@ -740,6 +772,57 @@
             </div>
         </div>
 
+        <!-- Satış Trendi -->
+        <div class="panel fade-up" style="animation-delay:0.35s">
+            <div class="panel-header">
+                <h2 class="panel-title">Satış Trendi</h2>
+                <span class="panel-badge" id="trendBadge">—</span>
+            </div>
+            <div class="chart-wrap-trend">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Zayiat Raporu -->
+        <div class="panel fade-up" style="animation-delay:0.4s">
+            <div class="panel-header">
+                <h2 class="panel-title">Zayiat Raporu</h2>
+                <span class="panel-badge panel-badge--red" id="zayiatTotal">—</span>
+            </div>
+            <div class="table-wrap">
+                <table class="zayiat-table">
+                    <thead>
+                        <tr>
+                            <th>Şube</th>
+                            <th>Tatlı</th>
+                            <th>Zayiat (adet)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="zayiatTableBody">
+                        <tr><td colspan="3">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">⏳</div>
+                                <div class="empty-state-title">Yükleniyor</div>
+                            </div>
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Ciro Tahmini -->
+        <div class="panel fade-up" style="animation-delay:0.45s">
+            <div class="panel-header">
+                <h2 class="panel-title">Ciro Tahmini</h2>
+                <span class="panel-badge panel-badge--green" id="ciroTotalBadge">—</span>
+            </div>
+            <div id="ciroContent">
+                <div class="ciro-no-price">
+                    💰 Ciro hesaplaması için fiyatları Süper Admin panelinden girin.
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <div id="loadingOverlay"><div class="spinner"></div></div>
@@ -751,6 +834,7 @@
         let currentFilter = 'today';
         let allData       = [];
         let dessertChart  = null;
+        let trendChart    = null;
         const DAILY_TARGET = 2500;
         let autoRefreshTimer = null;
 
@@ -833,6 +917,9 @@
             updateStats();
             updateBranchTable();
             updateCharts();
+            updateTrendChart();
+            updateZayiatTable();
+            updateCiroSection();
             await updateStockCards();
             updateLiveStatus();
         }
@@ -990,6 +1077,154 @@
                     }
                 }
             });
+        }
+
+        // ── Trend Chart ──────────────────────────────────
+        function updateTrendChart() {
+            const byDate = {};
+            allData.forEach(e => {
+                const d = e.entry_date;
+                if (!byDate[d]) byDate[d] = 0;
+                byDate[d] += calcSold(e);
+            });
+            const sortedDates = Object.keys(byDate).sort();
+            const labels = sortedDates.map(d => {
+                const [y, m, day] = d.split('-');
+                return `${day}.${m}`;
+            });
+            const data = sortedDates.map(d => byDate[d]);
+
+            document.getElementById('trendBadge').textContent =
+                sortedDates.length > 1 ? `${sortedDates.length} gün` : 'Bugün';
+
+            const ctx = document.getElementById('trendChart');
+            if (trendChart) trendChart.destroy();
+            if (sortedDates.length === 0) return;
+
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Satılan Adet',
+                        data,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245,158,11,0.08)',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#f59e0b',
+                        pointRadius: data.length <= 10 ? 5 : 2,
+                        tension: 0.35,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#111d30',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#94a3b8',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 10,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid:  { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#5a7192', font: { size: 12 } }
+                        },
+                        x: {
+                            grid:  { display: false },
+                            ticks: { color: '#5a7192', font: { size: 11 }, maxTicksLimit: 14 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── Zayiat Table ─────────────────────────────────
+        function updateZayiatTable() {
+            const tbody = document.getElementById('zayiatTableBody');
+            const rows  = [];
+            allData.forEach(e => {
+                const waste = e.waste_amount || 0;
+                if (waste <= 0) return;
+                rows.push({
+                    branch:  e.branches?.name  || '—',
+                    dessert: `${e.desserts?.emoji || ''} ${e.desserts?.name || '—'}`,
+                    waste,
+                });
+            });
+            rows.sort((a, b) => b.waste - a.waste || a.branch.localeCompare(b.branch, 'tr'));
+            const total = rows.reduce((s, r) => s + r.waste, 0);
+            document.getElementById('zayiatTotal').textContent =
+                total > 0 ? `${total.toLocaleString('tr-TR')} adet` : 'Yok';
+
+            if (rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <div class="empty-state-title">Bu dönemde zayiat kaydı yok</div>
+                    </div>
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = rows.map(r => `
+                <tr>
+                    <td>${r.branch}</td>
+                    <td>${r.dessert}</td>
+                    <td class="num-red">${r.waste.toLocaleString('tr-TR')}</td>
+                </tr>
+            `).join('') + `
+                <tr style="background:rgba(239,68,68,0.05)">
+                    <td colspan="2" style="font-weight:700;color:var(--text-2)">Toplam</td>
+                    <td class="num-red">${total.toLocaleString('tr-TR')}</td>
+                </tr>`;
+        }
+
+        // ── Ciro Section ──────────────────────────────────
+        function updateCiroSection() {
+            const prices    = JSON.parse(localStorage.getItem('dessertPrices') || '{}');
+            const container = document.getElementById('ciroContent');
+
+            if (Object.keys(prices).length === 0) {
+                container.innerHTML = `<div class="ciro-no-price">💰 Ciro hesaplaması için fiyatları Süper Admin panelinden girin.</div>`;
+                document.getElementById('ciroTotalBadge').textContent = '—';
+                return;
+            }
+
+            const bySold = {}, byName = {};
+            allData.forEach(e => {
+                const id = String(e.desserts?.id);
+                if (!bySold[id]) { bySold[id] = 0; byName[id] = `${e.desserts?.emoji || ''} ${e.desserts?.name || id}`; }
+                bySold[id] += calcSold(e);
+            });
+
+            let totalCiro = 0, cards = '';
+            Object.entries(prices).forEach(([id, price]) => {
+                if (!price || price <= 0) return;
+                const sold = bySold[id] || 0;
+                const ciro = sold * price;
+                totalCiro += ciro;
+                cards += `<div class="ciro-card">
+                    <div class="ciro-dessert">${byName[id] || `Tatlı #${id}`}</div>
+                    <div class="ciro-price-note">${Number(price).toLocaleString('tr-TR')} ₺ × ${sold.toLocaleString('tr-TR')} adet</div>
+                    <div class="ciro-amount">${ciro.toLocaleString('tr-TR')} ₺</div>
+                </div>`;
+            });
+
+            document.getElementById('ciroTotalBadge').textContent = `${totalCiro.toLocaleString('tr-TR')} ₺`;
+            container.innerHTML = `<div class="ciro-grid">${cards || '<div class="ciro-no-price">Henüz satış verisi yok.</div>'}</div>
+                <div class="ciro-total-bar">
+                    <span class="ciro-total-label">Toplam Tahmini Ciro</span>
+                    <span class="ciro-total-val">${totalCiro.toLocaleString('tr-TR')} ₺</span>
+                </div>`;
         }
 
         // ── Stock Cards ───────────────────────────────────
