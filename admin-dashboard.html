@@ -926,8 +926,39 @@
         }
 
         // ── Helpers ──────────────────────────────────────
-        function calcSold(entry) {
-            return Math.max(0, (entry.received_amount || 0) - (entry.remaining_amount || 0));
+
+        // Her (şube, tatlı) çifti için dönemdeki EN SON remaining_amount'u döndürür.
+        // allData entry_date DESC sıralı → ilk görülen = en yeni.
+        function buildLatestRemainingMap(data) {
+            const map = {}; // "branchId|dessertId" → remaining_amount
+            data.forEach(e => {
+                if (e.remaining_amount !== null && e.remaining_amount !== undefined) {
+                    const key = `${e.branches.id}|${e.dessert_id}`;
+                    if (!(key in map)) map[key] = e.remaining_amount;
+                }
+            });
+            return map;
+        }
+
+        // Günlük satış haritası: önceki kalan + gelen - güncel kalan
+        function buildSoldByDateMap(data) {
+            const remMap = {};
+            data.forEach(e => {
+                if (e.remaining_amount !== null && e.remaining_amount !== undefined)
+                    remMap[`${e.branches.id}|${e.dessert_id}|${e.entry_date}`] = e.remaining_amount;
+            });
+            const byDate = {};
+            data.forEach(e => {
+                const d = e.entry_date;
+                if (!byDate[d]) byDate[d] = 0;
+                if (e.remaining_amount === null || e.remaining_amount === undefined) return;
+                const received = e.received_amount || 0;
+                const prev = new Date(d); prev.setDate(prev.getDate() - 1);
+                const prevDate = prev.toISOString().split('T')[0];
+                const prevRem = remMap[`${e.branches.id}|${e.dessert_id}|${prevDate}`] ?? 0;
+                byDate[d] += Math.max(0, prevRem + received - e.remaining_amount);
+            });
+            return byDate;
         }
 
         function animateCounter(id, target) {
@@ -948,9 +979,14 @@
 
         // ── Stats ────────────────────────────────────────
         function updateStats() {
-            const dist  = allData.reduce((s,e) => s + (e.received_amount  || 0), 0);
-            const sold  = allData.reduce((s,e) => s + calcSold(e),                0);
-            const stock = allData.reduce((s,e) => s + (e.remaining_amount || 0), 0);
+            const dist = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
+
+            // Kalan: her (şube, tatlı) için EN SON remaining — toplam değil
+            const latestMap = buildLatestRemainingMap(allData);
+            const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
+
+            // Satılan: dönem içi gelen - dönem sonu kalan
+            const sold = Math.max(0, dist - stock);
 
             animateCounter('totalDistribution', dist);
             animateCounter('totalSales',        sold);
@@ -965,16 +1001,23 @@
 
         // ── Branch Table ──────────────────────────────────
         function updateBranchTable() {
+            const latestMap = buildLatestRemainingMap(allData);
+
             const bd = {};
             allData.forEach(entry => {
                 const id = entry.branches.id;
-                if (!bd[id]) {
-                    bd[id] = { name: entry.branches.name, received: 0, sold: 0, remaining: 0 };
-                }
-                bd[id].received  += entry.received_amount  || 0;
-                bd[id].sold      += calcSold(entry);
-                bd[id].remaining += entry.remaining_amount || 0;
+                if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0 };
+                bd[id].received += entry.received_amount || 0;
             });
+
+            // Kalan: her (şube, tatlı) için en son remaining — toplam değil
+            Object.entries(latestMap).forEach(([key, rem]) => {
+                const branchId = parseInt(key.split('|')[0]);
+                if (bd[branchId]) bd[branchId].remaining += rem;
+            });
+
+            // Satılan: gelen − kalan (dönem bazında)
+            Object.values(bd).forEach(b => { b.sold = Math.max(0, b.received - b.remaining); });
 
             const tbody = document.getElementById('branchTableBody');
             tbody.innerHTML = '';
@@ -1013,12 +1056,21 @@
 
         // ── Charts ───────────────────────────────────────
         function updateCharts() {
+            const latestMap = buildLatestRemainingMap(allData);
+
             const dd = {};
             allData.forEach(e => {
                 const id = e.desserts.id;
-                if (!dd[id]) dd[id] = { name: `${e.desserts.emoji} ${e.desserts.name}`, sold: 0 };
-                dd[id].sold += calcSold(e);
+                if (!dd[id]) dd[id] = { name: `${e.desserts.emoji} ${e.desserts.name}`, received: 0, remaining: 0 };
+                dd[id].received += e.received_amount || 0;
             });
+
+            Object.entries(latestMap).forEach(([key, rem]) => {
+                const dessertId = parseInt(key.split('|')[1]);
+                if (dd[dessertId]) dd[dessertId].remaining += rem;
+            });
+
+            Object.values(dd).forEach(d => { d.sold = Math.max(0, d.received - d.remaining); });
 
             const labels = Object.values(dd).map(d => d.name);
             const data   = Object.values(dd).map(d => d.sold);
@@ -1082,12 +1134,8 @@
 
         // ── Trend Chart ──────────────────────────────────
         function updateTrendChart() {
-            const byDate = {};
-            allData.forEach(e => {
-                const d = e.entry_date;
-                if (!byDate[d]) byDate[d] = 0;
-                byDate[d] += calcSold(e);
-            });
+            // Günlük satış: önceki kalan + gelen - güncel kalan
+            const byDate = buildSoldByDateMap(allData);
             const sortedDates = Object.keys(byDate).sort();
             const labels = sortedDates.map(d => {
                 const [y, m, day] = d.split('-');
@@ -1200,11 +1248,17 @@
                 return;
             }
 
+            // Ciro: tatlı bazlı satılan = gelen - en son kalan
+            const ciroLatestMap = buildLatestRemainingMap(allData);
             const bySold = {}, byName = {};
             allData.forEach(e => {
                 const id = String(e.desserts?.id);
                 if (!bySold[id]) { bySold[id] = 0; byName[id] = `${e.desserts?.emoji || ''} ${e.desserts?.name || id}`; }
-                bySold[id] += calcSold(e);
+                bySold[id] += e.received_amount || 0;
+            });
+            Object.entries(ciroLatestMap).forEach(([key, rem]) => {
+                const dessertId = String(parseInt(key.split('|')[1]));
+                if (dessertId in bySold) bySold[dessertId] = Math.max(0, bySold[dessertId] - rem);
             });
 
             let totalCiro = 0, cards = '';
