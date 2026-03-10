@@ -1012,7 +1012,7 @@
 
             // Kalan: her (şube, tatlı) için en son remaining — toplam değil
             Object.entries(latestMap).forEach(([key, rem]) => {
-                const branchId = parseInt(key.split('|')[0]);
+                const branchId = key.split('|')[0];
                 if (bd[branchId]) bd[branchId].remaining += rem;
             });
 
@@ -1066,7 +1066,7 @@
             });
 
             Object.entries(latestMap).forEach(([key, rem]) => {
-                const dessertId = parseInt(key.split('|')[1]);
+                const dessertId = key.split('|')[1];
                 if (dd[dessertId]) dd[dessertId].remaining += rem;
             });
 
@@ -1257,7 +1257,7 @@
                 bySold[id] += e.received_amount || 0;
             });
             Object.entries(ciroLatestMap).forEach(([key, rem]) => {
-                const dessertId = String(parseInt(key.split('|')[1]));
+                const dessertId = String(key.split('|')[1]);
                 if (dessertId in bySold) bySold[dessertId] = Math.max(0, bySold[dessertId] - rem);
             });
 
