@@ -20,6 +20,7 @@
             --amber:  #f59e0b;
             --blue:   #3b82f6;
             --green:  #10b981;
+            --red:    #ef4444;
             --bg:     #070d1a;
             --glass:  rgba(255,255,255,0.035);
             --border: rgba(255,255,255,0.07);
@@ -188,8 +189,11 @@
         /* ── Stat kartları ── */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px; margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         .stat-card {
@@ -209,10 +213,12 @@
         .stat-card:nth-child(1) { animation-delay: 0.1s; }
         .stat-card:nth-child(2) { animation-delay: 0.18s; }
         .stat-card:nth-child(3) { animation-delay: 0.26s; }
+        .stat-card:nth-child(4) { animation-delay: 0.34s; }
 
         .card-amber::before { background: var(--amber); }
         .card-green::before { background: var(--green); }
         .card-blue::before  { background: var(--blue);  }
+        .card-red::before   { background: var(--red);   }
 
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(16px); filter: blur(4px); }
@@ -230,6 +236,7 @@
         .card-amber .stat-value { color: var(--amber); }
         .card-green .stat-value { color: var(--green); }
         .card-blue  .stat-value { color: var(--blue);  }
+        .card-red   .stat-value { color: var(--red);   }
 
         .stat-label {
             font-size: 10px; font-weight: 700; color: var(--muted);
@@ -246,7 +253,7 @@
 
         .summary-head {
             display: grid;
-            grid-template-columns: 1fr 56px 56px 56px;
+            grid-template-columns: 1fr 56px 56px 56px 56px;
             gap: 6px; padding: 12px 18px;
             border-bottom: 1px solid var(--border);
             background: rgba(255,255,255,0.02);
@@ -263,10 +270,11 @@
         .head-amber { color: rgba(245,158,11,0.7) !important; }
         .head-green { color: rgba(16,185,129,0.7)  !important; }
         .head-blue  { color: rgba(59,130,246,0.7)  !important; }
+        .head-red   { color: rgba(239,68,68,0.7)   !important; }
 
         .dessert-row {
             display: grid;
-            grid-template-columns: 1fr 56px 56px 56px;
+            grid-template-columns: 1fr 56px 56px 56px 56px;
             gap: 6px; padding: 14px 18px;
             border-bottom: 1px solid rgba(255,255,255,0.04);
             align-items: center; opacity: 0;
@@ -304,6 +312,7 @@
         .val-amber { color: var(--amber); }
         .val-green { color: var(--green); }
         .val-blue  { color: var(--blue);  }
+        .val-red   { color: var(--red);   }
         .val-zero  { color: rgba(255,255,255,0.18) !important; }
 
         /* ── Boş durum ── */
@@ -387,6 +396,11 @@
                 <div class="stat-value" id="totalKalan">—</div>
                 <div class="stat-label">Şu An Kalan</div>
             </div>
+            <div class="stat-card card-red">
+                <div class="stat-icon">🗑️</div>
+                <div class="stat-value" id="totalZayiat">—</div>
+                <div class="stat-label">Bu Ay Zayiat</div>
+            </div>
         </div>
 
         <!-- Özet tablosu -->
@@ -396,6 +410,7 @@
                 <div class="head-cell head-amber">Gelen</div>
                 <div class="head-cell head-green">Satılan</div>
                 <div class="head-cell head-blue">Kalan</div>
+                <div class="head-cell head-red">Zayiat</div>
             </div>
             <!-- Skeleton -->
             <div class="dessert-row" style="opacity:1;animation:none;">
@@ -406,12 +421,14 @@
                 <div class="skel" style="height:18px;border-radius:6px;"></div>
                 <div class="skel" style="height:18px;border-radius:6px;"></div>
                 <div class="skel" style="height:18px;border-radius:6px;"></div>
+                <div class="skel" style="height:18px;border-radius:6px;"></div>
             </div>
             <div class="dessert-row" style="opacity:1;animation:none;">
                 <div class="row-name">
                     <div class="skel" style="width:36px;height:36px;border-radius:9px;flex-shrink:0;"></div>
                     <div class="skel" style="flex:1;height:16px;"></div>
                 </div>
+                <div class="skel" style="height:18px;border-radius:6px;"></div>
                 <div class="skel" style="height:18px;border-radius:6px;"></div>
                 <div class="skel" style="height:18px;border-radius:6px;"></div>
                 <div class="skel" style="height:18px;border-radius:6px;"></div>
@@ -486,7 +503,7 @@
                 return;
             }
 
-            let totalG = 0, totalS = 0, totalK = 0;
+            let totalG = 0, totalS = 0, totalK = 0, totalZ = 0;
             const rows = [];
 
             activeDesserts.forEach(dessert => {
@@ -500,20 +517,25 @@
                 // Güncel kalan: ay filtresinden bağımsız, gerçek son stok
                 const currentKalan = latestStock[dessert.id] ?? 0;
 
-                // Aylık satılan: her gün için (gelen - kalan) toplamı
-                const monthlySatilan = dessertEntries.reduce(
-                    (s, e) => s + Math.max(0, (e.received_amount || 0) - (e.remaining_amount || 0)), 0
+                // Aylık toplam zayiat
+                const monthlyZayiat = dessertEntries.reduce(
+                    (s, e) => s + (e.waste_amount || 0), 0
                 );
+
+                // Satılan = Gelen - Kalan - Zayiat
+                const monthlySatilan = Math.max(0, monthlyGelen - currentKalan - monthlyZayiat);
 
                 totalG += monthlyGelen;
                 totalK += currentKalan;
+                totalZ += monthlyZayiat;
                 totalS += monthlySatilan;
-                rows.push({ dessert, gelen: monthlyGelen, kalan: currentKalan, satilan: monthlySatilan });
+                rows.push({ dessert, gelen: monthlyGelen, kalan: currentKalan, satilan: monthlySatilan, zayiat: monthlyZayiat });
             });
 
             animCount('totalGelen',   totalG);
             animCount('totalSatilan', totalS);
             animCount('totalKalan',   totalK);
+            animCount('totalZayiat',  totalZ);
 
             const panel = document.getElementById('summaryPanel');
             panel.innerHTML = `
@@ -522,6 +544,7 @@
                     <div class="head-cell head-amber">Gelen</div>
                     <div class="head-cell head-green">Satılan</div>
                     <div class="head-cell head-blue">Kalan</div>
+                    <div class="head-cell head-red">Zayiat</div>
                 </div>
             `;
 
@@ -535,7 +558,7 @@
                 return;
             }
 
-            rows.forEach(({ dessert, gelen, kalan, satilan }, i) => {
+            rows.forEach(({ dessert, gelen, kalan, satilan, zayiat }, i) => {
                 const row = document.createElement('div');
                 row.className = 'dessert-row';
                 row.style.animationDelay = `${0.38 + i * 0.06}s`;
@@ -547,6 +570,7 @@
                     <span class="row-val val-amber ${gelen===0?'val-zero':''}">${gelen}</span>
                     <span class="row-val val-green ${satilan===0?'val-zero':''}">${satilan}</span>
                     <span class="row-val val-blue  ${kalan===0?'val-zero':''}">${kalan}</span>
+                    <span class="row-val val-red   ${zayiat===0?'val-zero':''}">${zayiat}</span>
                 `;
                 panel.appendChild(row);
             });
@@ -565,7 +589,7 @@
         }
 
         function showEmpty(msg) {
-            ['totalGelen','totalSatilan','totalKalan'].forEach(id => {
+            ['totalGelen','totalSatilan','totalKalan','totalZayiat'].forEach(id => {
                 document.getElementById(id).textContent = '0';
             });
             document.getElementById('summaryPanel').innerHTML = `

@@ -466,6 +466,17 @@
             box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
         }
 
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            18%     { transform: translateX(-9px); }
+            36%     { transform: translateX(9px); }
+            54%     { transform: translateX(-6px); }
+            72%     { transform: translateX(6px); }
+            88%     { transform: translateX(-3px); }
+        }
+        .pin-input-group.shake { animation: shake 0.45s ease; }
+        .pin-input.error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.18); }
+
         .btn-verify {
             width: 100%;
             padding: 16px;
@@ -869,12 +880,13 @@
             ['pin1','pin2','pin3','pin4'].forEach(id => document.getElementById(id).value = '');
         }
 
-        // PIN otomatik geçiş
+        // PIN otomatik geçiş + otomatik giriş
         const pinIds = ['pin1','pin2','pin3','pin4'];
         pinIds.forEach((id, idx) => {
             const input = document.getElementById(id);
             input.addEventListener('input', e => {
                 if (e.target.value && idx < 3) document.getElementById(pinIds[idx + 1]).focus();
+                if (e.target.value && idx === 3) verifyBranchPin();
             });
             input.addEventListener('keydown', e => {
                 if (e.key === 'Backspace' && !e.target.value && idx > 0) document.getElementById(pinIds[idx - 1]).focus();
@@ -897,9 +909,20 @@
                 if (result.managerName) localStorage.setItem('managerName', result.managerName);
                 window.location.href = 'branch-menu.html';
             } else {
-                showToast(result.error || 'Hatalı şifre!', 'error');
-                pinIds.forEach(id => document.getElementById(id).value = '');
+                const group = document.querySelector('#pinModal .pin-input-group');
+                group.classList.remove('shake');
+                void group.offsetWidth; // reflow
+                group.classList.add('shake');
+                pinIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    el.value = '';
+                    el.classList.add('error');
+                });
                 document.getElementById('pin1').focus();
+                setTimeout(() => {
+                    group.classList.remove('shake');
+                    pinIds.forEach(id => document.getElementById(id).classList.remove('error'));
+                }, 1400);
             }
         }
 

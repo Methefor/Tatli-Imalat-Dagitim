@@ -91,6 +91,19 @@
             min-height: 18px;
         }
 
+        .pin-back {
+            margin-top: 16px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.35);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .pin-back:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.06); }
+
         /* ─── PANEL ─── */
         #panel { display: flex; flex-direction: column; min-height: 100vh; }
 
@@ -400,6 +413,7 @@
             </div>
             <button class="pin-btn" onclick="checkPin()">Giriş</button>
             <div class="pin-error" id="pinError"></div>
+            <button class="pin-back" onclick="window.location.href='index.html'">← Ana Sayfaya Dön</button>
         </div>
     </div>
 
