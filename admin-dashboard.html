@@ -759,12 +759,13 @@
                                 <th onclick="sortTable(1)">Gelen ↕</th>
                                 <th onclick="sortTable(2)">Satılan ↕</th>
                                 <th onclick="sortTable(3)">Kalan ↕</th>
-                                <th onclick="sortTable(4)">Oran ↕</th>
+                                <th onclick="sortTable(4)">Zayiat ↕</th>
+                                <th onclick="sortTable(5)">Oran ↕</th>
                             </tr>
                         </thead>
                         <tbody id="branchTableBody">
                             <tr>
-                                <td colspan="5">
+                                <td colspan="6">
                                     <div class="empty-state">
                                         <div class="empty-state-icon">⏳</div>
                                         <div class="empty-state-title">Veriler yükleniyor</div>
@@ -1024,8 +1025,9 @@
             const bd = {};
             allData.forEach(entry => {
                 const id = entry.branches.id;
-                if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0 };
+                if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0, waste: 0 };
                 bd[id].received += entry.received_amount || 0;
+                bd[id].waste    += entry.waste_amount    || 0;
             });
 
             // Kalan: her (şube, tatlı) için en son remaining — toplam değil
@@ -1034,15 +1036,15 @@
                 if (bd[branchId]) bd[branchId].remaining += rem;
             });
 
-            // Satılan: gelen − kalan (dönem bazında)
-            Object.values(bd).forEach(b => { b.sold = Math.max(0, b.received - b.remaining); });
+            // Satılan: gelen − kalan − zayiat (dönem bazında)
+            Object.values(bd).forEach(b => { b.sold = Math.max(0, b.received - b.remaining - b.waste); });
 
             const tbody = document.getElementById('branchTableBody');
             tbody.innerHTML = '';
 
             const branches = Object.values(bd);
             if (branches.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">
+                tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
                     <div class="empty-state-icon">📭</div>
                     <div class="empty-state-title">Veri Bulunamadı</div>
                     <div class="empty-state-sub">Seçili tarihte kayıt yok.</div>
@@ -1066,6 +1068,7 @@
                     <td>${b.received.toLocaleString('tr-TR')}</td>
                     <td class="num-green">${b.sold.toLocaleString('tr-TR')}</td>
                     <td class="num-amber">${b.remaining.toLocaleString('tr-TR')}</td>
+                    <td class="num-red">${b.waste.toLocaleString('tr-TR')}</td>
                     <td><span class="pct-badge ${pctClass}">%${pct}</span></td>
                 `;
                 tbody.appendChild(row);
