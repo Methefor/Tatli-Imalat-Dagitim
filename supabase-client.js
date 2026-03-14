@@ -357,8 +357,9 @@ async function getLastSevenDays(branchId) {
 }
 
 /**
- * Şube bazlı en son kalan stok (ay filtresinden bağımsız, son 60 gün)
- * Dönüş: { dessert_id: remaining_amount }
+ * Şube bazlı güncel stok (son 60 gün)
+ * Mantık: son onaylı kalan + o tarihten sonra gelen tatlılar (kalan girilmemiş günler)
+ * Dönüş: { dessert_id: currentStock }
  */
 async function getBranchLatestStock(branchId) {
     try {
@@ -368,23 +369,38 @@ async function getBranchLatestStock(branchId) {
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
-            .select('dessert_id, remaining_amount, entry_date')
+            .select('dessert_id, received_amount, remaining_amount, entry_date')
             .eq('branch_id', branchId)
             .gte('entry_date', pastDate)
-            .not('remaining_amount', 'is', null)
             .order('entry_date', { ascending: false })
 
         if (error) throw error
 
-        // Her tatlı için en son tarihteki remaining_amount
-        const latestByDessert = {}
+        // 1) Her tatlı için en son onaylı kalan (remaining_amount set)
+        const lastConfirmed = {}  // dessert_id → { date, remaining }
         ;(data || []).forEach(e => {
-            if (!(e.dessert_id in latestByDessert)) {
-                latestByDessert[e.dessert_id] = e.remaining_amount || 0
+            if (!(e.dessert_id in lastConfirmed) && e.remaining_amount !== null) {
+                lastConfirmed[e.dessert_id] = { date: e.entry_date, remaining: e.remaining_amount }
             }
         })
 
-        return latestByDessert
+        // 2) Son onaylı tarihten SONRA gelen tatlılar (kalan henüz girilmemiş)
+        const addReceived = {}  // dessert_id → toplam gelen
+        ;(data || []).forEach(e => {
+            const lc = lastConfirmed[e.dessert_id]
+            if ((!lc || e.entry_date > lc.date) && e.received_amount) {
+                addReceived[e.dessert_id] = (addReceived[e.dessert_id] || 0) + e.received_amount
+            }
+        })
+
+        // 3) Güncel stok = son onaylı kalan + sonraki gelenler
+        const result = {}
+        const allIds = new Set([...Object.keys(lastConfirmed), ...Object.keys(addReceived)])
+        allIds.forEach(id => {
+            result[id] = (lastConfirmed[id]?.remaining || 0) + (addReceived[id] || 0)
+        })
+
+        return result
     } catch (err) {
         console.error('Stok çekme hatası:', err)
         return {}
@@ -392,8 +408,9 @@ async function getBranchLatestStock(branchId) {
 }
 
 /**
- * Tüm şubelerin en son kalan stoku (üretim paneli için)
- * Dönüş: { branch_id: { dessert_id: remaining_amount } }
+ * Tüm şubelerin güncel stoku (üretim/tatlıcı paneli için)
+ * Mantık: son onaylı kalan + o tarihten sonra gelen tatlılar
+ * Dönüş: { branch_id: { dessert_id: currentStock } }
  */
 async function getAllLatestStock() {
     try {
@@ -403,23 +420,39 @@ async function getAllLatestStock() {
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
-            .select('branch_id, dessert_id, remaining_amount, entry_date')
+            .select('branch_id, dessert_id, received_amount, remaining_amount, entry_date')
             .gte('entry_date', pastDate)
-            .not('remaining_amount', 'is', null)
             .order('entry_date', { ascending: false })
 
         if (error) throw error
 
-        // Her (şube, tatlı) için en son remaining_amount
-        const seen = new Set()
-        const result = {}
+        // 1) Her (şube, tatlı) için en son onaylı kalan
+        const lastConfirmed = {}  // "branchId||dessertId" → { date, remaining }
         ;(data || []).forEach(e => {
-            const key = `${e.branch_id}-${e.dessert_id}`
-            if (!seen.has(key)) {
-                seen.add(key)
-                if (!result[e.branch_id]) result[e.branch_id] = {}
-                result[e.branch_id][e.dessert_id] = e.remaining_amount || 0
+            const key = `${e.branch_id}||${e.dessert_id}`
+            if (!(key in lastConfirmed) && e.remaining_amount !== null) {
+                lastConfirmed[key] = { date: e.entry_date, remaining: e.remaining_amount }
             }
+        })
+
+        // 2) Son onaylı tarihten SONRA gelen tatlılar
+        const addReceived = {}  // "branchId||dessertId" → toplam gelen
+        ;(data || []).forEach(e => {
+            const key = `${e.branch_id}||${e.dessert_id}`
+            const lc = lastConfirmed[key]
+            if ((!lc || e.entry_date > lc.date) && e.received_amount) {
+                addReceived[key] = (addReceived[key] || 0) + e.received_amount
+            }
+        })
+
+        // 3) Şube → { tatlı: stok } yapısına dönüştür
+        const result = {}
+        const allKeys = new Set([...Object.keys(lastConfirmed), ...Object.keys(addReceived)])
+        allKeys.forEach(key => {
+            const [branchId, dessertId] = key.split('||')
+            const stock = (lastConfirmed[key]?.remaining || 0) + (addReceived[key] || 0)
+            if (!result[branchId]) result[branchId] = {}
+            result[branchId][dessertId] = stock
         })
 
         return result
@@ -430,8 +463,8 @@ async function getAllLatestStock() {
 }
 
 /**
- * Mevcut stok (her şube+tatlı için en son null-olmayan kalan)
- * getAllLatestStock() ile aynı veriyi kullanır, tatlı bazında toplar.
+ * Tüm şubelerin güncel stoku — tatlı bazında toplam (yönetici paneli için)
+ * Mantık: son onaylı kalan + o tarihten sonra gelen tatlılar
  */
 async function getCurrentStock() {
     try {
@@ -442,35 +475,55 @@ async function getCurrentStock() {
         const { data, error } = await supabaseClient
             .from('daily_entries')
             .select(`
-                branch_id, dessert_id, remaining_amount, entry_date,
+                branch_id, dessert_id, received_amount, remaining_amount, entry_date,
                 desserts (id, name, emoji, display_order)
             `)
             .gte('entry_date', pastDate)
-            .not('remaining_amount', 'is', null)
             .order('entry_date', { ascending: false })
 
         if (error) throw error
 
-        // Her (şube, tatlı) için en son remaining_amount, sonra tatlı bazında topla
-        const seen = new Set()
+        // 1) Her (şube, tatlı) için en son onaylı kalan
+        const lastConfirmed = {}  // "branchId||dessertId" → { date, remaining }
+        const dessertInfo   = {}  // dessert_id → { name, emoji, display_order }
+
+        ;(data || []).forEach(e => {
+            const key = `${e.branch_id}||${e.dessert_id}`
+            if (!(key in lastConfirmed) && e.remaining_amount !== null) {
+                lastConfirmed[key] = { date: e.entry_date, remaining: e.remaining_amount }
+            }
+            if (!dessertInfo[e.dessert_id] && e.desserts) {
+                dessertInfo[e.dessert_id] = e.desserts
+            }
+        })
+
+        // 2) Son onaylı tarihten SONRA gelen tatlılar
+        const addReceived = {}  // "branchId||dessertId" → toplam gelen
+        ;(data || []).forEach(e => {
+            const key = `${e.branch_id}||${e.dessert_id}`
+            const lc = lastConfirmed[key]
+            if ((!lc || e.entry_date > lc.date) && e.received_amount) {
+                addReceived[key] = (addReceived[key] || 0) + e.received_amount
+            }
+        })
+
+        // 3) Tatlı bazında topla
         const stockByDessert = {}
-
-        ;(data || []).forEach(entry => {
-            const key = `${entry.branch_id}-${entry.dessert_id}`
-            if (seen.has(key)) return
-            seen.add(key)
-
-            const dId = entry.dessert_id
-            if (!stockByDessert[dId]) {
-                stockByDessert[dId] = {
-                    dessertId:     dId,
-                    dessertName:   entry.desserts.name,
-                    emoji:         entry.desserts.emoji,
-                    displayOrder:  entry.desserts.display_order,
+        const allKeys = new Set([...Object.keys(lastConfirmed), ...Object.keys(addReceived)])
+        allKeys.forEach(key => {
+            const dessertId = key.split('||')[1]
+            const stock = (lastConfirmed[key]?.remaining || 0) + (addReceived[key] || 0)
+            if (!stockByDessert[dessertId]) {
+                const info = dessertInfo[dessertId]
+                stockByDessert[dessertId] = {
+                    dessertId,
+                    dessertName:   info?.name         || '—',
+                    emoji:         info?.emoji        || '🍬',
+                    displayOrder:  info?.display_order || 999,
                     totalRemaining: 0
                 }
             }
-            stockByDessert[dId].totalRemaining += entry.remaining_amount || 0
+            stockByDessert[dessertId].totalRemaining += stock
         })
 
         return Object.values(stockByDessert).sort((a, b) => a.displayOrder - b.displayOrder)

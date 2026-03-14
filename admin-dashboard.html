@@ -946,15 +946,33 @@
 
         // ── Helpers ──────────────────────────────────────
 
-        // Her (şube, tatlı) çifti için dönemdeki EN SON remaining_amount'u döndürür.
-        // allData entry_date DESC sıralı → ilk görülen = en yeni.
-        function buildLatestRemainingMap(data) {
-            const map = {}; // "branchId|dessertId" → remaining_amount
+        // Güncel stok: son onaylı kalan + sonrasındaki gelenler (kalan girilmemiş günler)
+        // data: entry_date DESC sıralı
+        function buildCurrentStockMap(data) {
+            const lastConfirmed = {}; // "branchId|dessertId" → { date, remaining }
+            const addReceived   = {}; // "branchId|dessertId" → toplam gelen sonrası
+
             data.forEach(e => {
-                if (e.remaining_amount !== null && e.remaining_amount !== undefined) {
-                    const key = `${e.branches.id}|${e.dessert_id}`;
-                    if (!(key in map)) map[key] = e.remaining_amount;
+                if (!e.branches) return;
+                const key = `${e.branches.id}|${e.dessert_id}`;
+                if (!(key in lastConfirmed) && e.remaining_amount !== null && e.remaining_amount !== undefined) {
+                    lastConfirmed[key] = { date: e.entry_date, remaining: e.remaining_amount };
                 }
+            });
+
+            data.forEach(e => {
+                if (!e.branches) return;
+                const key = `${e.branches.id}|${e.dessert_id}`;
+                const lc = lastConfirmed[key];
+                if ((!lc || e.entry_date > lc.date) && e.received_amount) {
+                    addReceived[key] = (addReceived[key] || 0) + e.received_amount;
+                }
+            });
+
+            const map = {};
+            const allKeys = new Set([...Object.keys(lastConfirmed), ...Object.keys(addReceived)]);
+            allKeys.forEach(key => {
+                map[key] = (lastConfirmed[key]?.remaining || 0) + (addReceived[key] || 0);
             });
             return map;
         }
@@ -1001,7 +1019,7 @@
             const dist = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
 
             // Kalan: her (şube, tatlı) için EN SON remaining — toplam değil
-            const latestMap = buildLatestRemainingMap(allData);
+            const latestMap = buildCurrentStockMap(allData);
             const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
 
             // Satılan: dönem içi gelen - dönem sonu kalan
@@ -1020,7 +1038,7 @@
 
         // ── Branch Table ──────────────────────────────────
         function updateBranchTable() {
-            const latestMap = buildLatestRemainingMap(allData);
+            const latestMap = buildCurrentStockMap(allData);
 
             const bd = {};
             allData.forEach(entry => {
@@ -1077,7 +1095,7 @@
 
         // ── Charts ───────────────────────────────────────
         function updateCharts() {
-            const latestMap = buildLatestRemainingMap(allData);
+            const latestMap = buildCurrentStockMap(allData);
 
             const dd = {};
             allData.forEach(e => {
@@ -1292,7 +1310,7 @@
             }
 
             // Ciro: tatlı bazlı satılan = gelen - en son kalan
-            const ciroLatestMap = buildLatestRemainingMap(allData);
+            const ciroLatestMap = buildCurrentStockMap(allData);
             const bySold = {}, byName = {};
             allData.forEach(e => {
                 const id = String(e.desserts?.id);
