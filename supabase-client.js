@@ -880,4 +880,239 @@ async function setSetting(key, value) {
     if (error) throw error
 }
 
+// ====================================================================
+// WEB PUSH — Bildirim Abonelik Fonksiyonları
+// ====================================================================
+
+/**
+ * VAPID public key (base64url). Üretim öncesi aşağıdaki komutla oluştur:
+ *   npx web-push generate-vapid-keys
+ * Oluşan PUBLIC KEY'i aşağıya yapıştır, PRIVATE KEY'i Edge Function secrets'a ekle.
+ */
+const VAPID_PUBLIC_KEY = 'BURAYA_VAPID_PUBLIC_KEY_EKLE';
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw     = atob(base64);
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+/**
+ * Push subscription kaydeder (yeni şube müdürü cihazı)
+ */
+async function registerPushSubscription(branchId) {
+    try {
+        if (!('Notification' in window) || !('serviceWorker' in navigator)) return false;
+
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return false;
+
+        const registration = await navigator.serviceWorker.ready;
+        let sub = await registration.pushManager.getSubscription();
+
+        if (!sub) {
+            sub = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
+        }
+
+        const { error } = await supabaseClient
+            .from('push_subscriptions')
+            .upsert({
+                branch_id:    branchId,
+                subscription: sub.toJSON(),
+                device_info:  navigator.userAgent.slice(0, 200)
+            }, { onConflict: 'branch_id' });
+
+        if (error) console.warn('Push kayıt hatası:', error.message);
+        return true;
+    } catch (err) {
+        console.warn('Push abonelik hatası:', err);
+        return false;
+    }
+}
+
+/**
+ * Push aboneliğini iptal et
+ */
+async function unregisterPushSubscription(branchId) {
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const sub = await registration.pushManager.getSubscription();
+        if (sub) {
+            await sub.unsubscribe();
+            if (branchId) {
+                await supabaseClient
+                    .from('push_subscriptions')
+                    .delete()
+                    .eq('branch_id', branchId);
+            }
+        }
+        return true;
+    } catch (err) {
+        console.warn('Push iptal hatası:', err);
+        return false;
+    }
+}
+
+// ====================================================================
+// ANALİTİK FONKSİYONLAR — Tahminleme, Zayiat Trendi, Yıllık Satış
+// ====================================================================
+
+/**
+ * Son N ayın zayiat trendi (tatlı bazında, ay bazında)
+ * Dönüş: [ { month: 'Oca 25', byDessert: { id: { name, total } } }, ... ]
+ */
+async function getWasteTrendData(months = 6) {
+    try {
+        const now = new Date()
+        const queries = []
+        const labels = []
+
+        for (let i = months - 1; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+            const startDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`
+            const endD = new Date(d.getFullYear(), d.getMonth() + 1, 0)
+            const endDate = `${endD.getFullYear()}-${String(endD.getMonth()+1).padStart(2,'0')}-${String(endD.getDate()).padStart(2,'0')}`
+            labels.push({ startDate, endDate, label: d.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' }) })
+        }
+
+        const results = await Promise.all(labels.map(({ startDate, endDate }) =>
+            supabaseClient
+                .from('daily_entries')
+                .select('dessert_id, waste_amount, desserts(id, name, emoji)')
+                .gte('entry_date', startDate)
+                .lte('entry_date', endDate)
+        ))
+
+        return labels.map(({ label }, idx) => {
+            const { data } = results[idx]
+            const byDessert = {}
+            ;(data || []).forEach(e => {
+                if (!e.waste_amount || e.waste_amount <= 0) return
+                const id = String(e.dessert_id)
+                const name = `${e.desserts?.emoji || ''} ${e.desserts?.name || id}`
+                if (!byDessert[id]) byDessert[id] = { name, total: 0 }
+                byDessert[id].total += e.waste_amount
+            })
+            return { month: label, byDessert }
+        })
+    } catch (err) {
+        console.error('Zayiat trend hatası:', err)
+        return []
+    }
+}
+
+/**
+ * Yıllık satış verisi (ay bazında)
+ * Dönüş: [ { monthIdx, label, received, remaining, sold }, ... ] — 12 eleman
+ */
+async function getYearlySalesData(year) {
+    try {
+        const startDate = `${year}-01-01`
+        const endDate   = `${year}-12-31`
+
+        const { data, error } = await supabaseClient
+            .from('daily_entries')
+            .select('entry_date, received_amount, remaining_amount, branch_id, dessert_id')
+            .gte('entry_date', startDate)
+            .lte('entry_date', endDate)
+            .order('entry_date', { ascending: true })
+
+        if (error) throw error
+
+        // Ay bazında received topla
+        const monthReceived = Array(12).fill(0)
+        ;(data || []).forEach(e => {
+            const m = new Date(e.entry_date).getMonth()
+            monthReceived[m] += e.received_amount || 0
+        })
+
+        return Array.from({ length: 12 }, (_, i) => ({
+            monthIdx: i,
+            label: new Date(year, i, 1).toLocaleDateString('tr-TR', { month: 'short' }),
+            received: monthReceived[i]
+        }))
+    } catch (err) {
+        console.error('Yıllık veri hatası:', err)
+        return Array.from({ length: 12 }, (_, i) => ({
+            monthIdx: i,
+            label: new Date(2025, i, 1).toLocaleDateString('tr-TR', { month: 'short' }),
+            received: 0
+        }))
+    }
+}
+
+/**
+ * Üretim hedeflerini çek
+ * Dönüş: { dessertId: dailyTarget }
+ */
+async function getProductionTargets() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('production_targets')
+            .select('dessert_id, daily_target')
+        if (error) throw error
+        const result = {}
+        ;(data || []).forEach(r => { result[String(r.dessert_id)] = r.daily_target })
+        return result
+    } catch (err) {
+        console.error('Üretim hedefi çekme hatası:', err)
+        return {}
+    }
+}
+
+/**
+ * Üretim hedefi kaydet/güncelle
+ */
+async function setProductionTarget(dessertId, target) {
+    const { error } = await supabaseClient
+        .from('production_targets')
+        .upsert({ dessert_id: dessertId, daily_target: target, updated_at: new Date().toISOString() },
+                 { onConflict: 'dessert_id' })
+    if (error) throw error
+}
+
+// ====================================================================
+// TEMA FONKSİYONLARI — Dark / Light Mode
+// ====================================================================
+
+/**
+ * Sayfa yüklenince kaydedilen temayı uygula
+ */
+function initTheme() {
+    const theme = localStorage.getItem('appTheme') || 'dark'
+    document.documentElement.setAttribute('data-theme', theme)
+    // Toggle butonunu varsa güncelle
+    const updateBtn = () => {
+        const btn = document.getElementById('themeToggleBtn')
+        if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙'
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateBtn)
+    } else {
+        updateBtn()
+    }
+}
+
+// Sayfa yüklenince otomatik uygula
+;(function() {
+    const theme = localStorage.getItem('appTheme') || 'dark'
+    document.documentElement.setAttribute('data-theme', theme)
+})()
+
+/**
+ * Dark ↔ Light arasında geçiş yap
+ */
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark'
+    const next = current === 'dark' ? 'light' : 'dark'
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('appTheme', next)
+    const btn = document.getElementById('themeToggleBtn')
+    if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙'
+}
+
 console.log('✅ Supabase Client yüklendi')

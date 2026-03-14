@@ -395,6 +395,48 @@
             .stock-card-value { font-size: 28px; }
             .branches-grid { grid-template-columns: 1fr; }
         }
+
+        /* ── ÜRETİM HEDEFİ ──────────────────── */
+        .stock-card-target { font-size: 11px; color: var(--muted); margin-top: 1px; }
+        .stock-card-progress {
+            width: 100%; height: 5px;
+            background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden;
+            margin-top: 6px;
+        }
+        .stock-card-progress-fill {
+            height: 100%; border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+        }
+        .pfill-green  { background: linear-gradient(90deg, #10b981, #059669); }
+        .pfill-amber  { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .pfill-red    { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .target-edit-row {
+            width: 100%; display: flex; align-items: center; gap: 4px;
+            margin-top: 6px;
+        }
+        .target-input {
+            flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px; color: var(--text); font-size: 12px;
+            padding: 4px 6px; text-align: center; max-width: 60px;
+        }
+        .target-save-btn {
+            font-size: 11px; padding: 4px 8px;
+            background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.25);
+            border-radius: 6px; color: var(--primary); cursor: pointer;
+            white-space: nowrap;
+        }
+        .target-edit-mode-btn {
+            font-size: 12px; padding: 6px 12px;
+            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2);
+            border-radius: 8px; color: var(--primary); cursor: pointer;
+            margin-left: auto;
+        }
+
+        /* ── TEMA ─────────────────────────── */
+        .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; }
+        [data-theme="light"] { --bg:#f1f5f9; --surface:#ffffff; --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:#64748b; }
+        [data-theme="light"] body { background:var(--bg); }
+        [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
@@ -425,6 +467,8 @@
             <span class="topbar-title">👨‍🍳 Tatlıcılar Paneli</span>
             <span class="topbar-date" id="todayBadge">—</span>
             <button class="refresh-btn" onclick="loadData()">🔄 Yenile</button>
+            <button class="target-edit-mode-btn" id="targetModeBtn" onclick="toggleTargetMode()">🎯 Hedef</button>
+            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
         </div>
 
         <div class="content">
@@ -572,10 +616,11 @@
             document.getElementById('grandTotalVal').textContent = '—';
             document.getElementById('branchesGrid').innerHTML = '';
 
-            const [branches, desserts, allStock] = await Promise.all([
+            const [branches, desserts, allStock, targets] = await Promise.all([
                 getBranches(),
                 getActiveDesserts(),
-                getAllLatestStock()
+                getAllLatestStock(),
+                getProductionTargets().catch(() => ({}))
             ]);
 
             if (!branches || !desserts) {
@@ -589,6 +634,10 @@
             summaryEl.innerHTML = '';
             let grandTotal = 0;
 
+            // Hedefleri sakla (hedef güncelleme için)
+            window._lastTargets  = targets;
+            window._lastDesserts = desserts;
+
             desserts.forEach(dessert => {
                 // Tüm şubelerdeki bu tatlının toplamı
                 let total = 0;
@@ -597,12 +646,32 @@
                 });
                 grandTotal += total;
 
+                const target   = Number(targets[String(dessert.id)] || 0);
+                const hasTarget = target > 0;
+                const ratio    = hasTarget ? Math.min(total / target, 1) : 0;
+                const pct      = Math.round(ratio * 100);
+                const fillClass = pct >= 100 ? 'pfill-green' : pct >= 50 ? 'pfill-amber' : 'pfill-red';
+                const targetHtml = hasTarget
+                    ? `<div class="stock-card-target">Hedef: ${target} adet/gün · %${pct}</div>
+                       <div class="stock-card-progress">
+                           <div class="stock-card-progress-fill ${fillClass}" style="width:${pct}%"></div>
+                       </div>`
+                    : `<div class="stock-card-target" style="opacity:0.4">Hedef yok</div>`;
+
+                const editHtml = `
+                    <div class="target-edit-row target-edit-section" id="tgt-${dessert.id}" style="display:none">
+                        <input class="target-input" type="number" min="0" placeholder="${target || '0'}" value="${target || ''}">
+                        <button class="target-save-btn" onclick="saveTarget(${dessert.id}, this)">✓</button>
+                    </div>`;
+
                 const card = document.createElement('div');
                 card.className = 'stock-card';
                 card.innerHTML = `
                     <div class="stock-card-emoji">${dessert.emoji || '🍰'}</div>
                     <div class="stock-card-name">${dessert.name}</div>
                     <div class="stock-card-value ${total === 0 ? 'zero' : ''}">${total}</div>
+                    ${targetHtml}
+                    ${editHtml}
                 `;
                 summaryEl.appendChild(card);
             });
@@ -654,6 +723,35 @@
 
         function toggleBranchCard(card) {
             card.classList.toggle('open');
+        }
+
+        // ── Üretim Hedefi ─────────────────────────────
+        let targetEditMode = false;
+
+        function toggleTargetMode() {
+            targetEditMode = !targetEditMode;
+            document.querySelectorAll('.target-edit-section').forEach(el => {
+                el.style.display = targetEditMode ? 'flex' : 'none';
+            });
+            const btn = document.getElementById('targetModeBtn');
+            btn.style.background   = targetEditMode ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.1)';
+            btn.style.borderColor  = targetEditMode ? 'rgba(245,158,11,0.5)'  : 'rgba(245,158,11,0.2)';
+            btn.textContent = targetEditMode ? '✓ Tamam' : '🎯 Hedef';
+        }
+
+        async function saveTarget(dessertId, btn) {
+            const row   = document.getElementById(`tgt-${dessertId}`);
+            const input = row?.querySelector('input');
+            if (!input) return;
+            const val = parseInt(input.value);
+            if (isNaN(val) || val < 0) { showToast('Geçersiz değer', 'error'); return; }
+            try {
+                await setProductionTarget(dessertId, val);
+                showToast('Hedef kaydedildi ✓', 'success');
+                loadData();
+            } catch (err) {
+                showToast('Kayıt hatası: ' + (err.message || ''), 'error');
+            }
         }
 
         // Giriş yapılmışsa yükle

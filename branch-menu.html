@@ -578,6 +578,12 @@
             .actions { padding: 0 16px 28px; }
             .tutorial-wrap { padding: 0 16px 20px; }
         }
+
+        /* ── TEMA ─────────────────────────── */
+        .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; }
+        [data-theme="light"] { --bg:#f1f5f9; --glass:rgba(0,0,0,0.04); --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:rgba(0,0,0,0.45); }
+        [data-theme="light"] body, [data-theme="light"] html { background:#f1f5f9; }
+        [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
@@ -594,6 +600,7 @@
             <span class="topbar-brand">Müdür Paneli</span>
             <div class="topbar-right">
                 <span class="topbar-clock" id="clock">--:--</span>
+                <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
                 <button class="logout-btn" onclick="logout()">Çıkış</button>
             </div>
         </nav>
@@ -734,6 +741,12 @@
         }
         tick();
         setInterval(tick, 1000);
+
+        // Push bildirimleri kayıt (VAPID key ayarlandıktan sonra aktif olur)
+        if (branchId && VAPID_PUBLIC_KEY !== 'BURAYA_VAPID_PUBLIC_KEY_EKLE') {
+            // Sayfa yüklendikten 2 saniye sonra izin iste
+            setTimeout(() => registerPushSubscription(branchId), 2000);
+        }
 
         function toggleTutorial() {
             document.getElementById('tutorialWrap').classList.toggle('open');

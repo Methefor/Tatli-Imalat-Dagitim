@@ -858,6 +858,186 @@
             justify-content: center; gap: 7px; transition: background 0.2s;
         }
         .btn-copy:hover { background: rgba(255,255,255,0.12); }
+
+        /* ── EXPORT & HEADER ACTIONS ─────────────────── */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 7px 14px;
+            background: transparent;
+            color: var(--text-2);
+            border: 1px solid var(--border-med);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .export-btn:hover {
+            background: rgba(255,255,255,0.06);
+            color: var(--text);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* ── COMPARISON TOGGLE ───────────────────────── */
+        .compare-toggle {
+            padding: 7px 13px;
+            background: transparent;
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .compare-toggle.active {
+            color: var(--blue);
+            border-color: rgba(59,130,246,0.35);
+            background: var(--blue-dim);
+        }
+
+        .delta-pos { color: var(--green); font-size: 11px; font-weight: 700; }
+        .delta-neg { color: var(--red);   font-size: 11px; font-weight: 700; }
+        .delta-neu { color: var(--text-3);font-size: 11px; }
+
+        /* ── STOCK WARNING ───────────────────────────── */
+        .stock-item.stock-warning {
+            border-left: 3px solid rgba(239,68,68,0.5);
+            background: rgba(239,68,68,0.04);
+        }
+
+        .stock-warning-badge {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--red);
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.25);
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+
+        /* ── TAHMINLEME TABLE ─────────────────────────── */
+        .forecast-table-wrap { overflow-x: auto; }
+        .forecast-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .forecast-table th {
+            padding: 10px 14px;
+            font-size: 10px; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            border-bottom: 1px solid var(--border); white-space: nowrap;
+            text-align: center;
+        }
+        .forecast-table th:first-child { text-align: left; }
+        .forecast-table td {
+            padding: 11px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            white-space: nowrap; text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .forecast-table td:first-child { text-align: left; font-weight: 600; color: var(--text); }
+        .forecast-table tr:last-child td { border-bottom: none; }
+        .forecast-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .fc-high { color: var(--green); font-weight: 700; }
+        .fc-mid  { color: var(--amber); font-weight: 600; }
+        .fc-low  { color: var(--red);   font-weight: 600; }
+        .fc-note { font-size: 11px; color: var(--text-3); padding: 32px 16px; text-align: center; }
+
+        /* ── MALİYET / KARLILIK ──────────────────────── */
+        .profit-table-wrap { overflow-x: auto; }
+        .profit-table { width: 100%; border-collapse: collapse; }
+        .profit-table th {
+            padding: 10px 16px;
+            font-size: 10px; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            border-bottom: 1px solid var(--border); text-align: right;
+        }
+        .profit-table th:first-child { text-align: left; }
+        .profit-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px; text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .profit-table td:first-child { text-align: left; font-weight: 600; }
+        .profit-table tfoot td {
+            font-weight: 700;
+            border-top: 1px solid var(--border-med);
+            border-bottom: none; font-size: 14px;
+        }
+        .profit-table tr:last-child td { border-bottom: none; }
+        .margin-high { color: var(--green); font-weight: 700; }
+        .margin-mid  { color: var(--amber); font-weight: 600; }
+        .margin-low  { color: var(--red);   font-weight: 700; }
+        .profit-no-cost { font-size: 13px; color: var(--text-3); text-align: center; padding: 40px 16px; }
+        .waste-cost-note { font-size: 12px; color: var(--text-3); padding: 10px 16px 16px; text-align: right; }
+
+        /* ── YEAR CHART HEADER ───────────────────────── */
+        .year-nav { display: flex; align-items: center; gap: 10px; }
+        .year-nav-btn {
+            padding: 4px 10px;
+            background: var(--panel-hover); border: 1px solid var(--border);
+            border-radius: 7px; color: var(--text-2); font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; line-height: 1;
+        }
+        .year-nav-btn:hover { color: var(--amber); border-color: rgba(245,158,11,0.3); }
+        .year-display {
+            font-size: 14px; font-weight: 700; color: var(--text);
+            min-width: 50px; text-align: center;
+        }
+        .chart-wrap-tall { padding: 20px 24px 24px; height: 300px; position: relative; }
+
+        /* ── PRINT ───────────────────────────────────── */
+        #printHeader { display: none; padding: 16px 0 20px; margin-bottom: 16px; border-bottom: 2px solid #333; }
+        .print-title { font-size: 20px; font-weight: 800; }
+        .print-sub { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+        @media print {
+            .topbar, .header-actions, .compare-toggle, .filter-tabs,
+            .logout-btn, .live-pill, .topbar-clock, #loadingOverlay, #toastContainer { display: none !important; }
+            body { background: white !important; color: #111 !important; -webkit-print-color-adjust: exact; }
+            .main { padding: 10px 0 !important; max-width: 100% !important; }
+            .panel { border: 1px solid #ddd !important; background: white !important; break-inside: avoid; margin-bottom: 12px !important; }
+            .panel-header { background: #f8fafc !important; border-bottom: 1px solid #ddd !important; }
+            .panel-title, .kpi-label { color: #333 !important; }
+            .kpi-card { background: #f8fafc !important; border: 1px solid #ddd !important; }
+            .kpi-value { color: #111 !important; }
+            .data-table th { color: #555 !important; border-bottom: 1px solid #ddd !important; }
+            .data-table td { color: #111 !important; border-bottom: 1px solid #eee !important; }
+            .data-table thead tr { background: #f0f4f8 !important; }
+            .content-grid { grid-template-columns: 1fr !important; }
+            canvas { max-height: 220px !important; }
+            #printHeader { display: block !important; color: #111 !important; }
+        }
+
+        /* ── LIGHT THEME (Faz 2'de tüm sayfalara eklenir, buraya admin için ön tanım) ── */
+        [data-theme="light"] {
+            --bg:          #f1f5f9;
+            --surface:     #ffffff;
+            --panel:       #ffffff;
+            --panel-hover: #f8fafc;
+            --border:      rgba(0,0,0,0.08);
+            --border-med:  rgba(0,0,0,0.14);
+            --text:        #0f172a;
+            --text-2:      #475569;
+            --text-3:      #94a3b8;
+        }
+
+        [data-theme="light"] body { background: var(--bg); }
+        [data-theme="light"] .topbar { background: rgba(241,245,249,0.95); border-bottom: 1px solid var(--border); }
+        [data-theme="light"] .tab-btn { color: var(--text-2); }
+        [data-theme="light"] .logout-btn { color: var(--text-2); }
+        [data-theme="light"] .data-table tbody tr:hover { background: rgba(0,0,0,0.02); }
     </style>
 </head>
 <body>
@@ -877,6 +1057,7 @@
                 <span id="liveStatus">Canlı</span>
             </div>
             <div class="topbar-clock" id="clockDisplay"></div>
+            <button id="themeToggleBtn" class="logout-btn" onclick="toggleTheme()" title="Tema Değiştir">☀️</button>
             <button class="report-btn" onclick="showReport()">📤 Rapor</button>
             <button class="logout-btn" onclick="logout()">
                 🚪 Çıkış
@@ -887,21 +1068,32 @@
     <!-- ── MAIN ─────────────────────────────────────── -->
     <main class="main">
 
+        <!-- Print Header (gizli, sadece yazdırınca görünür) -->
+        <div id="printHeader">
+            <div class="print-title">Aylık Yönetici Raporu — Tatlı Takip Sistemi</div>
+            <div class="print-sub" id="printSubLine">—</div>
+        </div>
+
         <!-- Page Header + Filter Tabs -->
         <div class="page-header fade-up">
             <div>
                 <h1 class="page-title">Yönetici Paneli</h1>
                 <p class="page-subtitle" id="dateDisplay">Yükleniyor...</p>
             </div>
-            <div class="filter-tabs">
-                <button class="tab-btn active" id="fBugün"  onclick="setFilter('today', this)">Bugün</button>
-                <button class="tab-btn"         id="fHafta" onclick="setFilter('week',  this)">Bu Hafta</button>
-                <div class="month-nav">
-                    <button class="month-arrow" onclick="shiftMonth(-1)">‹</button>
-                    <button class="tab-btn month-label" id="fAy" onclick="setFilter('month', this)">Bu Ay</button>
-                    <button class="month-arrow" onclick="shiftMonth(1)">›</button>
+            <div class="header-actions">
+                <div class="filter-tabs">
+                    <button class="tab-btn active" id="fBugün"  onclick="setFilter('today', this)">Bugün</button>
+                    <button class="tab-btn"         id="fHafta" onclick="setFilter('week',  this)">Bu Hafta</button>
+                    <div class="month-nav">
+                        <button class="month-arrow" onclick="shiftMonth(-1)">‹</button>
+                        <button class="tab-btn month-label" id="fAy" onclick="setFilter('month', this)">Bu Ay</button>
+                        <button class="month-arrow" onclick="shiftMonth(1)">›</button>
+                    </div>
+                    <button class="tab-btn"         id="fTumu" onclick="setFilter('all',   this)">Tümü</button>
                 </div>
-                <button class="tab-btn"         id="fTumu" onclick="setFilter('all',   this)">Tümü</button>
+                <button class="compare-toggle" id="compareToggleBtn" onclick="toggleComparison(this)" title="Önceki dönemle karşılaştır">⟷ Karşılaştır</button>
+                <button class="export-btn" onclick="exportCSV()" title="CSV olarak indir">📥 CSV</button>
+                <button class="export-btn" onclick="printReport()" title="PDF olarak yazdır">🖨️ PDF</button>
             </div>
         </div>
 
@@ -1050,6 +1242,56 @@
             </div>
         </div>
 
+        <!-- Maliyet & Karlılık -->
+        <div class="panel fade-up" style="animation-delay:0.5s">
+            <div class="panel-header">
+                <h2 class="panel-title">Maliyet & Karlılık</h2>
+                <span class="panel-badge panel-badge--green" id="maliyetKarBadge">—</span>
+            </div>
+            <div id="maliyetContent">
+                <div class="profit-no-cost">
+                    ⚙️ Maliyet hesabı için üretim maliyetlerini Süper Admin panelinden girin.
+                </div>
+            </div>
+        </div>
+
+        <!-- Ortalama Satış Tahmini (Son 30 Gün) -->
+        <div class="panel fade-up" style="animation-delay:0.55s">
+            <div class="panel-header">
+                <h2 class="panel-title">Ort. Günlük Satış (Son 30 Gün)</h2>
+                <span class="panel-badge" id="forecastBadge">30 Gün</span>
+            </div>
+            <div id="forecastContent">
+                <div class="fc-note">⏳ Yükleniyor...</div>
+            </div>
+        </div>
+
+        <!-- Zayiat Trendi (Son 6 Ay) -->
+        <div class="panel fade-up" style="animation-delay:0.6s">
+            <div class="panel-header">
+                <h2 class="panel-title">Zayiat Trendi (Son 6 Ay)</h2>
+                <span class="panel-badge panel-badge--red" id="wasteTrendBadge">6 Ay</span>
+            </div>
+            <div class="chart-wrap-tall">
+                <canvas id="wasteTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Yıllık Satış Trendi -->
+        <div class="panel fade-up" style="animation-delay:0.65s">
+            <div class="panel-header">
+                <h2 class="panel-title">Yıllık Dağıtım Trendi</h2>
+                <div class="year-nav">
+                    <button class="year-nav-btn" onclick="changeYear(-1)">‹</button>
+                    <span class="year-display" id="yearDisplay">2026</span>
+                    <button class="year-nav-btn" onclick="changeYear(1)">›</button>
+                </div>
+            </div>
+            <div class="chart-wrap-tall">
+                <canvas id="yearlyChart"></canvas>
+            </div>
+        </div>
+
     </main>
 
     <div id="loadingOverlay"><div class="spinner"></div></div>
@@ -1078,12 +1320,17 @@
     <script src="supabase-client.js"></script>
     <script>
         // ── State ────────────────────────────────────────
-        let currentFilter  = 'today';
-        let allData        = [];
-        let prevMonthData  = [];
-        let dessertChart   = null;
-        let trendChart     = null;
-        const DAILY_TARGET = 2500;
+        let currentFilter    = 'today';
+        let allData          = [];
+        let prevMonthData    = [];
+        let comparisonData   = [];
+        let comparisonActive = false;
+        let dessertChart     = null;
+        let trendChart       = null;
+        let wasteTrendChart  = null;
+        let yearlyChart      = null;
+        let currentYear      = new Date().getFullYear();
+        const DAILY_TARGET   = 2500;
         let autoRefreshTimer = null;
 
         // Ay seçici
@@ -1111,12 +1358,16 @@
 
         // ── Init ─────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', async () => {
+            initTheme();
             updateClock();
             setInterval(updateClock, 1000);
             updateDateDisplay();
             updateMonthLabel();
             await loadData();
             startAutoRefresh();
+            // Yan paneller — filtreden bağımsız
+            loadWasteTrend();
+            loadYearlyData(currentYear);
         });
 
         function updateClock() {
@@ -1217,7 +1468,10 @@
             updateTrendChart();
             updateZayiatTable();
             await updateCiroSection();
+            await updateMaliyetSection();
             await updateStockCards();
+            updateForecastSection();
+            updatePrintHeader();
             updateLiveStatus();
         }
 
@@ -1445,27 +1699,32 @@ _Mutlukent Tatlı Takip Sistemi_`;
         }
 
         // ── Branch Table ──────────────────────────────────
-        function updateBranchTable() {
-            const latestMap = buildCurrentStockMap(allData);
-
+        function aggregateBranchData(data) {
+            const latestMap = buildCurrentStockMap(data);
             const bd = {};
-            allData.forEach(entry => {
-                if (!entry.branches) return;  // şube verisi yoksa atla
+            data.forEach(entry => {
+                if (!entry.branches) return;
                 const id = entry.branches.id;
                 if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0, waste: 0 };
                 bd[id].received += entry.received_amount || 0;
                 bd[id].waste    += entry.waste_amount    || 0;
             });
-
             Object.entries(latestMap).forEach(([key, rem]) => {
                 const branchId = key.split('|')[0];
                 if (bd[branchId]) bd[branchId].remaining += rem;
             });
-
             Object.values(bd).forEach(b => {
                 b.sold = Math.max(0, b.received - b.remaining - b.waste);
                 b.pct  = b.received > 0 ? parseFloat(((b.sold / b.received) * 100).toFixed(1)) : 0;
             });
+            return bd;
+        }
+
+        function updateBranchTable() {
+            const bd   = aggregateBranchData(allData);
+            const prev = comparisonActive && comparisonData.length > 0
+                ? aggregateBranchData(comparisonData)
+                : null;
 
             const tbody   = document.getElementById('branchTableBody');
             const cardsEl = document.getElementById('branchCards');
@@ -1502,23 +1761,35 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return;
             }
 
+            const delta = (cur, old) => {
+                if (!prev || old === undefined) return '';
+                const d = cur - old;
+                if (d === 0) return `<span class="delta-neu"> (=)</span>`;
+                const sign = d > 0 ? '+' : '';
+                const cls  = d > 0 ? 'delta-pos' : 'delta-neg';
+                return `<span class="${cls}"> (${sign}${d.toLocaleString('tr-TR')})</span>`;
+            };
+
             branches.forEach((b, i) => {
                 const pct       = b.pct;
                 const pctClass  = pct >= 70 ? 'pct-high' : pct >= 40 ? 'pct-mid' : 'pct-low';
                 const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
+                const prevB     = prev ? Object.values(prev).find(pb => pb.name === b.name) : null;
 
                 // Masaüstü satır
                 const row = document.createElement('tr');
                 row.style.animation = `fadeUp 0.4s ease ${i * 0.06}s both`;
                 row.innerHTML = `
-                    <td><div class="branch-cell">
-                        <span class="branch-dot"></span>
-                        <span class="branch-cell-name">${b.name}</span>
-                    </div></td>
-                    <td>${b.received.toLocaleString('tr-TR')}</td>
-                    <td class="num-green">${b.sold.toLocaleString('tr-TR')}</td>
+                    <td>
+                        <div class="branch-cell">
+                            <span class="branch-dot"></span>
+                            <span class="branch-cell-name">${b.name}</span>
+                        </div>
+                    </td>
+                    <td>${b.received.toLocaleString('tr-TR')}${delta(b.received, prevB?.received)}</td>
+                    <td class="num-green">${b.sold.toLocaleString('tr-TR')}${delta(b.sold, prevB?.sold)}</td>
                     <td class="num-amber">${b.remaining.toLocaleString('tr-TR')}</td>
-                    <td class="num-red">${b.waste.toLocaleString('tr-TR')}</td>
+                    <td class="num-red">${b.waste.toLocaleString('tr-TR')}${delta(b.waste, prevB?.waste)}</td>
                     <td><span class="pct-badge ${pctClass}">%${pct}</span></td>
                 `;
                 tbody.appendChild(row);
@@ -1838,7 +2109,10 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
         // ── Stock Cards ───────────────────────────────────
         async function updateStockCards() {
-            const stockData = await getCurrentStock();
+            const [stockData, thresholds] = await Promise.all([
+                getCurrentStock(),
+                getSetting('dessertThresholds') || {}
+            ]);
             const grid = document.getElementById('stockGrid');
             grid.innerHTML = '';
 
@@ -1853,17 +2127,452 @@ _Mutlukent Tatlı Takip Sistemi_`;
             }
 
             stockData.forEach((s, i) => {
+                const threshold = thresholds ? Number(thresholds[String(s.dessertId)] || 0) : 0;
+                const isLow     = threshold > 0 && s.totalRemaining <= threshold;
+
                 const item = document.createElement('div');
-                item.className = 'stock-item';
+                item.className = 'stock-item' + (isLow ? ' stock-warning' : '');
                 item.style.animation = `fadeUp 0.4s ease ${i * 0.05}s both`;
                 item.innerHTML = `
                     <div class="stock-emoji">${s.emoji}</div>
                     <div class="stock-name">${s.dessertName}</div>
-                    <div class="stock-amount">${s.totalRemaining}</div>
+                    <div class="stock-amount" style="${isLow ? 'color:var(--red)' : ''}">${s.totalRemaining}</div>
                     <div class="stock-unit">adet kaldı</div>
+                    ${isLow ? `<div class="stock-warning-badge">⚠️ Düşük Stok</div>` : ''}
                 `;
                 grid.appendChild(item);
             });
+        }
+
+        // ── Print Report ─────────────────────────────────
+        function printReport() {
+            window.print();
+        }
+
+        function updatePrintHeader() {
+            const { startDate, endDate } = getDateRange();
+            const fmt = d => new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const label = startDate === endDate ? fmt(startDate) : `${fmt(startDate)} – ${fmt(endDate)}`;
+            document.getElementById('printSubLine').textContent = `Tarih: ${label}  |  Yazdırıldı: ${new Date().toLocaleString('tr-TR')}`;
+        }
+
+        // ── CSV Export ────────────────────────────────────
+        function exportCSV() {
+            if (!allData || allData.length === 0) { showToast('Dışa aktarılacak veri yok.', 'error'); return; }
+
+            const BOM = '\uFEFF';
+            const header = 'Tarih,Şube,Tatlı,Gelen,Kalan,Zayiat\n';
+            const rows = allData.map(e => [
+                e.entry_date,
+                `"${e.branches?.name || ''}"`,
+                `"${e.desserts?.name || ''}"`,
+                e.received_amount  ?? 0,
+                e.remaining_amount ?? '',
+                e.waste_amount     ?? 0
+            ].join(',')).join('\n');
+
+            const blob = new Blob([BOM + header + rows], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            const { startDate, endDate } = getDateRange();
+            a.href     = url;
+            a.download = `tatli-rapor-${startDate}-${endDate}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('CSV indirildi.', 'success');
+        }
+
+        // ── Comparison Toggle ─────────────────────────────
+        async function toggleComparison(btn) {
+            comparisonActive = !comparisonActive;
+            btn.classList.toggle('active', comparisonActive);
+
+            if (comparisonActive) {
+                const { startDate, endDate } = getDateRange();
+                const start = new Date(startDate);
+                const end   = new Date(endDate);
+                const diffMs = end - start;
+                const prevEnd   = new Date(start.getTime() - 86400000);
+                const prevStart = new Date(prevEnd.getTime() - diffMs);
+                const fmt = d => d.toISOString().split('T')[0];
+                comparisonData = await getDailyEntriesDateRange(fmt(prevStart), fmt(prevEnd));
+            } else {
+                comparisonData = [];
+            }
+
+            updateBranchTable();
+        }
+
+        // ── Maliyet & Karlılık Section ─────────────────────
+        async function updateMaliyetSection() {
+            const [prices, costs] = await Promise.all([
+                getSetting('dessertPrices') || {},
+                getSetting('dessertCosts')  || {}
+            ]);
+            const container = document.getElementById('maliyetContent');
+            const badge     = document.getElementById('maliyetKarBadge');
+
+            if (Object.keys(costs).length === 0) {
+                container.innerHTML = `<div class="profit-no-cost">⚙️ Maliyet hesabı için üretim maliyetlerini Süper Admin panelinden girin.</div>`;
+                badge.textContent = '—';
+                return;
+            }
+
+            // Tatlı bazlı satılan hesapla (aynı mantık ciro ile)
+            const ciroLatestMap = buildCurrentStockMap(allData);
+            const bySold = {}, byName = {};
+            allData.forEach(e => {
+                const id = String(e.desserts?.id);
+                if (!bySold[id]) { bySold[id] = 0; byName[id] = `${e.desserts?.emoji || ''} ${e.desserts?.name || id}`; }
+                bySold[id] += e.received_amount || 0;
+            });
+            Object.entries(ciroLatestMap).forEach(([key, rem]) => {
+                const dessertId = String(key.split('|')[1]);
+                if (dessertId in bySold) bySold[dessertId] = Math.max(0, bySold[dessertId] - rem);
+            });
+
+            // Zayiat maliyeti hesapla
+            const byWaste = {};
+            allData.forEach(e => {
+                const id = String(e.desserts?.id);
+                if (!byWaste[id]) byWaste[id] = 0;
+                byWaste[id] += e.waste_amount || 0;
+            });
+
+            let totalCiro = 0, totalMaliyet = 0, totalWasteCost = 0;
+            let rows = '';
+
+            const dessertIds = [...new Set([...Object.keys(costs), ...Object.keys(prices)])];
+            dessertIds.forEach(id => {
+                const cost  = Number(costs[id]  || 0);
+                const price = Number(prices[id] || 0);
+                if (cost <= 0 && price <= 0) return;
+                const sold    = bySold[id]  || 0;
+                const waste   = byWaste[id] || 0;
+                const ciro    = sold  * price;
+                const maliyet = sold  * cost;
+                const karMiktar = ciro - maliyet;
+                const karMarji  = ciro > 0 ? ((karMiktar / ciro) * 100).toFixed(1) : 0;
+                const wasteCost = waste * cost;
+                const marjClass = karMarji >= 40 ? 'margin-high' : karMarji >= 20 ? 'margin-mid' : 'margin-low';
+                totalCiro     += ciro;
+                totalMaliyet  += maliyet;
+                totalWasteCost += wasteCost;
+                const name = byName[id] || `Tatlı #${id}`;
+                rows += `<tr>
+                    <td>${name}</td>
+                    <td>${ciro.toLocaleString('tr-TR')} ₺</td>
+                    <td>${maliyet.toLocaleString('tr-TR')} ₺</td>
+                    <td class="${marjClass}">${karMiktar.toLocaleString('tr-TR')} ₺</td>
+                    <td class="${marjClass}">%${karMarji}</td>
+                    <td class="num-red">${wasteCost.toLocaleString('tr-TR')} ₺</td>
+                </tr>`;
+            });
+
+            if (!rows) {
+                container.innerHTML = `<div class="profit-no-cost">Bu dönemde satış verisi yok.</div>`;
+                badge.textContent = '—';
+                return;
+            }
+
+            const brutKar = totalCiro - totalMaliyet;
+            const brutMarj = totalCiro > 0 ? ((brutKar / totalCiro) * 100).toFixed(1) : 0;
+            badge.textContent = `%${brutMarj} kar marjı`;
+
+            container.innerHTML = `
+                <div class="profit-table-wrap">
+                    <table class="profit-table">
+                        <thead>
+                            <tr>
+                                <th>Tatlı</th>
+                                <th>Ciro</th>
+                                <th>Maliyet</th>
+                                <th>Brüt Kar</th>
+                                <th>Marj</th>
+                                <th>Zayiat Maliyeti</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                        <tfoot>
+                            <tr>
+                                <td>TOPLAM</td>
+                                <td>${totalCiro.toLocaleString('tr-TR')} ₺</td>
+                                <td>${totalMaliyet.toLocaleString('tr-TR')} ₺</td>
+                                <td class="${brutKar >= 0 ? 'margin-high' : 'margin-low'}">${brutKar.toLocaleString('tr-TR')} ₺</td>
+                                <td class="${brutMarj >= 40 ? 'margin-high' : brutMarj >= 20 ? 'margin-mid' : 'margin-low'}">%${brutMarj}</td>
+                                <td class="num-red">${totalWasteCost.toLocaleString('tr-TR')} ₺</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="waste-cost-note">⚠️ Toplam zayiat maliyeti: <strong>${totalWasteCost.toLocaleString('tr-TR')} ₺</strong> (satışa yansımayan kayıp)</div>
+            `;
+        }
+
+        // ── Forecast Section (Son 30 Gün Ort. Satış) ─────
+        function updateForecastSection() {
+            // allData içinde en az 2 gün varsa hesapla, yoksa dış veri al
+            const container = document.getElementById('forecastContent');
+
+            if (!allData || allData.length === 0) {
+                container.innerHTML = `<div class="fc-note">Tahmin için yeterli veri yok.</div>`;
+                return;
+            }
+
+            // allData'dan şube × tatlı bazlı toplam satış hesapla
+            const latestMap = buildCurrentStockMap(allData);
+            const bySoldBD  = {}; // "branchName|dessertId" → { sold, branchName, dessertName }
+            const branches  = new Set(), desserts = new Map();
+
+            allData.forEach(e => {
+                const bid = e.branches?.id;
+                const bName = e.branches?.name || '—';
+                const did  = String(e.desserts?.id);
+                const dName = `${e.desserts?.emoji || ''} ${e.desserts?.name || did}`;
+                if (!bid) return;
+                branches.add(bName);
+                desserts.set(did, dName);
+                const key = `${bName}|${did}`;
+                if (!bySoldBD[key]) bySoldBD[key] = { branchName: bName, dessertId: did, received: 0 };
+                bySoldBD[key].received += e.received_amount || 0;
+            });
+
+            // Kalan düş
+            Object.entries(latestMap).forEach(([key, rem]) => {
+                const [branchId, did] = key.split('|');
+                // branchId UUID, bySoldBD key'i branchName|did
+                Object.entries(bySoldBD).forEach(([k, v]) => {
+                    if (v.dessertId === did && !v.remSet) {
+                        // We need branchId→branchName mapping
+                    }
+                });
+            });
+
+            // Basit versiyon: received toplamını gün sayısına böl
+            const dates = new Set(allData.map(e => e.entry_date));
+            const dayCount = Math.max(dates.size, 1);
+
+            // Tatlı bazlı ortalama (tüm şubeler)
+            const byDessert = {};
+            allData.forEach(e => {
+                const did   = String(e.desserts?.id);
+                const dName = `${e.desserts?.emoji || ''} ${e.desserts?.name || did}`;
+                if (!byDessert[did]) byDessert[did] = { name: dName, received: 0, remaining: 0 };
+                byDessert[did].received += e.received_amount || 0;
+            });
+            Object.entries(latestMap).forEach(([key, rem]) => {
+                const did = key.split('|')[1];
+                if (byDessert[did]) byDessert[did].remaining += rem;
+            });
+
+            // Şube × tatlı tablosu için şube bazlı hesap
+            const branchData = {}; // branchName → { dessertId → sold }
+            allData.forEach(e => {
+                const bName = e.branches?.name;
+                const did   = String(e.desserts?.id);
+                if (!bName) return;
+                if (!branchData[bName]) branchData[bName] = {};
+                if (!branchData[bName][did]) branchData[bName][did] = { received: 0, remaining: 0 };
+                branchData[bName][did].received += e.received_amount || 0;
+            });
+            Object.entries(latestMap).forEach(([key, rem]) => {
+                const [bid, did] = key.split('|');
+                // Find branch name
+                const entry = allData.find(e => String(e.branches?.id) === bid);
+                if (!entry) return;
+                const bName = entry.branches.name;
+                if (branchData[bName]?.[did]) branchData[bName][did].remaining += rem;
+            });
+
+            const branchNames = [...branches].sort();
+            const dessertList = [...desserts.entries()]; // [id, name]
+
+            if (branchNames.length === 0 || dessertList.length === 0) {
+                container.innerHTML = `<div class="fc-note">Yeterli veri yok.</div>`;
+                return;
+            }
+
+            // Maksimum değer → renk eşiği
+            const allVals = [];
+            branchNames.forEach(b => {
+                dessertList.forEach(([did]) => {
+                    const d = branchData[b]?.[did];
+                    if (d) {
+                        const sold = Math.max(0, d.received - d.remaining);
+                        const avg  = (sold / dayCount).toFixed(1);
+                        allVals.push(Number(avg));
+                    }
+                });
+            });
+            const maxAvg = Math.max(...allVals, 1);
+
+            let thead = '<tr><th>Şube</th>';
+            dessertList.forEach(([, dName]) => { thead += `<th>${dName}</th>`; });
+            thead += '</tr>';
+
+            let tbody = '';
+            branchNames.forEach(b => {
+                let row = `<tr><td class="fc-branch">${b}</td>`;
+                dessertList.forEach(([did]) => {
+                    const d = branchData[b]?.[did];
+                    if (!d) { row += `<td class="fc-val" style="color:var(--text-3)">—</td>`; return; }
+                    const sold = Math.max(0, d.received - d.remaining);
+                    const avg  = (sold / dayCount).toFixed(1);
+                    const ratio = Number(avg) / maxAvg;
+                    const cls = ratio >= 0.6 ? 'fc-high' : ratio >= 0.25 ? 'fc-mid' : 'fc-low';
+                    row += `<td class="fc-val ${cls}">${avg}</td>`;
+                });
+                row += '</tr>';
+                tbody += row;
+            });
+
+            container.innerHTML = `
+                <div class="forecast-table-wrap">
+                    <table class="forecast-table">
+                        <thead>${thead}</thead>
+                        <tbody>${tbody}</tbody>
+                    </table>
+                </div>
+                <div class="fc-note" style="padding:8px 16px;text-align:right">Seçili dönem ${dayCount} gün · Değerler: ort. adet/gün</div>
+            `;
+        }
+
+        // ── Zayiat Trendi Chart ───────────────────────────
+        async function loadWasteTrend() {
+            const months = await getWasteTrendData(6);
+            if (!months || months.length === 0) return;
+
+            // Tüm tatlı ID'leri topla
+            const dessertMap = {}; // id → name
+            months.forEach(m => {
+                Object.entries(m.byDessert).forEach(([id, d]) => {
+                    if (!dessertMap[id]) dessertMap[id] = d.name;
+                });
+            });
+
+            const dessertIds = Object.keys(dessertMap);
+            const labels = months.map(m => m.month);
+
+            const palette = [
+                'rgba(239,68,68,0.8)',
+                'rgba(245,158,11,0.8)',
+                'rgba(59,130,246,0.8)',
+                'rgba(16,185,129,0.8)',
+                'rgba(168,85,247,0.8)',
+                'rgba(236,72,153,0.8)',
+                'rgba(20,184,166,0.8)',
+                'rgba(249,115,22,0.8)',
+            ];
+
+            const datasets = dessertIds.map((id, idx) => ({
+                label: dessertMap[id],
+                data: months.map(m => m.byDessert[id]?.total || 0),
+                backgroundColor: palette[idx % palette.length],
+                borderRadius: 4,
+                borderSkipped: false,
+            }));
+
+            const ctx = document.getElementById('wasteTrendChart');
+            if (wasteTrendChart) wasteTrendChart.destroy();
+
+            wasteTrendChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 } },
+                        tooltip: {
+                            backgroundColor: '#111d30',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#94a3b8',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1, padding: 12, cornerRadius: 10,
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { display: false }, ticks: { color: '#5a7192', font: { size: 12 } } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a7192', font: { size: 12 } } }
+                    }
+                }
+            });
+
+            // Toplam badge
+            const totalWaste = months.reduce((s, m) => s + Object.values(m.byDessert).reduce((ss, d) => ss + d.total, 0), 0);
+            document.getElementById('wasteTrendBadge').textContent = `${totalWaste.toLocaleString('tr-TR')} adet`;
+        }
+
+        // ── Yıllık Satış Chart ────────────────────────────
+        async function loadYearlyData(year) {
+            document.getElementById('yearDisplay').textContent = year;
+            const monthData = await getYearlySalesData(year);
+
+            const labels    = monthData.map(m => m.label);
+            const rawData   = monthData.map(m => m.received);
+            // Kümülatif
+            const cumData = rawData.reduce((acc, v, i) => {
+                acc.push((acc[i-1] || 0) + v);
+                return acc;
+            }, []);
+
+            const ctx = document.getElementById('yearlyChart');
+            if (yearlyChart) yearlyChart.destroy();
+
+            yearlyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: `${year} Aylık`,
+                            data: rawData,
+                            borderColor: 'rgba(59,130,246,0.7)',
+                            backgroundColor: 'rgba(59,130,246,0.07)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.35,
+                            fill: false,
+                            borderDash: [5, 3],
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: `${year} Kümülatif`,
+                            data: cumData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245,158,11,0.08)',
+                            borderWidth: 2.5,
+                            pointRadius: 4,
+                            tension: 0.35,
+                            fill: true,
+                            yAxisID: 'y',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 } },
+                        tooltip: {
+                            backgroundColor: '#111d30',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#94a3b8',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1, padding: 12, cornerRadius: 10,
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a7192', font: { size: 12 } } },
+                        x: { grid: { display: false }, ticks: { color: '#5a7192', font: { size: 12 } } }
+                    }
+                }
+            });
+        }
+
+        function changeYear(delta) {
+            currentYear += delta;
+            loadYearlyData(currentYear);
         }
 
         // ── No Data ──────────────────────────────────────

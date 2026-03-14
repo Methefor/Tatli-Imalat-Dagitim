@@ -688,9 +688,22 @@
             .btn-secondary { font-size: 14px; padding: 16px 12px; }
             .pin-input { width: 54px; height: 62px; font-size: 24px; }
         }
+
+        /* ── TEMA ─────────────────────────── */
+        #themeToggleBtn {
+            position: fixed; top: 16px; right: 16px; z-index: 1000;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px; color: var(--text); font-size: 18px;
+            cursor: pointer; padding: 7px 11px; line-height: 1;
+            backdrop-filter: blur(8px);
+        }
+        [data-theme="light"] { --bg:#f1f5f9; --card:#ffffff; --text:#0f172a; --text-secondary:#334155; --text-tertiary:#64748b; }
+        [data-theme="light"] body { background:#f1f5f9 !important; }
+        [data-theme="light"] #themeToggleBtn { background:rgba(0,0,0,0.06); border-color:rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
+    <button id="themeToggleBtn" onclick="toggleTheme()" title="Tema Değiştir">☀️</button>
 
     <!-- Arka plan -->
     <div class="bg-orb orb-1"></div>

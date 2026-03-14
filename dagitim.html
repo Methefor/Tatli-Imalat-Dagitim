@@ -734,6 +734,12 @@
             .section-line { background: #ddd; }
             .section-title { color: #555; }
         }
+
+        /* ── TEMA ─────────────────────────── */
+        .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; }
+        [data-theme="light"] { --bg:#f1f5f9; --surface:#ffffff; --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:#64748b; }
+        [data-theme="light"] body { background:var(--bg); }
+        [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
@@ -765,6 +771,7 @@
             <span class="topbar-date" id="todayBadge">—</span>
             <button class="refresh-btn" onclick="loadData()">🔄 Yenile</button>
             <button class="print-btn" onclick="window.print()">🖨️ Yazdır</button>
+            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
         </div>
 
         <div class="content">

@@ -437,6 +437,12 @@
             .dessert-emoji { width: 28px; height: 28px; font-size: 16px; border-radius: 7px; }
             .dessert-label { font-size: 12px; }
         }
+
+        /* ── TEMA ─────────────────────────── */
+        .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; }
+        [data-theme="light"] { --bg:#f1f5f9; --glass:rgba(0,0,0,0.04); --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:rgba(0,0,0,0.45); }
+        [data-theme="light"] body { background:#f1f5f9; }
+        [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
@@ -460,6 +466,7 @@
                 <span class="ri">↻</span>
                 <span>Yenile</span>
             </button>
+            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
         </div>
     </nav>
 

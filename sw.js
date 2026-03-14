@@ -38,6 +38,33 @@ self.addEventListener('activate', e => {
     );
 });
 
+// ── Push Bildirimleri ────────────────────────────────────
+self.addEventListener('push', event => {
+    const data = event.data ? event.data.json() : {};
+    const title   = data.title || '⚠️ Tatlı Takip';
+    const options = {
+        body:  data.body  || 'Kalan tatlılar girilmedi!',
+        icon:  '/icon-192.png',
+        badge: '/maskable-192.png',
+        tag:   data.tag   || 'tatli-bildirim',
+        data:  { url: data.url || '/branch-menu.html' }
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const url = event.notification.data?.url || '/branch-menu.html';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+            for (const client of list) {
+                if (client.url.endsWith(url) && 'focus' in client) return client.focus();
+            }
+            return clients.openWindow ? clients.openWindow(url) : null;
+        })
+    );
+});
+
 self.addEventListener('fetch', e => {
     // Supabase API isteklerini her zaman ağdan çek
     if (e.request.url.includes('supabase.co')) {

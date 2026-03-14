@@ -1,0 +1,6 @@
+# Supabase Edge Function konfigürasyonu
+# Cron: Her gün 22:00 Türkiye saati (UTC 19:00)
+# Supabase Dashboard → Edge Functions → Schedule bölümünde:
+#   Cron expression: "0 19 * * *"
+[functions.check-missing-kalan]
+verify_jwt = false

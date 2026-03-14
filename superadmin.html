@@ -551,6 +551,12 @@
             .topbar-label { display: none; }
             .log-stats { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* ── TEMA ─────────────────────────── */
+        .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; }
+        [data-theme="light"] { --bg:#f1f5f9; --surface:#ffffff; --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:#64748b; }
+        [data-theme="light"] body { background:var(--bg); }
+        [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
@@ -587,6 +593,7 @@
         </div>
         <div class="topbar-right">
             <button class="icon-btn" onclick="refreshCurrentTab()" title="Yenile">🔄</button>
+            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
         </div>
     </header>
 
@@ -678,6 +685,18 @@
                 <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
             </div>
             <button class="save-thresholds-btn" onclick="saveDessertPrices()" style="margin-top:16px;">💾 Fiyatları Kaydet</button>
+        </div>
+
+        <div class="sa-section" style="margin-top:16px;">
+            <div class="sa-section-header">
+                <span class="sa-section-icon">🏭</span>
+                <span class="sa-section-title">Üretim Maliyetleri</span>
+            </div>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Tatlı başına üretim maliyeti (₺). Yönetici panelinde karlılık hesabı için kullanılır.</p>
+            <div id="costs-list">
+                <div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>
+            </div>
+            <button class="save-thresholds-btn" onclick="saveDessertCosts()" style="margin-top:16px;">💾 Maliyetleri Kaydet</button>
         </div>
     </div>
 
@@ -875,6 +894,7 @@ function loadTabData(tabId) {
     } else if (tabId === 'tab-tatlilar') {
         loadDesserts();
         loadDessertPrices();
+        loadDessertCosts();
     } else if (tabId === 'tab-esikler') {
         loadThresholds();
     } else if (tabId === 'tab-islemler') {
@@ -1248,6 +1268,51 @@ async function saveDessertPrices() {
     try {
         await setSetting('dessertPrices', prices);
         showToast('Fiyatlar kaydedildi ✓', 'success');
+    } catch (err) {
+        showToast('Hata: ' + (err.message || 'Kaydedilemedi'), 'error');
+    }
+}
+
+// ── Üretim Maliyetleri ──
+async function loadDessertCosts() {
+    const container = document.getElementById('costs-list');
+    container.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Yükleniyor…</div>';
+    try {
+        const desserts = await getActiveDesserts();
+        if (!desserts || desserts.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">Tatlı bulunamadı.</div>';
+            return;
+        }
+        const saved = (await getSetting('dessertCosts')) || {};
+        container.innerHTML = '';
+        desserts.forEach(d => {
+            const row = document.createElement('div');
+            row.className = 'form-row';
+            row.innerHTML = `
+                <div class="form-label">${d.emoji || '🍰'} ${d.name}</div>
+                <input class="form-input small" type="number" id="cost-${d.id}" value="${saved[d.id] || ''}" placeholder="₺ maliyet" min="0" step="0.5">
+            `;
+            container.appendChild(row);
+        });
+    } catch (err) {
+        container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Hata: ' + (err.message || 'Yüklenemedi') + '</div>';
+    }
+}
+
+async function saveDessertCosts() {
+    const desserts = await getActiveDesserts();
+    if (!desserts) return;
+    const costs = {};
+    desserts.forEach(d => {
+        const input = document.getElementById(`cost-${d.id}`);
+        if (input && input.value !== '') {
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) costs[d.id] = val;
+        }
+    });
+    try {
+        await setSetting('dessertCosts', costs);
+        showToast('Maliyetler kaydedildi ✓', 'success');
     } catch (err) {
         showToast('Hata: ' + (err.message || 'Kaydedilemedi'), 'error');
     }
