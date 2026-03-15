@@ -1038,6 +1038,46 @@
         [data-theme="light"] .tab-btn { color: var(--text-2); }
         [data-theme="light"] .logout-btn { color: var(--text-2); }
         [data-theme="light"] .data-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+
+        /* ── Month Picker ── */
+        .mpick-panel {
+            max-height: 0; overflow: hidden; opacity: 0; pointer-events: none;
+            transition: max-height .35s ease, opacity .25s ease, padding .35s ease;
+        }
+        .mpick-panel.open {
+            max-height: 140px; opacity: 1; pointer-events: auto;
+            padding: 10px 2px 2px;
+        }
+        .mpick-nav {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+        }
+        .mpick-arrow {
+            background: var(--panel); border: 1px solid var(--border);
+            color: var(--text); border-radius: 6px; width: 26px; height: 26px;
+            cursor: pointer; font-size: 15px; line-height: 1; display: flex;
+            align-items: center; justify-content: center;
+            transition: background .15s;
+        }
+        .mpick-arrow:hover { background: var(--panel-hover); }
+        .mpick-year {
+            color: var(--text); font-size: 13px; font-weight: 600;
+            min-width: 44px; text-align: center;
+        }
+        .mpick-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;
+        }
+        .mpick-btn {
+            background: var(--panel); border: 1px solid var(--border);
+            color: var(--text-2); border-radius: 8px; padding: 6px 0;
+            font-size: 12px; cursor: pointer; text-align: center; font-weight: 500;
+            transition: background .15s, color .15s, border-color .15s;
+        }
+        .mpick-btn:hover { background: var(--panel-hover); color: var(--text); }
+        .mpick-btn.active {
+            background: var(--amber-dim); border-color: var(--amber);
+            color: var(--amber); font-weight: 700;
+        }
+        .mpick-btn.cur-month { border-color: var(--border-med); color: var(--text); }
     </style>
 </head>
 <body>
@@ -1081,6 +1121,7 @@
                 <p class="page-subtitle" id="dateDisplay">Yükleniyor...</p>
             </div>
             <div class="header-actions">
+                <div>
                 <div class="filter-tabs">
                     <button class="tab-btn active" id="fBugün"  onclick="setFilter('today', this)">Bugün</button>
                     <button class="tab-btn"         id="fHafta" onclick="setFilter('week',  this)">Bu Hafta</button>
@@ -1090,6 +1131,16 @@
                         <button class="month-arrow" onclick="shiftMonth(1)">›</button>
                     </div>
                     <button class="tab-btn"         id="fTumu" onclick="setFilter('all',   this)">Tümü</button>
+                    <button class="tab-btn" id="monthPickerBtn" onclick="toggleMonthPicker(this)">📅 Aylık</button>
+                </div>
+                <div class="mpick-panel" id="mpickPanel">
+                    <div class="mpick-nav">
+                        <button class="mpick-arrow" onclick="changeFilterYear(-1)">‹</button>
+                        <span class="mpick-year" id="mpickYear">2026</span>
+                        <button class="mpick-arrow" onclick="changeFilterYear(+1)">›</button>
+                    </div>
+                    <div class="mpick-grid" id="mpickGrid"></div>
+                </div>
                 </div>
                 <button class="compare-toggle" id="compareToggleBtn" onclick="toggleComparison(this)" title="Önceki dönemle karşılaştır">⟷ Karşılaştır</button>
                 <button class="export-btn" onclick="exportCSV()" title="CSV olarak indir">📥 CSV</button>
@@ -1323,6 +1374,9 @@
         let currentFilter    = 'today';
         let allData          = [];
         let prevMonthData    = [];
+        let zayiatData       = [];
+        let filterYear       = new Date().getFullYear();
+        let filterMonth      = new Date().getMonth() + 1;
         let comparisonData   = [];
         let comparisonActive = false;
         let dessertChart     = null;
@@ -1393,8 +1447,55 @@
             document.getElementById('liveStatus').textContent = `Son: ${t}`;
         }
 
+        // ── Month Picker ─────────────────────────────────
+        const MONTHS_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+
+        function renderMonthPicker() {
+            document.getElementById('mpickYear').textContent = filterYear;
+            const now = new Date();
+            const grid = document.getElementById('mpickGrid');
+            grid.innerHTML = MONTHS_TR.map((m, i) => {
+                const isActive  = currentFilter === 'month-specific' && filterMonth === i + 1 && filterYear === filterYear;
+                const isCurrent = filterYear === now.getFullYear() && i === now.getMonth();
+                return `<button class="mpick-btn${isActive ? ' active' : ''}${isCurrent ? ' cur-month' : ''}"
+                    onclick="selectMonth(${i + 1})">${m}</button>`;
+            }).join('');
+        }
+
+        function toggleMonthPicker(btn) {
+            const panel = document.getElementById('mpickPanel');
+            const isOpen = panel.classList.contains('open');
+            if (isOpen) {
+                panel.classList.remove('open');
+                currentFilter = 'today';
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('.tab-btn').classList.add('active');
+                loadData();
+            } else {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = 'month-specific';
+                panel.classList.add('open');
+                renderMonthPicker();
+                loadData();
+            }
+        }
+
+        function selectMonth(month) {
+            filterMonth = month;
+            renderMonthPicker();
+            loadData();
+        }
+
+        function changeFilterYear(delta) {
+            filterYear += delta;
+            renderMonthPicker();
+            loadData();
+        }
+
         // ── Filter ───────────────────────────────────────
         async function setFilter(filter, btn) {
+            document.getElementById('mpickPanel').classList.remove('open');
             currentFilter = filter;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -1410,6 +1511,13 @@
                 const d = new Date(today);
                 d.setDate(today.getDate() - 7);
                 return { startDate: d.toISOString().split('T')[0], endDate: todayStr };
+            }
+            if (currentFilter === 'month-specific') {
+                const lastDay = new Date(filterYear, filterMonth, 0).getDate();
+                return {
+                    startDate: `${filterYear}-${String(filterMonth).padStart(2,'0')}-01`,
+                    endDate:   `${filterYear}-${String(filterMonth).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`
+                };
             }
             if (currentFilter === 'month') {
                 // Seçilen navYear / navMonth'un tam başı-sonu
@@ -1437,9 +1545,25 @@
             };
         }
 
+        function getZayiatDateRange() {
+            // month-specific seçiliyse o ayın tam aralığı, diğer filtreler için cari ay
+            if (currentFilter === 'month-specific') return getDateRange();
+            const today = new Date();
+            const y = today.getFullYear(), m = today.getMonth() + 1;
+            return {
+                startDate: `${y}-${String(m).padStart(2,'0')}-01`,
+                endDate:   today.toISOString().split('T')[0]
+            };
+        }
+
         // ── Load Data ────────────────────────────────────
         async function loadData(silent = false) {
             if (!silent) toggleLoading(true);
+
+            // Zayiat herzaman bağımsız olarak o takvim ayından çekilir
+            const zr = getZayiatDateRange();
+            zayiatData = await getDailyEntriesDateRange(zr.startDate, zr.endDate);
+            updateZayiatTable();
 
             const { startDate, endDate } = getDateRange();
             // Aylık filtrede önceki ay verisi de paralel çekilir
@@ -1466,7 +1590,6 @@
             updateBranchTable();
             updateCharts();
             updateTrendChart();
-            updateZayiatTable();
             await updateCiroSection();
             await updateMaliyetSection();
             await updateStockCards();
@@ -1960,7 +2083,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
         function updateZayiatTable() {
             const container = document.getElementById('zayiatContent');
             const rows = [];
-            allData.forEach(e => {
+            zayiatData.forEach(e => {
                 const waste = e.waste_amount || 0;
                 if (waste <= 0) return;
                 rows.push({
