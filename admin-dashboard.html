@@ -765,6 +765,99 @@
             .data-table th, .data-table td { padding: 10px 10px; font-size: 12px; }
             .chart-wrap { height: 260px; padding: 14px 12px 18px; }
         }
+
+        /* ── KPI KARŞILAŞTIRMA ───────────────────────── */
+        .kpi-comp {
+            font-size: 11px; font-weight: 600;
+            margin-top: 8px; min-height: 16px;
+            display: flex; align-items: center; gap: 4px;
+            transition: opacity 0.3s;
+        }
+        .kpi-comp--up   { color: var(--green); }
+        .kpi-comp--down { color: var(--red);   }
+        .kpi-comp--flat { color: var(--text-3); }
+
+        /* ── EN İYİ ŞUBE BANNER ──────────────────────── */
+        .best-banner {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, rgba(245,158,11,0.08), transparent);
+            border-bottom: 1px solid rgba(245,158,11,0.15);
+        }
+        .best-banner-icon { font-size: 18px; }
+        .best-banner-text { font-size: 13px; color: var(--text-2); }
+        .best-banner-name { color: var(--amber); font-weight: 700; }
+        .best-banner-pct  {
+            margin-left: auto;
+            background: rgba(245,158,11,0.12);
+            color: var(--amber); font-size: 12px; font-weight: 700;
+            padding: 3px 10px; border-radius: 20px;
+        }
+
+        /* ── RAPOR BUTONU ────────────────────────────── */
+        .report-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px;
+            background: rgba(59,130,246,0.12);
+            border: 1px solid rgba(59,130,246,0.22);
+            border-radius: 9px;
+            color: #60a5fa;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .report-btn:hover { background: rgba(59,130,246,0.22); }
+
+        /* ── RAPOR MODAL ─────────────────────────────── */
+        .report-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(6,12,24,0.88);
+            z-index: 300; align-items: center; justify-content: center; padding: 20px;
+        }
+        .report-overlay.active { display: flex; }
+        .report-box {
+            background: var(--panel); border: 1px solid var(--border-med);
+            border-radius: 20px; width: 100%; max-width: 500px; overflow: hidden;
+        }
+        .report-head {
+            padding: 18px 22px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .report-title { font-size: 15px; font-weight: 700; }
+        .report-close {
+            background: none; border: none; color: var(--text-3);
+            font-size: 22px; cursor: pointer; line-height: 1; padding: 2px 6px;
+            border-radius: 6px; transition: background 0.15s;
+        }
+        .report-close:hover { background: rgba(255,255,255,0.07); }
+        .report-textarea {
+            width: 100%; border: none; outline: none;
+            background: rgba(0,0,0,0.25); color: var(--text);
+            font-size: 13px; line-height: 1.65;
+            padding: 18px 20px; resize: none; height: 260px;
+            font-family: 'Courier New', monospace;
+        }
+        .report-foot {
+            padding: 14px 18px; border-top: 1px solid var(--border);
+            display: flex; gap: 10px;
+        }
+        .btn-wa {
+            flex: 1; padding: 11px; border: none; border-radius: 10px;
+            background: #25d366; color: #fff;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: background 0.2s;
+        }
+        .btn-wa:hover { background: #1ebe5d; }
+        .btn-copy {
+            flex: 1; padding: 11px; border-radius: 10px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid var(--border);
+            color: var(--text); font-size: 14px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 7px; transition: background 0.2s;
+        }
+        .btn-copy:hover { background: rgba(255,255,255,0.12); }
     </style>
 </head>
 <body>
@@ -784,6 +877,7 @@
                 <span id="liveStatus">Canlı</span>
             </div>
             <div class="topbar-clock" id="clockDisplay"></div>
+            <button class="report-btn" onclick="showReport()">📤 Rapor</button>
             <button class="logout-btn" onclick="logout()">
                 🚪 Çıkış
             </button>
@@ -819,6 +913,7 @@
                     <div class="kpi-icon kpi-icon--blue">📦</div>
                 </div>
                 <div class="kpi-value" id="totalDistribution">—</div>
+                <div class="kpi-comp" id="compDist"></div>
                 <div class="kpi-footer">
                     <div class="kpi-progress-track">
                         <div class="kpi-progress-fill" id="distProgress"></div>
@@ -833,6 +928,7 @@
                     <div class="kpi-icon kpi-icon--green">📈</div>
                 </div>
                 <div class="kpi-value kpi-value--green" id="totalSales">—</div>
+                <div class="kpi-comp" id="compSales"></div>
                 <div class="kpi-footer">
                     <span class="kpi-badge" id="salesPercentage">%0 oran</span>
                 </div>
@@ -844,6 +940,7 @@
                     <div class="kpi-icon kpi-icon--amber">📊</div>
                 </div>
                 <div class="kpi-value" id="totalStock">—</div>
+                <div class="kpi-comp" id="compWaste"></div>
                 <div class="kpi-footer">
                     <span class="kpi-sub">Tüm şubeler toplamı</span>
                 </div>
@@ -858,6 +955,7 @@
                 <div class="panel-header">
                     <h2 class="panel-title">Şube Performansı</h2>
                 </div>
+                <div id="bestBranchBanner"></div>
                 <!-- Masaüstü tablo -->
                 <div class="table-wrap branch-table-wrap">
                     <table class="data-table">
@@ -957,13 +1055,34 @@
     <div id="loadingOverlay"><div class="spinner"></div></div>
     <div id="toastContainer"></div>
 
+    <!-- Rapor Modal -->
+    <div class="report-overlay" id="reportOverlay">
+        <div class="report-box">
+            <div class="report-head">
+                <span class="report-title">📤 Günlük Özet Raporu</span>
+                <button class="report-close" onclick="closeReport()">×</button>
+            </div>
+            <textarea class="report-textarea" id="reportText" readonly></textarea>
+            <div class="report-foot">
+                <button class="btn-wa" onclick="shareWhatsApp()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.1.546 4.07 1.5 5.785L0 24l6.388-1.676C8.077 23.45 10.003 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.86 0-3.595-.507-5.083-1.383l-.363-.216-3.793.994.993-3.683-.236-.379C2.586 15.636 2 13.889 2 12 2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                    WhatsApp ile Paylaş
+                </button>
+                <button class="btn-copy" onclick="copyReport()">
+                    📋 Kopyala
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="supabase-client.js"></script>
     <script>
         // ── State ────────────────────────────────────────
-        let currentFilter = 'today';
-        let allData       = [];
-        let dessertChart  = null;
-        let trendChart    = null;
+        let currentFilter  = 'today';
+        let allData        = [];
+        let prevMonthData  = [];
+        let dessertChart   = null;
+        let trendChart     = null;
         const DAILY_TARGET = 2500;
         let autoRefreshTimer = null;
 
@@ -1055,22 +1174,44 @@
             return { startDate: todayStr, endDate: todayStr };
         }
 
+        // ── Önceki ay aralığını hesapla ─────────────────
+        function getPrevMonthRange() {
+            const pm = navMonth - 1;
+            const py = pm < 1 ? navYear - 1 : navYear;
+            const m  = pm < 1 ? 12 : pm;
+            const lastDay = new Date(py, m, 0).getDate();
+            return {
+                startDate: `${py}-${String(m).padStart(2,'0')}-01`,
+                endDate:   `${py}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`
+            };
+        }
+
         // ── Load Data ────────────────────────────────────
         async function loadData(silent = false) {
             if (!silent) toggleLoading(true);
 
             const { startDate, endDate } = getDateRange();
-            allData = await getDailyEntriesDateRange(startDate, endDate);
+            // Aylık filtrede önceki ay verisi de paralel çekilir
+            const fetchPrev = currentFilter === 'month'
+                ? getDailyEntriesDateRange(getPrevMonthRange().startDate, getPrevMonthRange().endDate)
+                : Promise.resolve([]);
+
+            [allData, prevMonthData] = await Promise.all([
+                getDailyEntriesDateRange(startDate, endDate),
+                fetchPrev
+            ]);
 
             if (!silent) toggleLoading(false);
 
             if (!allData || allData.length === 0) {
                 showNoData();
+                updateComparison([]);
                 updateLiveStatus();
                 return;
             }
 
             updateStats();
+            updateComparison(prevMonthData);
             updateBranchTable();
             updateCharts();
             updateTrendChart();
@@ -1150,6 +1291,137 @@
             }, 16);
         }
 
+        // ── Metrik hesapla (karşılaştırma için) ──────────
+        function buildMetrics(data) {
+            if (!data || data.length === 0) return { dist: 0, sold: 0, waste: 0 };
+            const latestMap = buildCurrentStockMap(data);
+            const dist  = data.reduce((s, e) => s + (e.received_amount || 0), 0);
+            const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
+            const waste = data.reduce((s, e) => s + (e.waste_amount    || 0), 0);
+            const sold  = Math.max(0, dist - stock - waste);
+            return { dist, sold, waste };
+        }
+
+        // ── Önceki ay karşılaştırma ──────────────────────
+        function updateComparison(prevData) {
+            const clearComp = () => ['compDist','compSales','compWaste'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
+
+            if (!prevData || prevData.length === 0 || currentFilter !== 'month') {
+                clearComp();
+                return;
+            }
+
+            const curr = buildMetrics(allData);
+            const prev = buildMetrics(prevData);
+            const MONTHS_TR2 = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+            const prevLabel  = MONTHS_TR2[(navMonth - 2 + 12) % 12];
+
+            function setComp(elId, currVal, prevVal) {
+                const el = document.getElementById(elId);
+                if (!el || prevVal === 0) { if (el) el.innerHTML = ''; return; }
+                const diff = currVal - prevVal;
+                const pct  = Math.round(Math.abs(diff / prevVal) * 100);
+                if (diff > 0) {
+                    el.className = 'kpi-comp kpi-comp--up';
+                    el.innerHTML = `↑ %${pct} ${prevLabel}'a göre`;
+                } else if (diff < 0) {
+                    el.className = 'kpi-comp kpi-comp--down';
+                    el.innerHTML = `↓ %${pct} ${prevLabel}'a göre`;
+                } else {
+                    el.className = 'kpi-comp kpi-comp--flat';
+                    el.innerHTML = `→ ${prevLabel} ile aynı`;
+                }
+            }
+
+            setComp('compDist',  curr.dist,  prev.dist);
+            setComp('compSales', curr.sold,  prev.sold);
+            setComp('compWaste', curr.waste, prev.waste);
+        }
+
+        // ── Rapor oluştur ─────────────────────────────────
+        function buildReport() {
+            const MONTHS_TR2 = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
+                                 'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+            const now = new Date();
+            const filterLabel = currentFilter === 'today'  ? now.toLocaleDateString('tr-TR', {day:'numeric',month:'long',year:'numeric'})
+                              : currentFilter === 'week'   ? 'Son 7 Gün'
+                              : currentFilter === 'month'  ? `${MONTHS_TR2[navMonth-1]} ${navYear}`
+                              : 'Tüm Zamanlar';
+
+            const { dist, sold, waste } = buildMetrics(allData);
+            const latestMap = buildCurrentStockMap(allData);
+            const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
+            const soldRate = dist > 0 ? ((sold / dist) * 100).toFixed(1) : 0;
+
+            // Şube detayları
+            const bd = {};
+            allData.forEach(e => {
+                const id = e.branches?.id;
+                if (!id) return;
+                if (!bd[id]) bd[id] = { name: e.branches.name, received: 0, remaining: 0, waste: 0 };
+                bd[id].received += e.received_amount || 0;
+                bd[id].waste    += e.waste_amount    || 0;
+            });
+            Object.entries(buildCurrentStockMap(allData)).forEach(([key, rem]) => {
+                const bid = key.split('|')[0];
+                if (bd[bid]) bd[bid].remaining += rem;
+            });
+            Object.values(bd).forEach(b => {
+                b.sold = Math.max(0, b.received - b.remaining - b.waste);
+                b.pct  = b.received > 0 ? ((b.sold / b.received) * 100).toFixed(1) : 0;
+            });
+            const sorted     = Object.values(bd).sort((a, b) => b.pct - a.pct);
+            const bestBranch = sorted[0];
+
+            const branchLines = sorted
+                .map(b => `  • ${b.name}: ${b.received} gelen, ${b.sold} satılan (%${b.pct} oran)${b.waste > 0 ? `, ${b.waste} zayiat` : ''}`)
+                .join('\n');
+
+            return `📊 *Mutlukent Esenlik — ${filterLabel} Özeti*
+📅 ${now.toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'})}
+
+📦 Toplam Dağıtım:  ${dist.toLocaleString('tr-TR')} adet
+✅ Satılan:         ${sold.toLocaleString('tr-TR')} adet (%${soldRate})
+📊 Kalan Stok:      ${stock.toLocaleString('tr-TR')} adet
+🗑️ Zayiat:         ${waste.toLocaleString('tr-TR')} adet
+${bestBranch ? `\n🏆 *En İyi Şube:* ${bestBranch.name} (%${bestBranch.pct} satış oranı)` : ''}
+🏪 *Şube Detayları:*
+${branchLines}
+
+_Mutlukent Tatlı Takip Sistemi_`;
+        }
+
+        function showReport() {
+            const text = buildReport();
+            document.getElementById('reportText').value = text;
+            document.getElementById('reportOverlay').classList.add('active');
+        }
+        function closeReport() {
+            document.getElementById('reportOverlay').classList.remove('active');
+        }
+        async function copyReport() {
+            const text = document.getElementById('reportText').value;
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('Rapor panoya kopyalandı!', 'success');
+            } catch {
+                document.getElementById('reportText').select();
+                document.execCommand('copy');
+                showToast('Kopyalandı!', 'success');
+            }
+        }
+        function shareWhatsApp() {
+            const text = document.getElementById('reportText').value;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+        // Overlay dışına tıklayınca kapat
+        document.getElementById('reportOverlay').addEventListener('click', e => {
+            if (e.target.id === 'reportOverlay') closeReport();
+        });
+
         // ── Stats ────────────────────────────────────────
         function updateStats() {
             const dist = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
@@ -1189,7 +1461,10 @@
                 if (bd[branchId]) bd[branchId].remaining += rem;
             });
 
-            Object.values(bd).forEach(b => { b.sold = Math.max(0, b.received - b.remaining - b.waste); });
+            Object.values(bd).forEach(b => {
+                b.sold = Math.max(0, b.received - b.remaining - b.waste);
+                b.pct  = b.received > 0 ? parseFloat(((b.sold / b.received) * 100).toFixed(1)) : 0;
+            });
 
             const tbody   = document.getElementById('branchTableBody');
             const cardsEl = document.getElementById('branchCards');
@@ -1197,6 +1472,24 @@
             cardsEl.innerHTML = '';
 
             const branches = Object.values(bd).sort((a, b) => b.sold - a.sold);
+
+            // En iyi şube banner
+            const bannerEl = document.getElementById('bestBranchBanner');
+            if (bannerEl) {
+                const best = [...branches].sort((a, b) => b.pct - a.pct)[0];
+                if (best && best.received > 0) {
+                    bannerEl.innerHTML = `<div class="best-banner">
+                        <span class="best-banner-icon">🏆</span>
+                        <span class="best-banner-text">Bu dönemin en iyi şubesi:
+                            <span class="best-banner-name">${best.name}</span>
+                        </span>
+                        <span class="best-banner-pct">%${best.pct.toFixed(1)} satış oranı</span>
+                    </div>`;
+                } else {
+                    bannerEl.innerHTML = '';
+                }
+            }
+
             if (branches.length === 0) {
                 const empty = `<div class="empty-state">
                     <div class="empty-state-icon">📭</div>
@@ -1209,8 +1502,8 @@
             }
 
             branches.forEach((b, i) => {
-                const pct      = b.received > 0 ? ((b.sold / b.received) * 100).toFixed(1) : 0;
-                const pctClass = pct >= 70 ? 'pct-high' : pct >= 40 ? 'pct-mid' : 'pct-low';
+                const pct       = b.pct;
+                const pctClass  = pct >= 70 ? 'pct-high' : pct >= 40 ? 'pct-mid' : 'pct-low';
                 const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
 
                 // Masaüstü satır
