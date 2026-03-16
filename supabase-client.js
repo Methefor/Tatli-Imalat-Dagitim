@@ -168,9 +168,10 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
 
         if (existing) {
             // Güncelleme: null gelen alanları mevcut DB değerinin üzerine YAZMAsın
-            const updateData = { waste_amount: waste, notes: notes, entry_time: new Date().toISOString() }
+            const updateData = { notes: notes, entry_time: new Date().toISOString() }
             if (received  !== null && received  !== undefined) updateData.received_amount  = received
             if (remaining !== null && remaining !== undefined) updateData.remaining_amount = remaining
+            if (waste     !== null && waste     !== undefined) updateData.waste_amount     = waste
 
             const { error: updateError } = await supabaseClient
                 .from('daily_entries')

@@ -542,7 +542,7 @@
                     selectedDate,
                     parseInt(input.dataset.received) || 0,
                     remaining,
-                    0, ''
+                    null, ''  // kalan kaydı: waste_amount'a dokunma
                 );
                 if (result.success) successCount++;
             }
