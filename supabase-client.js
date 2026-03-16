@@ -166,22 +166,12 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
             throw checkError
         }
 
-        // remaining === null → gelen kaydı, mevcut kalan_amount korunur
-        const baseData = {
-            branch_id: branchId,
-            dessert_id: dessertId,
-            entry_date: date,
-            received_amount: received,
-            waste_amount: waste,
-            notes: notes,
-            entry_time: new Date().toISOString()
-        }
-
         if (existing) {
-            // Güncelleme: remaining null ise remaining_amount'a dokunma
-            const updateData = (remaining !== null && remaining !== undefined)
-                ? { ...baseData, remaining_amount: remaining }
-                : baseData
+            // Güncelleme: null gelen alanları mevcut DB değerinin üzerine YAZMAsın
+            const updateData = { waste_amount: waste, notes: notes, entry_time: new Date().toISOString() }
+            if (received  !== null && received  !== undefined) updateData.received_amount  = received
+            if (remaining !== null && remaining !== undefined) updateData.remaining_amount = remaining
+
             const { error: updateError } = await supabaseClient
                 .from('daily_entries')
                 .update(updateData)
@@ -189,10 +179,20 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
 
             if (updateError) throw updateError
         } else {
-            // Yeni kayıt: remaining_amount null başlar (kalan girilene kadar)
+            // Yeni kayıt: tüm alanlar dahil (null olabilir)
+            const insertData = {
+                branch_id:        branchId,
+                dessert_id:       dessertId,
+                entry_date:       date,
+                received_amount:  received  ?? null,
+                remaining_amount: remaining ?? null,
+                waste_amount:     waste,
+                notes:            notes,
+                entry_time:       new Date().toISOString()
+            }
             const { error: insertError } = await supabaseClient
                 .from('daily_entries')
-                .insert([{ ...baseData, remaining_amount: remaining ?? null }])
+                .insert([insertData])
 
             if (insertError) throw insertError
         }

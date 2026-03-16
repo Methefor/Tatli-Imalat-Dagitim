@@ -548,7 +548,7 @@
                 </div>
             `;
 
-            if (rows.every(r => r.gelen === 0 && r.kalan === 0)) {
+            if (rows.every(r => r.gelen === 0 && r.kalan === 0 && r.zayiat === 0)) {
                 panel.innerHTML += `
                     <div class="empty-state">
                         <div class="empty-icon">📭</div>

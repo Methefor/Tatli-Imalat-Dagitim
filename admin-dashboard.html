@@ -190,6 +190,7 @@
         /* ── FILTER TABS ─────────────────────────────── */
         .filter-tabs {
             display: flex;
+            align-items: center;
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -220,6 +221,27 @@
             color: #0d0d0d;
             box-shadow: 0 2px 10px var(--amber-glow);
         }
+
+        /* Ay seçici */
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        .month-arrow {
+            background: transparent;
+            border: none;
+            color: var(--text-2);
+            font-size: 15px;
+            font-weight: 800;
+            padding: 7px 7px;
+            cursor: pointer;
+            border-radius: 7px;
+            line-height: 1;
+            transition: background 0.15s, color 0.15s;
+        }
+        .month-arrow:hover { background: rgba(255,255,255,0.07); color: var(--amber); }
+        .month-label { min-width: 108px; text-align: center; }
 
         /* ── KPI CARDS ───────────────────────────────── */
         .kpi-grid {
@@ -719,10 +741,14 @@
                 <p class="page-subtitle" id="dateDisplay">Yükleniyor...</p>
             </div>
             <div class="filter-tabs">
-                <button class="tab-btn active" onclick="setFilter('today', this)">Bugün</button>
-                <button class="tab-btn" onclick="setFilter('week', this)">Bu Hafta</button>
-                <button class="tab-btn" onclick="setFilter('month', this)">Bu Ay</button>
-                <button class="tab-btn" onclick="setFilter('all', this)">Tümü</button>
+                <button class="tab-btn active" id="fBugün"  onclick="setFilter('today', this)">Bugün</button>
+                <button class="tab-btn"         id="fHafta" onclick="setFilter('week',  this)">Bu Hafta</button>
+                <div class="month-nav">
+                    <button class="month-arrow" onclick="shiftMonth(-1)">‹</button>
+                    <button class="tab-btn month-label" id="fAy" onclick="setFilter('month', this)">Bu Ay</button>
+                    <button class="month-arrow" onclick="shiftMonth(1)">›</button>
+                </div>
+                <button class="tab-btn"         id="fTumu" onclick="setFilter('all',   this)">Tümü</button>
             </div>
         </div>
 
@@ -880,11 +906,35 @@
         const DAILY_TARGET = 2500;
         let autoRefreshTimer = null;
 
+        // Ay seçici
+        const MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
+                           'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+        let navYear  = new Date().getFullYear();
+        let navMonth = new Date().getMonth() + 1; // 1-12
+
+        function updateMonthLabel() {
+            document.getElementById('fAy').textContent = `${MONTHS_TR[navMonth - 1]} ${navYear}`;
+        }
+
+        async function shiftMonth(delta) {
+            navMonth += delta;
+            if (navMonth > 12) { navMonth = 1;  navYear++; }
+            if (navMonth < 1)  { navMonth = 12; navYear--; }
+            updateMonthLabel();
+            // Ay seçiciye geç
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('fAy').classList.add('active');
+            currentFilter = 'month';
+            await loadData();
+            startAutoRefresh();
+        }
+
         // ── Init ─────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', async () => {
             updateClock();
             setInterval(updateClock, 1000);
             updateDateDisplay();
+            updateMonthLabel();
             await loadData();
             startAutoRefresh();
         });
@@ -924,21 +974,24 @@
         function getDateRange() {
             const today    = new Date();
             const todayStr = today.toISOString().split('T')[0];
-            let startDate  = todayStr;
 
             if (currentFilter === 'week') {
                 const d = new Date(today);
                 d.setDate(today.getDate() - 7);
-                startDate = d.toISOString().split('T')[0];
-            } else if (currentFilter === 'month') {
-                const d = new Date(today);
-                d.setMonth(today.getMonth() - 1);
-                startDate = d.toISOString().split('T')[0];
-            } else if (currentFilter === 'all') {
-                startDate = '2020-01-01';
+                return { startDate: d.toISOString().split('T')[0], endDate: todayStr };
             }
-
-            return { startDate, endDate: todayStr };
+            if (currentFilter === 'month') {
+                // Seçilen navYear / navMonth'un tam başı-sonu
+                const lastDay   = new Date(navYear, navMonth, 0).getDate();
+                const startDate = `${navYear}-${String(navMonth).padStart(2,'0')}-01`;
+                const endDate   = `${navYear}-${String(navMonth).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+                return { startDate, endDate };
+            }
+            if (currentFilter === 'all') {
+                return { startDate: '2020-01-01', endDate: todayStr };
+            }
+            // 'today'
+            return { startDate: todayStr, endDate: todayStr };
         }
 
         // ── Load Data ────────────────────────────────────
