@@ -481,16 +481,68 @@
             .zw-col-left { border-right: none; border-bottom: 1px solid var(--border); }
         }
 
-        /* ── CIRO GRID ───────────────────────────────── */
-        .ciro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1px; background: var(--border); }
-        .ciro-card { background: var(--panel); padding: 18px 16px; display: flex; flex-direction: column; gap: 4px; transition: background 0.2s; }
-        .ciro-card:hover { background: var(--panel-hover); }
-        .ciro-dessert { font-size: 12px; font-weight: 600; color: var(--text-2); }
-        .ciro-price-note { font-size: 11px; color: var(--text-3); }
-        .ciro-amount { font-size: 22px; font-weight: 800; color: var(--green); letter-spacing: -0.02em; margin-top: 4px; }
-        .ciro-total-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid var(--border); background: rgba(16,185,129,0.05); }
-        .ciro-total-label { font-size: 13px; font-weight: 600; color: var(--text-2); }
-        .ciro-total-val { font-size: 20px; font-weight: 800; color: var(--green); }
+        /* ── ŞUBE PERFORMANS KARTLARI (mobil) ────────── */
+        .branch-cards {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            padding: 14px;
+        }
+        .bc-card {
+            background: var(--surface);
+            border: 1px solid var(--border-med);
+            border-radius: 16px;
+            padding: 16px 18px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+        }
+        .bc-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            border-radius: 4px 0 0 4px;
+        }
+        .bc-card.rank-1::before { background: #f59e0b; }
+        .bc-card.rank-2::before { background: #94a3b8; }
+        .bc-card.rank-3::before { background: #cd7c3a; }
+        .bc-card:not(.rank-1):not(.rank-2):not(.rank-3)::before { background: var(--blue); }
+        .bc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-left: 10px; }
+        .bc-name { font-size: 16px; font-weight: 700; }
+        .bc-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .bc-stat { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 6px; text-align: center; }
+        .bc-val { font-size: 20px; font-weight: 800; line-height: 1; }
+        .bc-lbl { font-size: 10px; color: var(--text-3); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .bc-val.v-amber { color: var(--amber); }
+        .bc-val.v-green { color: var(--green); }
+        .bc-val.v-blue  { color: var(--blue); }
+        .bc-val.v-red   { color: var(--red); }
+
+        /* ── ELDE EDİLEN GELİR PANELİ ────────────────── */
+        .gelir-hero {
+            padding: 24px 24px 20px;
+            background: linear-gradient(135deg, rgba(16,185,129,0.10) 0%, rgba(16,185,129,0.03) 100%);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .gelir-icon { font-size: 44px; line-height: 1; flex-shrink: 0; }
+        .gelir-hero-label { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+        .gelir-hero-amount { font-size: 40px; font-weight: 900; color: var(--green); letter-spacing: -0.03em; line-height: 1; }
+        .gelir-hero-sub { font-size: 12px; color: var(--text-3); margin-top: 5px; }
+        .gelir-list { padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 0; }
+        .gelir-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .gelir-row:last-child { border-bottom: none; }
+        .gelir-emoji { font-size: 20px; flex-shrink: 0; }
+        .gelir-info { flex: 1; min-width: 0; }
+        .gelir-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gelir-detail { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+        .gelir-bar-wrap { width: 72px; height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+        .gelir-bar { height: 100%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 3px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+        .gelir-amount { font-size: 15px; font-weight: 800; color: var(--green); min-width: 80px; text-align: right; flex-shrink: 0; }
+        .gelir-no-price { font-size: 13px; color: var(--text-3); text-align: center; padding: 48px 20px; line-height: 1.7; }
         .ciro-no-price { font-size: 13px; color: var(--text-3); text-align: center; padding: 40px 16px; }
         .chart-wrap-trend { padding: 20px 24px 24px; height: 260px; position: relative; }
 
@@ -699,6 +751,13 @@
             .tab-btn { flex: 1; padding: 7px 10px; font-size: 12px; }
             .stock-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
             .live-pill span:last-child { display: none; }
+            /* Şube tablo → kart */
+            .branch-table-wrap { display: none; }
+            .branch-cards { display: flex; }
+            /* Gelir hero küçük */
+            .gelir-hero-amount { font-size: 30px; }
+            .gelir-hero { padding: 18px 16px; gap: 12px; }
+            .gelir-icon { font-size: 32px; }
         }
 
         @media (max-width: 480px) {
@@ -799,7 +858,8 @@
                 <div class="panel-header">
                     <h2 class="panel-title">Şube Performansı</h2>
                 </div>
-                <div class="table-wrap">
+                <!-- Masaüstü tablo -->
+                <div class="table-wrap branch-table-wrap">
                     <table class="data-table">
                         <thead>
                             <tr>
@@ -812,17 +872,17 @@
                             </tr>
                         </thead>
                         <tbody id="branchTableBody">
-                            <tr>
-                                <td colspan="6">
-                                    <div class="empty-state">
-                                        <div class="empty-state-icon">⏳</div>
-                                        <div class="empty-state-title">Veriler yükleniyor</div>
-                                    </div>
-                                </td>
-                            </tr>
+                            <tr><td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">⏳</div>
+                                    <div class="empty-state-title">Veriler yükleniyor</div>
+                                </div>
+                            </td></tr>
                         </tbody>
                     </table>
                 </div>
+                <!-- Mobil kartlar -->
+                <div class="branch-cards" id="branchCards"></div>
             </div>
 
             <!-- Chart -->
@@ -878,15 +938,16 @@
             </div>
         </div>
 
-        <!-- Ciro Tahmini -->
+        <!-- Elde Edilen Gelir -->
         <div class="panel fade-up" style="animation-delay:0.45s">
             <div class="panel-header">
-                <h2 class="panel-title">Ciro Tahmini</h2>
+                <h2 class="panel-title">💰 Elde Edilen Gelir</h2>
                 <span class="panel-badge panel-badge--green" id="ciroTotalBadge">—</span>
             </div>
             <div id="ciroContent">
-                <div class="ciro-no-price">
-                    💰 Ciro hesaplaması için fiyatları Süper Admin panelinden girin.
+                <div class="gelir-no-price">
+                    Gelir hesabı için fiyatları<br>
+                    <strong>Süper Admin → Tatlı Fiyatları</strong> bölümünden girin.
                 </div>
             </div>
         </div>
@@ -1123,41 +1184,43 @@
                 bd[id].waste    += entry.waste_amount    || 0;
             });
 
-            // Kalan: her (şube, tatlı) için en son remaining — toplam değil
             Object.entries(latestMap).forEach(([key, rem]) => {
                 const branchId = key.split('|')[0];
                 if (bd[branchId]) bd[branchId].remaining += rem;
             });
 
-            // Satılan: gelen − kalan − zayiat (dönem bazında)
             Object.values(bd).forEach(b => { b.sold = Math.max(0, b.received - b.remaining - b.waste); });
 
-            const tbody = document.getElementById('branchTableBody');
+            const tbody   = document.getElementById('branchTableBody');
+            const cardsEl = document.getElementById('branchCards');
             tbody.innerHTML = '';
+            cardsEl.innerHTML = '';
 
-            const branches = Object.values(bd);
+            const branches = Object.values(bd).sort((a, b) => b.sold - a.sold);
             if (branches.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+                const empty = `<div class="empty-state">
                     <div class="empty-state-icon">📭</div>
                     <div class="empty-state-title">Veri Bulunamadı</div>
                     <div class="empty-state-sub">Seçili tarihte kayıt yok.</div>
-                </div></td></tr>`;
+                </div>`;
+                tbody.innerHTML = `<tr><td colspan="6">${empty}</td></tr>`;
+                cardsEl.innerHTML = empty;
                 return;
             }
 
             branches.forEach((b, i) => {
-                const pct = b.received > 0 ? ((b.sold / b.received) * 100).toFixed(1) : 0;
+                const pct      = b.received > 0 ? ((b.sold / b.received) * 100).toFixed(1) : 0;
                 const pctClass = pct >= 70 ? 'pct-high' : pct >= 40 ? 'pct-mid' : 'pct-low';
+                const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
 
+                // Masaüstü satır
                 const row = document.createElement('tr');
                 row.style.animation = `fadeUp 0.4s ease ${i * 0.06}s both`;
                 row.innerHTML = `
-                    <td>
-                        <div class="branch-cell">
-                            <span class="branch-dot"></span>
-                            <span class="branch-cell-name">${b.name}</span>
-                        </div>
-                    </td>
+                    <td><div class="branch-cell">
+                        <span class="branch-dot"></span>
+                        <span class="branch-cell-name">${b.name}</span>
+                    </div></td>
                     <td>${b.received.toLocaleString('tr-TR')}</td>
                     <td class="num-green">${b.sold.toLocaleString('tr-TR')}</td>
                     <td class="num-amber">${b.remaining.toLocaleString('tr-TR')}</td>
@@ -1165,6 +1228,24 @@
                     <td><span class="pct-badge ${pctClass}">%${pct}</span></td>
                 `;
                 tbody.appendChild(row);
+
+                // Mobil kart
+                const card = document.createElement('div');
+                card.className = `bc-card ${rankClass}`;
+                card.style.animationDelay = `${i * 0.07}s`;
+                card.innerHTML = `
+                    <div class="bc-header">
+                        <span class="bc-name">${i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : ''}${b.name}</span>
+                        <span class="pct-badge ${pctClass}">%${pct}</span>
+                    </div>
+                    <div class="bc-stats">
+                        <div class="bc-stat"><div class="bc-val v-amber">${b.received.toLocaleString('tr-TR')}</div><div class="bc-lbl">Gelen</div></div>
+                        <div class="bc-stat"><div class="bc-val v-green">${b.sold.toLocaleString('tr-TR')}</div><div class="bc-lbl">Satılan</div></div>
+                        <div class="bc-stat"><div class="bc-val v-blue">${b.remaining.toLocaleString('tr-TR')}</div><div class="bc-lbl">Kalan</div></div>
+                        <div class="bc-stat"><div class="bc-val v-red">${b.waste.toLocaleString('tr-TR')}</div><div class="bc-lbl">Zayiat</div></div>
+                    </div>
+                `;
+                cardsEl.appendChild(card);
             });
         }
 
@@ -1384,49 +1465,81 @@
             `;
         }
 
-        // ── Ciro Section ──────────────────────────────────
+        // ── Elde Edilen Gelir ─────────────────────────────
         async function updateCiroSection() {
-            const prices = (await getSetting('dessertPrices')) || {};
+            const prices    = (await getSetting('dessertPrices')) || {};
             const container = document.getElementById('ciroContent');
 
             if (Object.keys(prices).length === 0) {
-                container.innerHTML = `<div class="ciro-no-price">💰 Ciro hesaplaması için fiyatları Süper Admin panelinden girin.</div>`;
+                container.innerHTML = `<div class="gelir-no-price">
+                    Gelir hesabı için fiyatları<br>
+                    <strong>Süper Admin → Tatlı Fiyatları</strong> bölümünden girin.
+                </div>`;
                 document.getElementById('ciroTotalBadge').textContent = '—';
                 return;
             }
 
-            // Ciro: tatlı bazlı satılan = gelen - en son kalan
-            const ciroLatestMap = buildCurrentStockMap(allData);
-            const bySold = {}, byName = {};
+            // Satılan = gelen - kalan (mevcut stok haritası)
+            const latestMap = buildCurrentStockMap(allData);
+            const bySold = {}, byName = {}, byEmoji = {};
             allData.forEach(e => {
                 const id = String(e.desserts?.id);
-                if (!bySold[id]) { bySold[id] = 0; byName[id] = `${e.desserts?.emoji || ''} ${e.desserts?.name || id}`; }
+                if (!bySold[id]) {
+                    bySold[id]  = 0;
+                    byName[id]  = e.desserts?.name  || `Tatlı #${id}`;
+                    byEmoji[id] = e.desserts?.emoji || '🍰';
+                }
                 bySold[id] += e.received_amount || 0;
             });
-            Object.entries(ciroLatestMap).forEach(([key, rem]) => {
-                const dessertId = String(key.split('|')[1]);
-                if (dessertId in bySold) bySold[dessertId] = Math.max(0, bySold[dessertId] - rem);
+            Object.entries(latestMap).forEach(([key, rem]) => {
+                const did = String(key.split('|')[1]);
+                if (did in bySold) bySold[did] = Math.max(0, bySold[did] - rem);
             });
 
-            let totalCiro = 0, cards = '';
+            // Gelir hesapla
+            const items = [];
+            let totalGelir = 0;
             Object.entries(prices).forEach(([id, price]) => {
                 if (!price || price <= 0) return;
-                const sold = bySold[id] || 0;
-                const ciro = sold * price;
-                totalCiro += ciro;
-                cards += `<div class="ciro-card">
-                    <div class="ciro-dessert">${byName[id] || `Tatlı #${id}`}</div>
-                    <div class="ciro-price-note">${Number(price).toLocaleString('tr-TR')} ₺ × ${sold.toLocaleString('tr-TR')} adet</div>
-                    <div class="ciro-amount">${ciro.toLocaleString('tr-TR')} ₺</div>
-                </div>`;
+                const sold  = bySold[id] || 0;
+                const gelir = sold * price;
+                totalGelir += gelir;
+                items.push({ id, name: byName[id] || `Tatlı #${id}`, emoji: byEmoji[id] || '🍰', sold, price: Number(price), gelir });
             });
+            items.sort((a, b) => b.gelir - a.gelir);
+            const maxGelir = items[0]?.gelir || 1;
 
-            document.getElementById('ciroTotalBadge').textContent = `${totalCiro.toLocaleString('tr-TR')} ₺`;
-            container.innerHTML = `<div class="ciro-grid">${cards || '<div class="ciro-no-price">Henüz satış verisi yok.</div>'}</div>
-                <div class="ciro-total-bar">
-                    <span class="ciro-total-label">Toplam Tahmini Ciro</span>
-                    <span class="ciro-total-val">${totalCiro.toLocaleString('tr-TR')} ₺</span>
+            document.getElementById('ciroTotalBadge').textContent =
+                totalGelir > 0 ? `${totalGelir.toLocaleString('tr-TR')} ₺` : '—';
+
+            const soldTotal = items.reduce((s, it) => s + it.sold, 0);
+
+            const rows = items.map(it => {
+                const barW = Math.round((it.gelir / maxGelir) * 100);
+                return `<div class="gelir-row">
+                    <span class="gelir-emoji">${it.emoji}</span>
+                    <div class="gelir-info">
+                        <div class="gelir-name">${it.name}</div>
+                        <div class="gelir-detail">${it.price.toLocaleString('tr-TR')} ₺ × ${it.sold.toLocaleString('tr-TR')} adet</div>
+                    </div>
+                    <div class="gelir-bar-wrap"><div class="gelir-bar" style="width:${barW}%"></div></div>
+                    <span class="gelir-amount">${it.gelir.toLocaleString('tr-TR')} ₺</span>
                 </div>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="gelir-hero">
+                    <div class="gelir-icon">💰</div>
+                    <div>
+                        <div class="gelir-hero-label">Toplam Elde Edilen Gelir</div>
+                        <div class="gelir-hero-amount">${totalGelir.toLocaleString('tr-TR')} ₺</div>
+                        <div class="gelir-hero-sub">${soldTotal.toLocaleString('tr-TR')} adet tatlı satıldı</div>
+                    </div>
+                </div>
+                <div class="gelir-list">
+                    ${rows || '<div class="gelir-no-price">Henüz satış verisi yok.</div>'}
+                </div>
+            `;
         }
 
         // ── Stock Cards ───────────────────────────────────
