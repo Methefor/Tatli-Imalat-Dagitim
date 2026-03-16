@@ -1,427 +1,639 @@
 # Tatlı İmalat ve Dağıtım Takip Sistemi — Kullanım Kılavuzu
 
-> **Sistem Adresi:** https://tli-takip.vercel.app
-> **Son Güncelleme:** Mart 2026
+> **Sürüm:** 2.1 — Mart 2026
+> **Hazırlayan:** Mutlukent Tatlı
+> **Platform:** Web tabanlı PWA (Progressive Web App) — mobil ve masaüstü uyumlu
 
 ---
 
 ## İçindekiler
 
-1. [Sisteme Genel Bakış](#1-sisteme-genel-bakış)
-2. [Kullanıcı Rolleri](#2-kullanıcı-rolleri)
+1. [Genel Bakış](#1-genel-bakış)
+2. [Kullanıcı Rolleri ve Erişim Seviyeleri](#2-kullanıcı-rolleri-ve-erişim-seviyeleri)
 3. [Giriş Ekranı](#3-giriş-ekranı)
-4. [Yönetici (Admin) Paneli](#4-yönetici-admin-paneli)
-5. [Müdür Paneli](#5-müdür-paneli)
-6. [Tatlıcı Paneli](#6-tatlıcı-paneli)
-7. [Üretim Paneli](#7-üretim-paneli)
-8. [Günlük İş Akışı](#8-günlük-iş-akışı)
-9. [Şubeler ve Sorumluları](#9-şubeler-ve-sorumluları)
-10. [Sık Sorulan Sorular](#10-sık-sorulan-sorular)
+4. [Müdür Paneli](#4-müdür-paneli)
+5. [Şubem — Müdür İstatistik Sayfası](#5-şubem--müdür-i̇statistik-sayfası)
+6. [Tatlıcılar Paneli](#6-tatlıcılar-paneli)
+7. [Dağıtım Paneli](#7-dağıtım-paneli)
+8. [Yönetici Paneli (Admin Dashboard)](#8-yönetici-paneli-admin-dashboard)
+9. [Sistem Yönetimi (Süper Admin)](#9-sistem-yönetimi-süper-admin)
+10. [Günlük İş Akışı](#10-günlük-iş-akışı)
+11. [Şubeler](#11-şubeler)
+12. [Sık Sorulan Sorular](#12-sık-sorulan-sorular)
 
 ---
 
-## 1. Sisteme Genel Bakış
+## 1. Genel Bakış
 
-Bu sistem, şube bazlı tatlı üretimi ve dağıtımını takip etmek için tasarlanmıştır. Merkezi bir veritabanı üzerinden çalışır; her şubede nerede ne kadar tatlı bulunduğunu, ne kadar satıldığını ve ne kadar fire verildiğini anlık olarak izlemenizi sağlar.
+**Tatlı Takip Sistemi**, Mutlukent Tatlı'nın üretim merkezi ile 6 satış şubesi arasındaki tatlı hareketlerini anlık olarak izleyen, bulut tabanlı bir takip platformudur.
 
-**Sistemin yaptıkları:**
-- Her şubeye gün içinde gelen tatlı miktarlarını kayıt altına alır
-- Gün sonu kalan stoku takip eder
-- Satılan miktar otomatik hesaplanır (Gelen − Kalan = Satılan)
-- Şubeler arası tatlı transferlerini kaydeder
-- Aylık/haftalık/günlük raporlar üretir
-- Tatlıcı ekibine anlık stok görünürlüğü sağlar
+### Temel Özellikler
 
-**Sistemde tutulan veriler:**
-| Kayıt | Açıklama |
-|-------|----------|
-| Gelen | O gün şubeye teslim edilen tatlı adedi |
-| Kalan | Günün sonunda şubede artan tatlı adedi |
-| Satılan | Gelen − Kalan farkı (otomatik) |
-| Transfer | Başka şubeye gönderilen miktar |
+| Özellik | Açıklama |
+|---------|----------|
+| **Anlık Senkronizasyon** | Tüm değişiklikler saniyeler içinde tüm cihazlara yansır |
+| **Çoklu Rol** | 5 farklı kullanıcı tipi, her birinin kendine ait ekranı |
+| **Şube Bazlı Takip** | Her şubenin gelen, kalan ve zayiat verileri ayrı tutulur |
+| **Satış Formülü** | Satılan = Gelen − Kalan − Zayiat otomatik hesaplanır |
+| **Dağıtım Planlama** | Hangi şubeye ne kadar gönderileceği renk kodlu tabloyla gösterilir |
+| **Elde Edilen Gelir** | Satılan adet × fiyat üzerinden gerçek gelir hesabı |
+| **Aylık Karşılaştırma** | Önceki ayın verileriyle anlık KPI karşılaştırması |
+| **WhatsApp Raporu** | Günlük özet raporu tek tıkla WhatsApp'ta paylaşılabilir |
+| **PWA Desteği** | Telefona uygulama gibi kurulabilir, önceki veriler çevrimdışı görünür |
+
+### Temel Satış Formülü
+
+```
+SATILAN = GELEN − KALAN − ZAYİAT
+```
+
+- **Gelen:** Üretimden şubeye ulaşan tatlı adedi
+- **Kalan:** Günün sonunda rafta kalan tatlı adedi
+- **Zayiat:** Bozulan, düşen veya fire olan tatlı adedi
+- **Satılan:** Sistem otomatik hesaplar — manuel giriş gerekmez
+
+### Sistem Mimarisi
+
+```
+[Üretim Merkezi]
+       ↓  Tatlı üretilir ve paketlenir
+[Tatlıcılar Paneli] → Tüm şubelerin kalan stoğu izlenir
+       ↓
+[Dağıtım Paneli] → Renk kodlu tabloyla hangi şubeye ne kadar gidileceği planlanır
+       ↓
+[Müdür Paneli] → Şube müdürü gelen tatlıları teslim alır (Gelen Tatlılar)
+       ↓
+[Kalan Tatlılar + Zayiat] → Satış sonrası kalan ve fire miktarı girilir
+       ↓
+[Yönetici Paneli] → Tüm şubelerin verileri analiz edilir, raporlar paylaşılır
+```
+
+![Tatlı Takip Sistemi İş Akışı](Tatlı%20Takip%20Sistemi%20İş%20Akışı.png)
+
+![Tatlı Takip Sistemi Ekosistem](Tatlı%20Takip%20Sistemi%20İş%20Akışı%202.png)
 
 ---
 
-## 2. Kullanıcı Rolleri
+## 2. Kullanıcı Rolleri ve Erişim Seviyeleri
 
-Sistemde **4 farklı kullanıcı rolü** bulunur:
+Sistemde **5 temel rol** bulunmaktadır. Her rol farklı bir PIN ile korunmaktadır.
 
-| Rol | Kim? | Erişim |
-|-----|------|--------|
-| **Yönetici (Admin)** | Merkez yönetim | Tüm şubelerin raporları, analitikler |
-| **Müdür** | Şube sorumluları | Kendi şubelerinin giriş ekranları |
-| **Tatlıcı** | Üretim/imalat ekibi | Stok özet paneli (okuma) |
-| **Üretim Ekibi** | Sevkiyat/dağıtım | Anlık stok matrisi (şifrесиз) |
+| Rol | Kimler Kullanır | Varsayılan PIN | Erişebildiği Ekranlar |
+|-----|----------------|---------------|----------------------|
+| **Müdür** | Şube müdürleri | Şubeye özel | Gelen Tatlılar, Kalan Tatlılar, Transfer, Zayiat, Şubem |
+| **Tatlıcılar** | Üretim personeli | `0000` | Tatlıcılar Paneli (üretim stok kartları) |
+| **Dağıtım** | Dağıtım şoförü / sorumlusu | `1234` | Dağıtım Paneli (stok + plan tablosu) |
+| **Yönetici** | İşletme sahibi / üst yönetim | Gizli | Admin Dashboard (tüm raporlar ve analizler) |
+| **Süper Admin** | Sistem yöneticisi | `9999` | Sistem Yönetimi (tüm ayarlar, PIN değişikliği) |
+
+> **Not:** Tüm PIN'ler Süper Admin tarafından Sistem Yönetimi → PIN Yönetimi ekranından değiştirilebilir. Değişiklikler tüm cihazlara anında yansır.
 
 ---
 
 ## 3. Giriş Ekranı
 
-**Adres:** Ana sayfa (`/`)
+![Giriş Paneli](Giriş%20Paneli.png)
 
-Giriş ekranında üç farklı yol mevcuttur:
+Uygulama açıldığında **Rol Seçim Ekranı** görüntülenir.
 
----
+### Giriş Yöntemi
 
-### 3.1 Müdür Girişi
+1. **Müdür Girişi** (en üstte, büyük buton): Şube müdürleri için. Butona tıklandığında şube seçimi, ardından PIN ekranı gelir.
 
-1. Sayfada görünen **şube kartlarından** kendi şubenize tıklayın.
-   *(🌊 Rumeli İskelesi, 📚 Yahya Kemal, 🚂 Vagon, vb.)*
-2. Açılan kutucuğa **4 haneli şube şifrenizi** girin.
-3. **"Giriş Yap"** butonuna basın.
-4. Doğrulanırsa Müdür Menüsüne yönlendirilirsiniz.
+2. **İkinci Sıra (yan yana iki buton):**
+   - **Dağıtım**: Dağıtım sorumlusu girişi. PIN ekranı açılır.
+   - **Tatlıcılar**: Üretim personeli girişi. PIN ekranı açılır.
 
-> ⚠️ **Dikkat:** Her şubenin ayrı şifresi vardır. Yanlış şube seçilirse giriş yapılamaz.
+3. **Yönetici** (en altta, soluk/gizli görünüm): İşletme sahibi girişi. Admin Dashboard'a erişim sağlar.
 
----
+### Otomatik PIN Girişi
 
-### 3.2 Yönetici (Admin) Girişi
+Tüm PIN ekranlarında **4. rakam girildiği anda** sistem PIN'i otomatik doğrular — ayrıca "Giriş" butonuna basmaya gerek yoktur. Yanlış PIN girilirse ekran sarsılarak kullanıcıya bildirilir.
 
-1. Giriş ekranının alt kısmındaki **"Yönetici Girişi"** bağlantısına tıklayın.
-2. **Kullanıcı adı** ve **şifrenizi** girin.
-3. **"Giriş Yap"** butonuna basın.
-4. Admin Kontrol Paneline yönlendirilirsiniz.
+> **Tasarım Notu:** Yönetici butonu kasıtlı olarak soluk ve küçük tutulmuştur. Hassas verilere erişimi vurgusuz hale getirmek için bu şekilde tasarlanmıştır.
 
 ---
 
-### 3.3 Tatlıcı Paneli Girişi
+## 4. Müdür Paneli
 
-1. Giriş ekranındaki **"Tatlıcılar Paneli"** butonuna tıklayın.
-2. **4 haneli PIN** kodunu girin.
-3. Stok özet sayfasına erişirsiniz.
+### 4.1 Şube Seçimi ve PIN Girişi
 
-> Tatlıcı PIN'i varsayılan olarak **`0000`**'dır.
+![Şube Seçimi](Şube%20Seçimi.png)
 
----
+![Şube Seçim Pin girişi](Şube%20Seçim%20Pin%20girişi.png)
 
-## 4. Yönetici (Admin) Paneli
+Müdür Girişi'ne tıklandığında:
 
-**Kimler Kullanır:** Merkez yönetim, işletme sahibi
-**Sayfа:** `/admin-dashboard.html`
+1. **Şube Listesi** görüntülenir — müdür kendi şubesini seçer
+2. **PIN Ekranı** açılır — 4 haneli PIN rakamlarla girilir
+3. 4. rakam girildiği anda doğrulama otomatik yapılır
+4. Doğrulama başarılıysa **Müdür Menüsü** açılır
 
-Admin paneli şirketin tüm verilerini tek ekranda gösterir.
+> Her şubenin PIN'i birbirinden farklı olabilir. PIN'ler Süper Admin tarafından belirlenir.
 
----
+### 4.2 Müdür Menüsü
 
-### 4.1 Ekranın Bölümleri
+![Müdür Paneli](Müdür%20Paneli.png)
 
-#### Üst Bar
-- Sağ üstte **canlı saat** ve tarih
-- **Çıkış Yap** butonu (sol üst)
-- Yeşil "Canlı" göstergesi (sistem aktif anlamına gelir)
+Müdür Paneli 4 ana karttan oluşur:
 
-#### Zaman Filtresi Sekmeleri
-Verileri şu dönemler için filtreleyebilirsiniz:
+| Kart | Renk | İşlev |
+|------|------|--------|
+| **Gelen Tatlılar** | Amber/Sarı | Üretimden gelen tatlıların teslim alınması |
+| **Kalan Tatlılar** | Mavi | Günün sonunda kalan tatlı sayılarının girilmesi |
+| **Şube Arası Transfer** | Mor | Başka şubeden tatlı talep etmek veya göndermek |
+| **Zayiat Girişi** | Kırmızı | Bozulan / fire olan tatlıların kaydedilmesi |
 
-| Sekme | Gösterilen Veriler |
-|-------|--------------------|
-| **Bugün** | Sadece bugünkü hareketler |
-| **Bu Hafta** | Pazartesiden bugüne |
-| **Bu Ay** | Ayın başından bugüne |
-| **Tümü** | Tüm kayıtlı veriler |
+**Şubem Linki:** Ekranın üst kısmındaki şube adı veya avatar ikonuna tıklandığında **Şubem** sayfası açılır — şubenin kendi istatistikleri ve aylık performansı burada görüntülenir.
 
-#### Özet Kartlar (KPI)
-- **Toplam Dağıtım:** Seçilen dönemde tüm şubelere gönderilen toplam tatlı adedi. Hedef: 2.500 adet (ilerleme çubuğu ile görüntülenir).
-- **Toplam Satış:** Hesaplanan satış adedi (Gelen − Kalan) ve satış oranı (%).
-- **Mevcut Stok:** Tüm şubelerdeki güncel toplam stok.
+### 4.3 Gelen Tatlılar
 
-#### Şube Performans Tablosu
-Tüm şubeler yan yana karşılaştırılır:
+![Gelen Tatlılar](Gelen%20Tatlılar.png)
 
-| Sütun | Açıklama |
-|-------|----------|
-| Şube | Şube adı |
-| Gelen | Dönemde teslim alınan toplam |
-| Satılan | Hesaplanan satış |
-| Kalan | Güncel stok |
-| Satış Oranı | % olarak — yeşil iyi, sarı orta, kırmızı düşük |
+- Her tatlı türü için **adet giriş kutusu** bulunur
+- Üretim merkezinden gelen miktarlar sabah buraya girilir
+- **Tarih Gezgini:** Sağ/sol oklarla geçmiş günlere bakılabilir ve düzeltme yapılabilir
+- **Kaydet** butonuna basıldığında veri Supabase'e kaydedilir ve tüm cihazlara yansır
 
-#### Tatlı Satış Dağılımı (Bar Grafik)
-Her tatlı türü için toplam satış rakamını görsel olarak gösterir.
+> **Önemli:** Gelen tatlı miktarı kaydedildikten sonra düzenlemek için aynı tarihe gidip değeri değiştirip tekrar kaydetmek yeterlidir. Sistem mevcut kaydı günceller, yeni kayıt oluşturmaz.
 
-#### Güncel Stok Durumu
-Tüm tatlı türlerinin anlık stok adetleri kart olarak listelenir.
+### 4.4 Kalan Tatlılar
 
----
+![Kalan Tatlılar](Kalan%20Tatlılar.png)
 
-### 4.2 Yöneticinin Günlük Görevleri
+- Günün sonunda şubede rafta kalan tatlı sayıları girilir
+- Sistem otomatik olarak **Satılan = Gelen − Kalan − Zayiat** formülüyle hesaplar
+- Kalan miktarlar, Tatlıcılar Paneli ve Yönetici Dashboard'unda görüntülenir
 
-- [ ] Her sabah **"Bugün"** sekmesini açarak dünkü kapanış stoklarını kontrol edin
-- [ ] Satış oranı **kırmızı** görünen şubelerle iletişime geçin
-- [ ] Haftalık periyotta **"Bu Hafta"** sekmesiyle şube performanslarını karşılaştırın
-- [ ] Aylık hedef takibini **"Bu Ay"** sekmesinden yapın
-- [ ] Stok çok fazla birikiyor ya da tükeniyor ise üretim planlamasını buna göre ayarlayın
+### 4.5 Müdür Paneli Kullanım Rehberi (Adım Adım)
 
----
+![Müdür Paneli Nasıl Kullanılır](Müdür%20Paneli%20Nasıl%20Kullanılır.png)
 
-## 5. Müdür Paneli
+**Sabah Rutini:**
+1. Gelen Tatlılar'a gir → Üretimden gelen adetleri gir → Kaydet
+2. Şubem sayfasından günlük durumu kontrol et
 
-**Kimler Kullanır:** Her şubenin sorumlu müdürü
-**Erişim:** Kendi şube şifresiyle giriş
+**Akşam Rutini:**
+1. Kalan Tatlılar'a gir → Rafta kalan adetleri gir → Kaydet
+2. Varsa Zayiat Girişi'ne gir → Fire/bozuk ürünleri kaydet → Kaydet
 
-Müdür panelinde **4 ana işlem** bulunur:
+### 4.6 Şube Arası Transfer
 
----
+![Şube Arası Transfer](Şube%20Arası%20Transfer.png)
 
-### 5.1 Müdür Ana Menüsü
+- **Kaynak Şube:** Tatlıyı gönderen şube
+- **Hedef Şube:** Tatlıyı alan şube
+- Transfer onaylandığında kaynak şubenin stoğu düşer, hedef şubenin stoğu artar
+- İki şube müdürü de kendi panellerinden transferi görebilir
 
-Giriş yaptıktan sonra karşınıza çıkan 4 kart:
+### 4.7 Zayiat Girişi
 
-| Kart | Ne İşe Yarar |
-|------|-------------|
-| 📦 **Gelen Tatlılar** | Gün içinde teslim alınan tatlıları kaydet |
-| ✅ **Kalan Tatlılar** | Gün sonu stoğunu gir |
-| 📊 **Şubem** | Aylık rapor ve istatistikleri gör |
-| 🔄 **Şube Arası Transfer** | Fazla tatlıyı başka şubeye gönder |
+![Zayiat Girişi](Zayiat%20Girişi.png)
+
+- Bozulan, düşen veya fire olan tatlılar buraya kaydedilir
+- Tatlı türü bazında miktar girilir
+- Zayiat miktarı kaydedildiğinde Yönetici Paneli raporlarına yansır
+- Gerçek satış hesabı: **Satılan = Gelen − Kalan − Zayiat**
 
 ---
 
-### 5.2 Gelen Tatlılar
+## 5. Şubem — Müdür İstatistik Sayfası
 
-**Ne Zaman Kullanılır:** Tatlılar teslim alındığında (genellikle sabah veya öğlen)
+**Şubem** sayfası, müdürün kendi şubesinin günlük ve aylık performansını takip ettiği kişisel paneldir. Müdür Menüsü'ndeki şube avatarına veya adına tıklanarak açılır.
 
-**Nasıl Kullanılır:**
-1. Ana menüden **"Gelen Tatlılar"**'a tıklayın.
-2. Üstte tarih görüntülenir. Farklı bir tarih için **`<`** veya **`>`** oklarını** kullanın.
-3. Her tatlı türünün yanındaki **kutuya gelen adedi** yazın.
-4. Hiç gelmemiş tatlıları **0 bırakın** (dokunmayın).
-5. **"Kaydet"** butonuna basın.
+![Şubem İstatistikler](Şubem%20istatistikler.png)
 
-> 💡 **İpucu:** Aynı gün için birden fazla teslimat aldıysanız, son miktarı kutuya yazıp tekrar kaydedin. Önceki kayıt güncellenir, toplanmaz.
+### 5.1 Gösterilen Veriler
 
----
+| Veri | Açıklama |
+|------|----------|
+| **Gelen** | Seçilen dönemde üretimden gelen toplam tatlı adedi |
+| **Kalan** | Dönem sonu rafta kalan toplam tatlı adedi |
+| **Zayiat** | Dönemde kaydedilen toplam fire/bozuk ürün adedi |
+| **Satılan** | Gelen − Kalan − Zayiat formülüyle hesaplanan satış adedi |
 
-### 5.3 Kalan Tatlılar
+### 5.2 Dönem Seçimi
 
-**Ne Zaman Kullanılır:** Günün sonunda, kapanış öncesi
+- **Bugün / Bu Hafta / Bu Ay** sekmeleriyle hızlıca filtreleme yapılabilir
+- Şubeye ait veriler sadece o şubenin müdürüne görünür
 
-**Nasıl Kullanılır:**
-1. Ana menüden **"Kalan Tatlılar"**'a tıklayın.
-2. Her tatlı için kutuda şu bilgilerden biri hazır gelir:
-   - **📦 Gelen: X** — O gün teslim alındı, kalan girilmemiş
-   - **📋 Önceki Kalan: X** — Dün kapanışta kalan miktar
-3. Gerçekte kalan miktarı **kutuya yazın**.
-4. Tamamen biten tatlılar için **0 yazın**.
-5. **"Kaydet"** butonuna basın.
+### 5.3 Veri Yoksa Ne Olur?
 
-> ⚠️ **Önemli:** Hiç dokunmadan kalan **0 olan kutular** kaydedilmez. Eğer bir tatlı gerçekten 0 kaldıysa, 0 yazıp kaydedin.
-
-**Satış Otomatik Hesaplanır:**
-`Satılan = Gelen − Kalan`
+Gelen ve kalan veriler 0 olsa bile zayiat girişi yapılmışsa sayfa "Veri yok" hatası vermez; zayiat kaydı otomatik olarak gösterilir.
 
 ---
 
-### 5.4 Şubem (Aylık Rapor)
+## 6. Tatlıcılar Paneli
 
-**Ne Gösterir:**
+![Tatlıcılar Paneli Güncel Stok durumu](Tatlıcılar%20Paneli%20Güncel%20Stok%20durumu.png)
 
-- **Bu Ay Gelen:** Ayın başından bugüne teslim alınan toplam
-- **Bu Ay Satılan:** Hesaplanan satış toplamı
-- **Şu An Kalan:** Güncel toplam stok (tüm tatlılar)
+Tatlıcılar Paneli, üretim merkezinde çalışan personelin tüm şubelerin stok durumunu izlediği ekrandır. PIN: `0000` (değiştirilebilir).
 
-Alt kısımda tatlı bazında tablo:
+### 6.1 Güncel Stok Özeti
 
-| Tatlı | Gelen | Satılan | Kalan |
-|-------|-------|---------|-------|
-| Magnolya 🍮 | 120 | 114 | 6 |
-| Cheesecake 🍰 | 80 | 76 | 4 |
+Sayfanın üst kısmında **tüm şubelerin toplam stoğu** özet olarak gösterilir:
 
-**Ay Değiştirme:** `<` ve `>` butonlarıyla önceki aylara geçebilirsiniz.
+- Her tatlı türü için toplam kalan adet (tüm şubeler toplamı)
+- Genel toplam (tüm tatlılar, tüm şubeler)
+- Renkli gösterge: **Yeşil** = yeterli stok, **Sarı** = az stok, **Kırmızı** = kritik seviye
 
----
+### 6.2 Şube Bazlı Stok Kartları (Açılır/Kapanır)
 
-### 5.5 Şube Arası Transfer
+![Tatlıcılar Paneli Şube bazlı Stok durumu](Tatlıcılar%20Paneli%20Şube%20bazlı%20Stok%20durumu.png)
 
-**Ne Zaman Kullanılır:** Bir şubede fazla tatlı var, başka şubede ihtiyaç varsa
+Her şube için **ayrı bir kart** bulunur. Bu kartlar **açılır/kapanır** yapıdadır:
 
-**Nasıl Kullanılır:**
-1. **"Şube Arası Transfer"**'e tıklayın.
-2. **Tarih** seçin (bugün veya geçmiş).
-3. **Alan Şube**'yi seçin (kendi şubenizden başkasına gönderebilirsiniz).
-4. **Tatlı türünü** seçin.
-5. **Miktarı** girin.
-6. **"Transferi Kaydet"** butonuna basın.
+| Cihaz | Kartların Başlangıç Durumu |
+|-------|--------------------------|
+| Telefon (mobil) | Kapalı — tatlıcı istediği şubeye tıklar |
+| Masaüstü / Tablet | Açık — tüm detaylar otomatik görünür |
 
-**Sistem Ne Yapar:**
-- Gönderen şubenin stoğu **azalır** (remaining_amount eksilir)
-- Alan şubenin o güne ait **gelen miktarı artar**
-- Transfer geçmişinde not olarak kayıt tutulur
+**Kart içeriği:**
+- Tatlı adı + o şubede kalan adet
+- Eşik altındaki tatlılar kırmızı veya turuncu ile işaretlenir
+- Şubenin toplam stok sayısı
 
-**Transfer Geçmişi:** Sayfanın altında son transferler listelenir.
+> **Neden bu tasarım?** Mobil ekranlarda 6 şubenin tüm detaylarını aynı anda göstermek fazla yer kaplar. Açılır/kapanır yapı sayesinde tatlıcı sadece ilgilendiği şubenin bilgisine hızlıca ulaşır.
 
 ---
 
-### 5.6 Müdürün Günlük Görevleri
+## 7. Dağıtım Paneli
 
-**Sabah:**
-- [ ] Tatlı teslimatı alındığında **"Gelen Tatlılar"**'ı doldurun
-- [ ] Birden fazla teslimat varsa her seferinde güncelleyin
+![Dağıtım Paneli](Dağıtım%20Paneli.png)
 
-**Akşam (Kapanış):**
-- [ ] **"Kalan Tatlılar"**'ı doldurun — her tatlı türü için gerçek kalan adedi girin
-- [ ] Biten tatlılar için **0** yazın
-- [ ] Kaydedin
+Dağıtım Paneli, dağıtım sorumlusunun hangi şubeye ne kadar tatlı götüreceğini planlamasına yardımcı olur. PIN: `1234` (değiştirilebilir).
 
-**İhtiyaç Halinde:**
-- [ ] Fazla stok varsa **Şube Arası Transfer** ile komşu şubeye gönderin
-- [ ] Aylık performansı **"Şubem"** ekranından kontrol edin
+### 7.1 Güncel Stok Durumu
+
+Sayfanın üst bölümünde **tüm şubelerin anlık stok özeti** bulunur. Tatlıcılar Paneli'ndeki özet bölümüyle aynıdır:
+- Tatlı türü bazında toplam stoklar
+- Genel toplam
+
+### 7.2 Şube Bazlı Stok Detayı (Açılır/Kapanır)
+
+![Dağıtım Planı Şube bazlı stok](Dağıtım%20Planı%20Şube%20bazlı%20stok.png)
+
+Tatlıcılar Paneli ile aynı açılır/kapanır kart yapısı:
+- Mobilde başta KAPALI, masaüstünde AÇIK
+- Şube başlığına tıklayarak her şubenin detay stoğu görüntülenir
+
+### 7.3 Dağıtım Planı Tablosu
+
+![Dağıtım Planı](Dağıtım%20Planı.png)
+
+Bu bölüm Dağıtım Paneli'nin en kritik özelliğidir.
+
+**Tablo Yapısı:**
+- **Satırlar:** Her şube (6 şube)
+- **Sütunlar:** Her tatlı türü
+- **Hücre Değeri:** O şubeye kaç adet teslim edilmeli?
+
+**Renk Kodlaması:**
+
+| Renk | Anlam | Stok Durumu |
+|------|-------|-------------|
+| 🔴 Kırmızı | Kritik — Acil götür | Stok = 0 |
+| 🟠 Turuncu | Az — Tamamla | 0 < Stok < Eşik Değeri |
+| ⬜ Gri (—) | Yeterli | Stok ≥ Eşik Değeri |
+
+**Eşik Değerleri:** Her şube için minimum stok eşiği Sistem Yönetimi'nden ayarlanır. Eşiğin altındaki şubelere dağıtımda öncelik verilir.
+
+**Yazdırma:** "Yazdır" butonu ile dağıtım planı kağıda çıktı alınabilir. Baskıda sadece plan tablosu görünür.
 
 ---
 
-## 6. Tatlıcı Paneli
+## 8. Yönetici Paneli (Admin Dashboard)
 
-**Kimler Kullanır:** Üretim/imalat ekibi (tatlıcılar)
-**Sayfa:** `/tatlilar-panel.html`
-**Erişim:** 4 haneli PIN (`0000`)
+![Yönetici Girişi](Yönetici%20Girişi.png)
 
----
+![Yönetici Paneli](Yönetici%20Paneli.png)
 
-### 6.1 Panel Bölümleri
+Yönetici Paneli, işletme sahibinin tüm şubelerin performansını tek ekrandan izleyebildiği analiz merkezidir. Giriş ekranındaki "Yönetici" butonuyla erişilir.
 
-#### Güncel Stok Durumu (Üst Bölüm)
-Tüm tatlı türleri için **toplam stok** (tüm şubeler birleşik):
+### 8.1 Zaman Filtresi ve Ay Navigasyonu
+
+Panelin üstündeki filtre sekmeleriyle veriler dönemsel olarak incelenir:
+
+| Filtre | Açıklama |
+|--------|----------|
+| **Bugün** | Sadece bugünkü veriler |
+| **Bu Hafta** | Pazartesiden itibaren |
+| **Bu Ay** | Seçilen ayın 1'inden son gününe kadar |
+
+**Ay Navigasyonu:** "Bu Ay" sekmesinin yanındaki **‹** ve **›** okları ile geçmiş aylara gidilir. Örneğin Şubat 2026 verisini görmek için ‹ butonuna tıklanır. Başlık otomatik olarak "Şubat 2026" olarak güncellenir.
+
+> Ay navigasyonu sayesinde geçmiş aylara ait zayiat, satış ve stok verileri kolayca incelenebilir.
+
+### 8.2 KPI Özet Kartları
+
+Ana ekranda 4 adet **Anahtar Performans Göstergesi (KPI)** kartı bulunur:
+
+| KPI Kartı | Gösterdiği Veri |
+|-----------|----------------|
+| **Toplam Dağıtım** | Seçilen dönemde şubelere gönderilen toplam tatlı adedi |
+| **Tahmini Satış** | Gelen − Kalan − Zayiat formülüyle hesaplanan satış adedi |
+| **Toplam Zayiat** | Seçilen dönemde kaydedilen toplam fire/bozuk tatlı adedi |
+| **Aktif Şube** | Veri girişi yapılmış aktif şube sayısı |
+
+### 8.3 Önceki Ay Karşılaştırması (KPI Altı)
+
+Her KPI kartının altında **önceki ayla karşılaştırma** göstergesi bulunur:
+
+- **▲ %15 önceki aya göre** → Yeşil renk, artış var
+- **▼ %8 önceki aya göre** → Kırmızı renk, düşüş var
+- **→ Değişim yok** → Gri renk, eşit
+
+> Karşılaştırma yalnızca "Bu Ay" filtresi aktifken gösterilir. Diğer filtrelerde gösterge gizlenir.
+
+### 8.4 En İyi Şube Banner'ı
+
+Şube Performansı panelinin üstünde, o dönem en yüksek satış yüzdesine sahip şube **🥇 altın banner** ile öne çıkarılır:
 
 ```
-Magnolya 🍮          Cheesecake 🍰
-     42                    18
+🥇 En İyi Şube: Rumeli İskelesi — %87 satış oranı
 ```
 
-- Büyük ve okuması kolay rakamlar
-- Sıfır stok kırmızımsı gösterilir
+Banner, veriler her yenilendiğinde güncellenir.
 
-**Grand Total Bar:** Tüm tatlıların genel toplamı altın rengi çubukta.
+### 8.5 Günlük Özet Raporu ve WhatsApp Paylaşımı
 
-#### Şube Bazlı Stok (Alt Bölüm)
-Her şube için ayrı kart:
+Panelin üst çubuğundaki **📤 Rapor** butonuyla günlük özet raporu oluşturulur.
 
+**Rapor İçeriği:**
 ```
-┌─────────────────────────────┐
-│  🌊 Rumeli İskelesi   ──  12 │
-│  Magnolya             6     │
-│  Cheesecake           3     │
-│  Kadayıf              3     │
-└─────────────────────────────┘
+📊 MUTLUKENT TATLI — GÜNLÜK RAPOR
+📅 16 Mart 2026 | Bu Ay
+
+🍰 Dağıtım: 245 adet
+💰 Satış: 198 adet
+⚠️ Zayiat: 12 adet (%4,9)
+
+🏪 Şube Performansları:
+  🥇 Rumeli İskelesi — %87
+  🥈 Vagon — %82
+  🥉 Millet Bahçesi — %79
+  4. Yahya Kemal — %74
+  5. TunaBoyu — %68
+  6. Sahil — %61
 ```
+
+**Paylaşım Seçenekleri:**
+- **WhatsApp ile Paylaş:** Rapor metin olarak WhatsApp'a aktarılır, kişi veya grup seçilerek gönderilebilir
+- **📋 Kopyala:** Rapor panoya kopyalanır, istenen herhangi bir uygulamaya yapıştırılabilir
+
+### 8.6 Şube Performansı — Mobil Kart Görünümü
+
+![Şube Kartları Rozetleri](Şube%20kartları%20rozetleri.jpeg)
+
+Telefon ekranlarında şube performans tablosu yerine **tam ekran renkli kartlar** gösterilir:
+
+**Kart Yapısı:**
+- 🥇 1. sıra → Altın kart
+- 🥈 2. sıra → Gümüş kart
+- 🥉 3. sıra → Bronz kart
+- 4-6. sıra → Standart kart
+
+**Her Kart İçeriği:**
+- Şube adı ve sırası
+- Gelen / Satılan / Zayiat adetleri
+- Satış yüzdesi (görsel çubuk gösterge)
+
+> Masaüstü bilgisayarlarda tablo görünümü, telefonda kart görünümü otomatik olarak aktif olur.
+
+### 8.7 Güncel Stok ve Satış Trendi
+
+![Yönetici Paneli Güncel Stok ve Satış trendi](Yönetici%20Paneli%20Güncel%20Stok%20ve%20Satış%20trendi.png)
+
+- Tatlı türü bazında **son 7 günün satış grafiği**
+- Hangi tatlının ne kadar sattığı trend olarak gösterilir
+- Şube bazlı kırılım: hangi şube daha fazla satıyor?
+- Grafik üzerindeki noktalar günlük verileri gösterir
+
+### 8.8 Zayiat Raporu (Modern İki Sütun Tasarım)
+
+![Yönetici Paneli Zayiat ve ciro tahmin](Yönetici%20Paneli%20Zayiat%20ve%20ciro%20tahmin.png)
+
+Zayiat Raporu iki sütunlu modern bir düzende sunulur:
+
+**Sol Sütun — Şube Bazlı Zayiat:**
+- Her şube sıralı listede gösterilir (en fazla zayiattan en aza)
+- Zayiat adedi ve yüzdesi (Zayiat / Gelen × 100) gösterilir
+- Renk kodlu gösterge: yüksek oran kırmızı, orta turuncu, düşük yeşil
+- Örnek: `🏪 Rumeli İskelesi — 8 adet (%3,2)`
+
+**Sağ Sütun — Tatlı Bazlı Zayiat:**
+- Her tatlı türü sıralı listede gösterilir (en fazla zayiattan en aza)
+- Tatlı bazında toplam fire adedi ve oranı
+- Örnek: `🍰 Baklava — 15 adet (%5,1)`
+
+> Hangi şubede ve hangi tatlıda fire fazla olduğu tek bakışta anlaşılır.
+
+### 8.9 Elde Edilen Gelir Paneli
+
+**Elde Edilen Gelir** paneli, gerçek satışa dayalı gelir hesabını gösterir:
+
+![Elde Edilen Gelir](Elde%20edilen%20Gelir.png)
+
+**Formül:**
+```
+Elde Edilen Gelir = Satılan Adet × Tatlı Birim Fiyatı
+```
+
+**Görünüm:**
+- **Hero bölümü (üst):** Dönemin toplam geliri büyük font ile gösterilir
+  ```
+  💰 Toplam Elde Edilen Gelir
+     ₺ 18.450
+     312 adet tatlı satıldı
+  ```
+- **Bar listesi (alt):** Her tatlı türü kendi geliriyle sıralı listelenir
+  - Tatlı adı + satış adedi + gelir miktarı
+  - Görsel bar: maksimum gelire göre oransal genişlik
+
+> **Not:** Tatlı birim fiyatları Sistem Yönetimi → Tatlı Fiyatları sekmesinden güncellenir.
 
 ---
 
-### 6.2 Tatlıcının Görevleri
+## 9. Sistem Yönetimi (Süper Admin)
 
-- Her sabah üretim planlamadan önce paneli kontrol edin
-- **Düşük stoklu şubeleri** öncelikli üretin
-- Sıfır stok görünen şubelere **acil sevkiyat** ayarlayın
-- **Yenile** butonuna basarak verileri güncelleyin
-- Panel her **60 saniyede** otomatik yenilenir
+![Sistem Yönetimi Paneli](Sistem%20Yönetimi%20Paneli.png)
 
----
+Sistem Yönetimi, uygulamanın tüm ayarlarının yapıldığı merkezi yapılandırma ekranıdır. PIN: `9999`.
 
-## 7. Üretim Paneli
+> **Uyarı:** Bu ekrandaki değişiklikler anında tüm kullanıcılara yansır. Dikkatli kullanın.
 
-**Kimler Kullanır:** Sevkiyat, dağıtım, üretim ekibi — **şifresiz erişim**
-**Sayfa:** `/uretim.html`
+### 9.1 Sekme Yapısı
 
----
+| Sekme | İşlev |
+|-------|--------|
+| **Müdürler** | Şube aktif / pasif durumu yönetimi |
+| **Tatlılar** | Aktif tatlı listesi yönetimi |
+| **Eşikler** | Şube bazlı minimum stok eşik değerleri |
+| **Tatlı Fiyatları** | Gelir hesabında kullanılan birim fiyatlar |
+| **PIN Yönetimi** | Tüm rol ve şube PIN'lerini değiştir |
 
-### 7.1 Panel İçeriği
+### 9.2 Müdürler Sekmesi
 
-#### Özet Chips (Üst)
-Stok durumlarını hızlıca gösteren renkli etiketler:
-- 🟢 **Yeterli** (4+)
-- 🟡 **Az** (1–3)
-- 🔴 **Tükendi** (0)
+![Sistem Yönetimi Müdürler](Sistem%20Yönetimi%20Müdürler.png)
 
-#### Şube Stok Kartları
-Her şube için ayrı kart — o şubedeki tüm tatlıların güncel stoğu.
+- Her şube için **Aktif / Pasif** toggle düğmesi
+- Pasif şubeler giriş listesinde görünmez, veri girişi yapılamaz
+- Geçici olarak kapalı olan şubeler buradan pasife alınır
 
-#### Matris Tablosu
-Tüm şubeleri ve tatlıları **çapraz tabloda** gösterir:
+### 9.3 Tatlılar Sekmesi
 
-|  | Rumeli | Yahya Kemal | Vagon | Sahil | TunaBoyu | Millet | TOPLAM |
-|--|--------|-------------|-------|-------|----------|--------|--------|
-| Magnolya | 6 | 3 | 8 | 2 | 4 | 6 | **29** |
-| Cheesecake | 3 | 1 | 5 | 0 | 2 | 4 | **15** |
-| **TOPLAM** | **9** | **4** | **13** | **2** | **6** | **10** | **44** |
+![Sistem Yönetimi Tatlılar](Sistem%20Yönetimi%20Tatlılar.png)
 
-- Renk kodlaması: yeşil (4+), sarı (1–3), gri (0)
-- Panel her **5 dakikada** otomatik yenilenir
+- Sistemdeki tüm tatlı türleri listelenir
+- Her tatlı Aktif / Pasif yapılabilir
+- Pasif tatlılar giriş formlarında görünmez (mevsimlik ürünler için kullanışlı)
 
----
+### 9.4 Eşikler Sekmesi
 
-## 8. Günlük İş Akışı
+![Sistem Yönetimi Eşikler](Sistem%20Yönetimi%20Eşikler.png)
 
-### Sabah (Teslimat Sonrası)
+- Her şube için her tatlıda **minimum stok eşiği** belirlenir
+- Örnek: Rumeli İskelesi şubesi için Baklava eşiği = 8
+- Bu eşikler Dağıtım Paneli'nde renk kodlamasını belirler:
+  - Stok < Eşik → 🟠 Turuncu (az stok)
+  - Stok = 0 → 🔴 Kırmızı (kritik)
+  - Stok ≥ Eşik → ⬜ Gri (yeterli)
 
-```
-Tatlıcı üretir → Teslimat yapılır → Müdür "Gelen Tatlılar"'ı doldurur
-```
+### 9.5 Tatlı Fiyatları Sekmesi
 
-1. Tatlıcı sabah stoğu kontrol eder (**Tatlıcı Paneli**)
-2. Üretim tamamlanır ve şubelere dağıtım yapılır
-3. Her şube müdürü teslim aldığı miktarı **"Gelen Tatlılar"** ekranına girer
-4. Tatlıcı/dağıtım ekibi **Üretim Paneli**'nden teslimatın yansıdığını doğrular
+![Sistem Yönetimi Tatlı fiyatları](Sistem%20Yönetimi%20Tatlı%20fiyatları.png)
 
----
+- Her tatlı türü için **birim satış fiyatı (TL)** girilir
+- Bu fiyatlar Yönetici Dashboard'undaki **Elde Edilen Gelir** hesabında kullanılır
+- Fiyat değişikliği anında tüm gelir hesaplamalarına yansır
 
-### Gün İçi (İhtiyaç Halinde)
+### 9.6 PIN Yönetimi Sekmesi
 
-```
-Şube A fazla → Transfer → Şube B'ye gönderilir
-```
+![Sistem Yönetimi Pin yönetimi](Sistem%20Yönetimi%20Pin%20yönetimi.png)
 
-- Müdür **"Şube Arası Transfer"** ile stok düzenler
-- Yönetici **Admin Paneli**'nden anlık durumu izler
+Tüm rol PIN'leri bu sekmeden yönetilir:
 
----
+| Alan | Açıklama |
+|------|----------|
+| Süper Admin PIN | Sistem Yönetimi ekranı için |
+| Yönetici PIN | Admin Dashboard için |
+| Tatlıcılar PIN | Tatlıcılar Paneli için |
+| Dağıtım PIN | Dağıtım Paneli için |
+| Şube PIN'leri | Her şube için ayrı PIN (6 adet) |
 
-### Akşam (Kapanış)
-
-```
-Müdür sayar → "Kalan Tatlılar"'ı girer → Yönetici raporu kontrol eder
-```
-
-1. Şube müdürü gün sonu stoğu sayar
-2. **"Kalan Tatlılar"** ekranına gerçek kalan adedi girer
-3. Sistem satışı otomatik hesaplar (Gelen − Kalan)
-4. Yönetici Admin Paneli'nden günlük satış raporunu inceler
+- PIN değişikliği Supabase bulut veritabanına kaydedilir
+- Tüm cihazlar otomatik olarak yeni PIN'i kullanmaya başlar
+- PIN'ler 4 haneli sayıdan oluşmalıdır
 
 ---
 
-## 9. Şubeler ve Sorumluları
+## 10. Günlük İş Akışı
 
-| Şube | Emoji | Müdür |
-|------|-------|-------|
-| Rumeli İskelesi | 🌊 | Metehan Arslan |
-| Yahya Kemal | 📚 | Berkay Nazlıgül |
-| Vagon | 🚂 | Baturay Cimpiri |
-| Sahil | 🏖️ | Bahtiyar Kurt |
-| TunaBoyu | 🌿 | Semra Polat |
-| Millet Bahçesi | 🌸 | Melis Boyalık |
+Tipik bir iş günündeki veri akışı ve roller:
+
+### Sabah — Dağıtım Öncesi
+
+1. **Tatlıcılar** → Tatlıcılar Paneli açılır
+   - Tüm şubelerin kalan stoğu kontrol edilir
+   - Hangi şubede hangi tatlı az? Açılır kartlarla şube şube incelenir
+   - Üretim miktarı buna göre belirlenir
+
+2. **Dağıtım Sorumlusu** → Dağıtım Paneli açılır
+   - Dağıtım Planı tablosuna bakılır
+   - 🔴 Kırmızı = Acil, 🟠 Turuncu = Tamamla
+   - Gerekirse dağıtım planı yazdırılır
+
+### Sabah — Dağıtım Sonrası
+
+3. **Şube Müdürleri** → Gelen Tatlılar
+   - Teslim alınan tatlı adetleri tatlı tatlı girilir → Kaydet
+
+### Akşam — Satış Sonrası
+
+4. **Şube Müdürleri** → Kalan Tatlılar
+   - Rafta kalan tatlı adetleri girilir → Kaydet
+
+5. **Şube Müdürleri** → Zayiat Girişi (varsa)
+   - Bozulan / fire tatlılar girilir → Kaydet
+
+### Gece — Analiz ve Raporlama
+
+6. **Yönetici** → Admin Dashboard
+   - Ay filtresi ile dönem seçilir
+   - KPI kartlarından genel özet görülür
+   - Önceki ayla karşılaştırma incelenir
+   - En iyi şube banner'ından günün performansı değerlendirilir
+   - Zayiat raporu ile hangi şube/tatlıda fire fazla olduğu tespit edilir
+   - Elde Edilen Gelir panelinden dönem geliri hesaplanır
+   - **📤 Rapor** butonuyla günlük özet WhatsApp üzerinden ekiple paylaşılır
 
 ---
 
-## 10. Sık Sorulan Sorular
+## 11. Şubeler
 
-**S: Yanlış miktarı girdim, düzeltebilir miyim?**
-C: Evet. Aynı ekrana geri gidin, doğru miktarı yazın ve tekrar kaydedin. Sistem günceller, ikinci bir kayıt oluşturmaz.
+Sistemde tanımlı **6 aktif şube** bulunmaktadır:
 
-**S: Dünkü veriyi unutup girmedim, geç girebilir miyim?**
-C: Evet. Tarih gezginindeki `<` okunu kullanarak önceki tarihe geçin ve veriyi girin.
+| Şube Adı | Varsayılan Eşik |
+|----------|----------------|
+| Rumeli İskelesi | 8 (en yüksek hacimli şube) |
+| Yahya Kemal | 5 |
+| TunaBoyu | 5 |
+| Sahil | 5 |
+| Vagon | 6 |
+| Millet Bahçesi | 6 |
 
-**S: Kalan tatlılar ekranında tatlı görünmüyor.**
-C: Daha önce "Gelen Tatlılar" girilmemiş olabilir. Ya da o tatlıya ait geçmiş kayıt yoktur. Gelen sıfır da olsa miktarı girin, sistem önceki stoğu gösterecektir.
-
-**S: Transfer yaptım ama alan şubede görünmüyor.**
-C: Alan şubenin müdürü o gün "Gelen Tatlılar"'ı açtığında transfer miktarı dahil edilmiş olacak. Üretim Paneli'nden de doğrulayabilirsiniz.
-
-**S: Şifremi unuttum.**
-C: Yöneticiye başvurun. Şifre değişikliği yönetici tarafından yapılabilir.
-
-**S: "Şu An Kalan 0" gözüküyor ama şubede tatlı var.**
-C: "Kalan Tatlılar" ekranından o günün kapanış stoğu girilmemiş demektir. Müdürden girmesini isteyin.
-
-**S: Tatlı türü listede yok ama satıyoruz.**
-C: Sisteme yeni tatlı eklenmesi gerekiyor. Yöneticiye bildirin; admin panelinden eklenebilir.
+> Şube eşik değerleri Sistem Yönetimi → Eşikler sekmesinden her tatlı için ayrı ayrı güncellenebilir.
 
 ---
 
-*Bu kılavuz Tatli-Imalat-Dagitim sistemi için hazırlanmıştır.*
+## 12. Sık Sorulan Sorular
+
+**S: Yaptığım değişiklik diğer cihazlarda görünmüyor?**
+C: Sayfayı yenileyin (pull-to-refresh veya F5). Tüm veriler Supabase bulut veritabanında tutulduğu için yenileme sonrası tüm cihazlar güncellenir.
+
+**S: PIN'imi unuttum?**
+C: Sistem Yönetimi ekranına (9999 ile) girin → PIN Yönetimi sekmesinden sıfırlayın. Süper Admin PIN'i de unutulursa sistem yöneticisine başvurun.
+
+**S: Eski bir günün verisini düzeltmek istiyorum?**
+C: Tarih Gezgini ile o tarihe gidip değeri değiştirip tekrar kaydedin. Sistem mevcut kaydı günceller, yeni kayıt oluşturmaz.
+
+**S: Zayiat girişi yaptım ama Şubem'de görünmüyor?**
+C: Sayfayı yenileyin. Şubem sayfası, gelen ve kalan 0 olsa bile zayiat kaydı varsa bunu gösterecek şekilde güncellenmiştir.
+
+**S: Geçen ayki verilere nasıl bakabilirim?**
+C: Yönetici Paneli'nde "Bu Ay" sekmesini seçin, ardından **‹** okuna tıklayarak önceki aya geçin. Başlık "Şubat 2026" gibi güncellenir.
+
+**S: Yeni tatlı türü eklemek istiyorum?**
+C: Sistem Yönetimi → Tatlılar sekmesinden mevcut tatlılar yönetilebilir. Yeni tatlı ekleme için sistem yöneticisine başvurun (veritabanı değişikliği gerektirebilir).
+
+**S: Şube PIN'ini kim belirleyebilir?**
+C: Yalnızca Süper Admin (PIN: 9999) belirleyebilir. PIN Yönetimi sekmesinden her şubenin PIN'i ayrı ayrı ayarlanır.
+
+**S: Uygulama telefona nasıl kurulur?**
+C: Tarayıcıda siteyi açın → Tarayıcı menüsü → "Ana ekrana ekle" seçeneğini kullanın. Uygulama artık telefonda baklava ikonuyla görünür.
+
+**S: İnternet olmadan çalışır mı?**
+C: PWA (Service Worker) sayesinde son görüntülenen veriler önbellekte tutulur. Ancak yeni veri kaydetmek veya güncel veri görmek için internet bağlantısı gereklidir.
+
+**S: Dağıtım planı tablosunu kağıda nasıl çıktı alırım?**
+C: Dağıtım Paneli'nde "Yazdır" butonuna basın. Sadece plan tablosu çıktıya alınır.
+
+**S: WhatsApp raporu nasıl gönderilir?**
+C: Yönetici Paneli'nde üst çubuktaki **📤 Rapor** butonuna basın → açılan pencerede "WhatsApp ile Paylaş" butonuna tıklayın → WhatsApp açılır, kişi veya grup seçerek raporu gönderin.
+
+---
+
+## Sistem Teknik Bilgileri
+
+| Özellik | Detay |
+|---------|-------|
+| **Platform** | Progressive Web App (PWA) |
+| **Veritabanı** | Supabase (PostgreSQL tabanlı, bulut) |
+| **Çevrimdışı Destek** | Service Worker ile önbellek (Cache-first strateji) |
+| **Cihaz Uyumluluğu** | Telefon, tablet, masaüstü — tüm modern tarayıcılar |
+| **Otomatik Güncelleme** | Yeni sürüm çıktığında kullanıcı yenilediğinde otomatik yüklenir |
+| **Veri Güvenliği** | PIN tabanlı rol erişimi, tüm veriler şifreli bulut bağlantısıyla aktarılır |
+
+---
+
+*Tatlı Takip Sistemi v2.1 — © 2026 Mutlukent Tatlı*
