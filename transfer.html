@@ -481,7 +481,7 @@
                 date,
                 prevReceived + qty,
                 destEntry?.remaining_amount ?? null,
-                0,
+                null,  // transfer: waste_amount'a dokunma
                 note
             );
 
@@ -491,9 +491,9 @@
                 branchId,
                 dessertId,
                 date,
-                srcReceived,
+                srcReceived || null,  // gelen yoksa null, varsa koru
                 newSrcRemaining,
-                0,
+                null,  // transfer: waste_amount'a dokunma
                 `Transfer çıkış: → ${toBranchName}`
             );
 

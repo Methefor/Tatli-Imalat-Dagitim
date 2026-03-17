@@ -540,7 +540,7 @@
                     branchId,
                     input.dataset.id,
                     selectedDate,
-                    parseInt(input.dataset.received) || 0,
+                    parseInt(input.dataset.received) || null,  // kalan kaydı: received yoksa dokunma
                     remaining,
                     null, ''  // kalan kaydı: waste_amount'a dokunma
                 );

@@ -1450,6 +1450,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
             const bd = {};
             allData.forEach(entry => {
+                if (!entry.branches) return;  // şube verisi yoksa atla
                 const id = entry.branches.id;
                 if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0, waste: 0 };
                 bd[id].received += entry.received_amount || 0;
@@ -1881,6 +1882,14 @@ _Mutlukent Tatlı Takip Sistemi_`;
                         <div class="empty-state-sub">Seçilen tarih aralığında kayıt bulunmamaktadır.</div>
                     </div>
                 </td></tr>`;
+
+            const zayiatEl = document.getElementById('zayiatContent');
+            if (zayiatEl) zayiatEl.innerHTML = `<div class="empty-state" style="padding:32px">
+                <div class="empty-state-icon">✅</div>
+                <div class="empty-state-title">Bu dönemde zayiat kaydı yok</div>
+            </div>`;
+            const zayiatTotalEl = document.getElementById('zayiatTotal');
+            if (zayiatTotalEl) zayiatTotalEl.textContent = 'Yok';
         }
 
         // ── Sort Table ────────────────────────────────────
