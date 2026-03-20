@@ -584,6 +584,124 @@
         [data-theme="light"] { --bg:#f1f5f9; --glass:rgba(0,0,0,0.04); --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:rgba(0,0,0,0.45); }
         [data-theme="light"] body, [data-theme="light"] html { background:#f1f5f9; }
         [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
+
+        /* ── Bildirim Çanı ─────────────────── */
+        .notif-wrap {
+            position: relative;
+        }
+        .notif-btn {
+            position: relative;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px 9px;
+            line-height: 1;
+            transition: background .2s, border-color .2s;
+        }
+        .notif-btn:hover, .notif-btn.active {
+            background: rgba(245,158,11,0.1);
+            border-color: rgba(245,158,11,0.35);
+        }
+        .notif-badge {
+            position: absolute;
+            top: -5px; right: -5px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 999px;
+            min-width: 16px; height: 16px;
+            padding: 0 3px;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        .notif-panel {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 300px;
+            background: #0d1626;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            z-index: 9999;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-8px) scale(0.97);
+            pointer-events: none;
+            transition: opacity .22s ease, transform .22s ease;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+        }
+        .notif-panel.open {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .notif-panel-header {
+            padding: 13px 16px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 13px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            text-decoration: none;
+            transition: background .15s;
+            cursor: pointer;
+        }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item:hover { background: rgba(255,255,255,0.04); }
+        .notif-icon {
+            font-size: 18px;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .notif-warn .notif-icon  { background: rgba(245,158,11,0.12); }
+        .notif-info .notif-icon  { background: rgba(59,130,246,0.12); }
+        .notif-ok   .notif-icon  { background: rgba(16,185,129,0.12); }
+        .notif-body { flex: 1; min-width: 0; }
+        .notif-title {
+            font-size: 13px; font-weight: 700;
+            margin-bottom: 3px; line-height: 1.3;
+        }
+        .notif-warn .notif-title { color: #fbbf24; }
+        .notif-info .notif-title { color: #93c5fd; }
+        .notif-ok   .notif-title { color: #6ee7b7; }
+        .notif-desc {
+            font-size: 11px;
+            color: rgba(255,255,255,0.38);
+            line-height: 1.45;
+        }
+        .notif-loading {
+            padding: 20px 16px;
+            text-align: center;
+            color: rgba(255,255,255,0.25);
+            font-size: 12px;
+        }
+        /* Light theme overrides */
+        [data-theme="light"] .notif-panel {
+            background: #ffffff;
+            border-color: rgba(0,0,0,0.1);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        [data-theme="light"] .notif-panel-header { color: rgba(0,0,0,0.35); border-bottom-color: rgba(0,0,0,0.06); }
+        [data-theme="light"] .notif-item:hover { background: rgba(0,0,0,0.03); }
+        [data-theme="light"] .notif-warn .notif-title { color: #d97706; }
+        [data-theme="light"] .notif-info .notif-title { color: #2563eb; }
+        [data-theme="light"] .notif-ok   .notif-title { color: #059669; }
+        [data-theme="light"] .notif-desc { color: rgba(0,0,0,0.45); }
+        [data-theme="light"] .notif-loading { color: rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -600,6 +718,16 @@
             <span class="topbar-brand">Müdür Paneli</span>
             <div class="topbar-right">
                 <span class="topbar-clock" id="clock">--:--</span>
+                <div class="notif-wrap" id="notifWrap">
+                    <button class="notif-btn" id="notifBtn" onclick="toggleNotifPanel()" title="Bildirimler">
+                        🔔
+                        <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                    </button>
+                    <div class="notif-panel" id="notifPanel">
+                        <div class="notif-panel-header">Bildirimler</div>
+                        <div id="notifList"><div class="notif-loading">Yükleniyor…</div></div>
+                    </div>
+                </div>
                 <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
                 <button class="logout-btn" onclick="logout()">Çıkış</button>
             </div>
@@ -744,9 +872,91 @@
 
         // Push bildirimleri kayıt (VAPID key ayarlandıktan sonra aktif olur)
         if (branchId && VAPID_PUBLIC_KEY !== 'BURAYA_VAPID_PUBLIC_KEY_EKLE') {
-            // Sayfa yüklendikten 2 saniye sonra izin iste
             setTimeout(() => registerPushSubscription(branchId), 2000);
         }
+
+        // ── Bildirim Çanı ────────────────────────────────────────────────
+        let notifOpen = false;
+
+        async function loadNotifications() {
+            const today   = getTodayDate();
+            const entries = await getDailyEntriesByBranch(branchId, today);
+            const notifs  = [];
+
+            const hasGelen = entries.some(e => (e.received_amount || 0) > 0);
+            if (!hasGelen) {
+                notifs.push({
+                    type: 'warn',
+                    icon: '📦',
+                    title: 'Gelen Tatlılar Girilmedi',
+                    desc: 'Bugün gelen ürünleri henüz kaydetmediniz.',
+                    url: 'gelen-tatlilar.html'
+                });
+            }
+
+            const hasKalan = entries.some(e => e.remaining_amount !== null && e.remaining_amount !== undefined);
+            if (!hasKalan) {
+                notifs.push({
+                    type: 'info',
+                    icon: '✅',
+                    title: 'Kalan Tatlılar Girilmedi',
+                    desc: 'Günün sonunda kalan ürünleri girmeyi unutmayın.',
+                    url: 'kalan-tatlilar.html'
+                });
+            }
+
+            // Badge güncelle
+            const badge = document.getElementById('notifBadge');
+            if (notifs.length > 0) {
+                badge.textContent = notifs.length;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            // Panel içeriği
+            const list = document.getElementById('notifList');
+            if (notifs.length === 0) {
+                list.innerHTML = `
+                    <div class="notif-item notif-ok" style="cursor:default">
+                        <div class="notif-icon">✅</div>
+                        <div class="notif-body">
+                            <div class="notif-title">Tüm Girişler Tamam</div>
+                            <div class="notif-desc">Bugünkü gelen ve kalan tatlılar girilmiş.</div>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = notifs.map(n => `
+                <a class="notif-item notif-${n.type}" href="${n.url}">
+                    <div class="notif-icon">${n.icon}</div>
+                    <div class="notif-body">
+                        <div class="notif-title">${n.title}</div>
+                        <div class="notif-desc">${n.desc}</div>
+                    </div>
+                </a>`).join('');
+        }
+
+        function toggleNotifPanel() {
+            notifOpen = !notifOpen;
+            document.getElementById('notifPanel').classList.toggle('open', notifOpen);
+            document.getElementById('notifBtn').classList.toggle('active', notifOpen);
+            if (notifOpen) loadNotifications();
+        }
+
+        // Panel dışına tıklayınca kapat
+        document.addEventListener('click', function(e) {
+            const wrap = document.getElementById('notifWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                notifOpen = false;
+                document.getElementById('notifPanel').classList.remove('open');
+                document.getElementById('notifBtn').classList.remove('active');
+            }
+        });
+
+        // Sayfa yüklenince badge'i set et
+        loadNotifications();
 
         function toggleTutorial() {
             document.getElementById('tutorialWrap').classList.toggle('open');
