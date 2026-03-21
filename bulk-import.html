@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Toplu Veri Girişi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: monospace; background: #0f172a; color: #e2e8f0; padding: 24px; }
+        h2 { color: #f59e0b; margin-bottom: 16px; }
+        #log { white-space: pre-wrap; line-height: 1.7; font-size: 13px; }
+        .ok  { color: #22c55e; }
+        .err { color: #ef4444; }
+        .inf { color: #94a3b8; }
+        .hd  { color: #f59e0b; font-weight: bold; }
+        #startBtn {
+            padding: 12px 28px; background: #f59e0b; color: #000;
+            border: none; border-radius: 10px; font-size: 15px;
+            font-weight: 700; cursor: pointer; margin-bottom: 24px;
+        }
+        #startBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h2>📦 WhatsApp Toplu Veri Girişi — 01–04 Mart 2026</h2>
+    <button id="startBtn" onclick="runImport()">▶ Girişi Başlat</button>
+    <div id="log"></div>
+
+    <script src="supabase-client.js"></script>
+    <script>
+    // ── WhatsApp verisi (parse edilmiş) ──────────────────────────────────
+    // Şube adları ve tatlı adları DB'deki isimlerle eşleştirilecek
+    const RAW = [
+        // ── 01.03.2026 — Sadece kalan var ────────────────────────────
+        { date:'2026-03-01', branch:'TunaBoyu',        dessert:'Magnolya',           received:0, remaining:15 },
+        { date:'2026-03-01', branch:'Millet Bahçesi',  dessert:'Magnolya',           received:0, remaining:26 },
+        { date:'2026-03-01', branch:'Vagon',            dessert:'Magnolya',           received:0, remaining:19 },
+        { date:'2026-03-01', branch:'Vagon',            dessert:'Tiramisu',           received:0, remaining:15 },
+        { date:'2026-03-01', branch:'Rumeli İskelesi', dessert:'Magnolya',           received:0, remaining:65 },
+        { date:'2026-03-01', branch:'Rumeli İskelesi', dessert:'Limonlu Cheesecake', received:0, remaining:6  },
+        { date:'2026-03-01', branch:'Rumeli İskelesi', dessert:'San Sebastian',       received:0, remaining:28 },
+        { date:'2026-03-01', branch:'Rumeli İskelesi', dessert:'Mozaik',             received:0, remaining:22 },
+        { date:'2026-03-01', branch:'Sahil',           dessert:'Magnolya',           received:0, remaining:16 },
+        { date:'2026-03-01', branch:'Sahil',           dessert:'Tiramisu',           received:0, remaining:20 },
+
+        // ── 02.03.2026 — Sadece kalan var ────────────────────────────
+        { date:'2026-03-02', branch:'TunaBoyu',        dessert:'Magnolya',           received:0, remaining:6  },
+        { date:'2026-03-02', branch:'Rumeli İskelesi', dessert:'Magnolya',           received:0, remaining:43 },
+        { date:'2026-03-02', branch:'Rumeli İskelesi', dessert:'San Sebastian',       received:0, remaining:19 },
+        { date:'2026-03-02', branch:'Rumeli İskelesi', dessert:'Mozaik',             received:0, remaining:13 },
+        { date:'2026-03-02', branch:'Rumeli İskelesi', dessert:'Limonlu Cheesecake', received:0, remaining:1  },
+        { date:'2026-03-02', branch:'Millet Bahçesi',  dessert:'Magnolya',           received:0, remaining:6  },
+        { date:'2026-03-02', branch:'Vagon',            dessert:'Magnolya',           received:0, remaining:11 },
+        { date:'2026-03-02', branch:'Vagon',            dessert:'Tiramisu',           received:0, remaining:10 },
+        { date:'2026-03-02', branch:'Sahil',           dessert:'Tiramisu',           received:0, remaining:18 },
+
+        // ── 03.03.2026 — Gelen + Kalan ────────────────────────────
+        // Rumeli: gelen 25 magnolya, 16 truff | kalan 44 magnolya, 7 truff, 10 mozaik, 11 san sebastian, 1 limonlu cheesecake
+        { date:'2026-03-03', branch:'Rumeli İskelesi', dessert:'Magnolya',           received:25, remaining:44 },
+        { date:'2026-03-03', branch:'Rumeli İskelesi', dessert:'Truff',              received:16, remaining:7  },
+        { date:'2026-03-03', branch:'Rumeli İskelesi', dessert:'Mozaik',             received:0,  remaining:10 },
+        { date:'2026-03-03', branch:'Rumeli İskelesi', dessert:'San Sebastian',       received:0,  remaining:11 },
+        { date:'2026-03-03', branch:'Rumeli İskelesi', dessert:'Limonlu Cheesecake', received:0,  remaining:1  },
+        // TunaBoyu: gelen 25 | kalan 22 magnolya
+        { date:'2026-03-03', branch:'TunaBoyu',        dessert:'Magnolya',           received:25, remaining:22 },
+        // Millet: gelen 49 | kalan 43 magnolya
+        { date:'2026-03-03', branch:'Millet Bahçesi',  dessert:'Magnolya',           received:49, remaining:43 },
+        // Vagon: gelen 25 magnolya | kalan 16 magnolya, 3 tiramisu
+        { date:'2026-03-03', branch:'Vagon',            dessert:'Magnolya',           received:25, remaining:16 },
+        { date:'2026-03-03', branch:'Vagon',            dessert:'Tiramisu',           received:0,  remaining:3  },
+        // Yahya Kemal: gelen 32 magnolya, 16 truff | kalan 20 magnolya, 0 truff, 10 limonlu cheesecake
+        { date:'2026-03-03', branch:'Yahya Kemal',     dessert:'Magnolya',           received:32, remaining:20 },
+        { date:'2026-03-03', branch:'Yahya Kemal',     dessert:'Truff',              received:16, remaining:0  },
+        { date:'2026-03-03', branch:'Yahya Kemal',     dessert:'Limonlu Cheesecake', received:0,  remaining:10 },
+        // Sahil: gelen 26 magnolya, 16 truff | kalan 22 magnolya, 8 truff
+        { date:'2026-03-03', branch:'Sahil',           dessert:'Magnolya',           received:26, remaining:22 },
+        { date:'2026-03-03', branch:'Sahil',           dessert:'Truff',              received:16, remaining:8  },
+
+        // ── 04.03.2026 — Gelen + Kalan ────────────────────────────
+        // Rumeli: gelen 50 magnolya, 10 san sebastian, 10 limonlu cheesecake | kalan 63 magnolya, 3 truff, 1 mozaik, 17 san sebastian, 10 limonlu cheesecake
+        { date:'2026-03-04', branch:'Rumeli İskelesi', dessert:'Magnolya',           received:50, remaining:63 },
+        { date:'2026-03-04', branch:'Rumeli İskelesi', dessert:'San Sebastian',       received:10, remaining:17 },
+        { date:'2026-03-04', branch:'Rumeli İskelesi', dessert:'Limonlu Cheesecake', received:10, remaining:10 },
+        { date:'2026-03-04', branch:'Rumeli İskelesi', dessert:'Truff',              received:0,  remaining:3  },
+        { date:'2026-03-04', branch:'Rumeli İskelesi', dessert:'Mozaik',             received:0,  remaining:1  },
+        // Millet: gelen 25 magnolya, 20 limonlu cheesecake, 10 san sebastian | kalan 28 magnolya, 19 limonlu cheesecake, 7 san sebastian
+        { date:'2026-03-04', branch:'Millet Bahçesi',  dessert:'Magnolya',           received:25, remaining:28 },
+        { date:'2026-03-04', branch:'Millet Bahçesi',  dessert:'Limonlu Cheesecake', received:20, remaining:19 },
+        { date:'2026-03-04', branch:'Millet Bahçesi',  dessert:'San Sebastian',       received:10, remaining:7  },
+        // Sahil: gelen 25 magnolya | kalan 18 magnolya, 4 truff
+        { date:'2026-03-04', branch:'Sahil',           dessert:'Magnolya',           received:25, remaining:18 },
+        { date:'2026-03-04', branch:'Sahil',           dessert:'Truff',              received:0,  remaining:4  },
+        // Yahya Kemal: kalan 10 san sebastian
+        { date:'2026-03-04', branch:'Yahya Kemal',     dessert:'San Sebastian',       received:0,  remaining:10 },
+        // TunaBoyu: kalan 8 magnolya
+        { date:'2026-03-04', branch:'TunaBoyu',        dessert:'Magnolya',           received:0,  remaining:8  },
+        // Vagon: kalan 7 magnolya
+        { date:'2026-03-04', branch:'Vagon',            dessert:'Magnolya',           received:0,  remaining:7  },
+    ];
+
+    function log(msg, cls = '') {
+        const d = document.getElementById('log');
+        d.innerHTML += `<span class="${cls}">${msg}\n</span>`;
+    }
+
+    // Fuzzy match helper (lowercase, normalize Turkish chars)
+    function norm(s) {
+        return (s || '').toLowerCase()
+            .replace(/ı/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g')
+            .replace(/ü/g,'u').replace(/ö/g,'o').replace(/ç/g,'c')
+            .replace(/İ/g,'i').replace(/Ş/g,'s').replace(/Ğ/g,'g')
+            .replace(/Ü/g,'u').replace(/Ö/g,'o').replace(/Ç/g,'c')
+            .trim();
+    }
+
+    function matchBranch(branches, name) {
+        const n = norm(name);
+        return branches.find(b => norm(b.name) === n ||
+            norm(b.name).includes(n) || n.includes(norm(b.name)));
+    }
+
+    function matchDessert(desserts, name) {
+        const n = norm(name);
+        return desserts.find(d => norm(d.name) === n ||
+            norm(d.name).includes(n) || n.includes(norm(d.name)));
+    }
+
+    async function runImport() {
+        document.getElementById('startBtn').disabled = true;
+        const supabase = window.supabaseInstance;
+
+        log('=== Şube ve Tatlı Listesi Çekiliyor ===', 'hd');
+        const { data: branches } = await supabase.from('branches').select('*');
+        const { data: desserts } = await supabase.from('desserts').select('*').eq('is_active', true);
+
+        log(`✔ ${branches.length} şube bulundu: ${branches.map(b=>b.name).join(', ')}`, 'inf');
+        log(`✔ ${desserts.length} tatlı bulundu: ${desserts.map(d=>d.name).join(', ')}`, 'inf');
+        log('', '');
+
+        let ok = 0, fail = 0;
+        const dates = [...new Set(RAW.map(r => r.date))].sort();
+
+        for (const date of dates) {
+            log(`── ${date} ──────────────────────────────────────`, 'hd');
+            const rows = RAW.filter(r => r.date === date);
+
+            for (const row of rows) {
+                const branch  = matchBranch(branches, row.branch);
+                const dessert = matchDessert(desserts, row.dessert);
+
+                if (!branch) {
+                    log(`  ✘ Şube bulunamadı: "${row.branch}"`, 'err');
+                    fail++; continue;
+                }
+                if (!dessert) {
+                    log(`  ✘ Tatlı bulunamadı: "${row.dessert}"`, 'err');
+                    fail++; continue;
+                }
+
+                // Upsert
+                const { data: existing } = await supabase
+                    .from('daily_entries')
+                    .select('id')
+                    .eq('branch_id', branch.id)
+                    .eq('dessert_id', dessert.id)
+                    .eq('entry_date', date)
+                    .single();
+
+                const payload = {
+                    branch_id:        branch.id,
+                    dessert_id:       dessert.id,
+                    entry_date:       date,
+                    received_amount:  row.received,
+                    remaining_amount: row.remaining,
+                    waste_amount:     0,
+                    notes:            'whatsapp-import',
+                    entry_time:       new Date().toISOString()
+                };
+
+                let err;
+                if (existing) {
+                    ({ error: err } = await supabase.from('daily_entries').update(payload).eq('id', existing.id));
+                } else {
+                    ({ error: err } = await supabase.from('daily_entries').insert([payload]));
+                }
+
+                if (err) {
+                    log(`  ✘ HATA [${branch.name} / ${dessert.name}]: ${err.message}`, 'err');
+                    fail++;
+                } else {
+                    log(`  ✔ ${branch.name.padEnd(18)} ${dessert.name.padEnd(20)} gelen:${String(row.received).padStart(3)}  kalan:${String(row.remaining).padStart(3)}`, 'ok');
+                    ok++;
+                }
+            }
+            log('', '');
+        }
+
+        log(`=== TAMAMLANDI: ${ok} başarılı, ${fail} hata ===`, fail > 0 ? 'err' : 'hd');
+        document.getElementById('startBtn').textContent = '✔ Tamamlandı';
+    }
+    </script>
+</body>
+</html>
