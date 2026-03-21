@@ -1161,7 +1161,7 @@
                     <div class="kpi-progress-track">
                         <div class="kpi-progress-fill" id="distProgress"></div>
                     </div>
-                    <span class="kpi-target">Hedef: 2.500</span>
+                    <span class="kpi-target">Hedef: 5.000</span>
                 </div>
             </div>
 
@@ -1448,13 +1448,13 @@
         }
 
         // ── Month Picker ─────────────────────────────────
-        const MONTHS_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+        const MONTHS_SHORT = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
 
         function renderMonthPicker() {
             document.getElementById('mpickYear').textContent = filterYear;
             const now = new Date();
             const grid = document.getElementById('mpickGrid');
-            grid.innerHTML = MONTHS_TR.map((m, i) => {
+            grid.innerHTML = MONTHS_SHORT.map((m, i) => {
                 const isActive  = currentFilter === 'month-specific' && filterMonth === i + 1 && filterYear === filterYear;
                 const isCurrent = filterYear === now.getFullYear() && i === now.getMonth();
                 return `<button class="mpick-btn${isActive ? ' active' : ''}${isCurrent ? ' cur-month' : ''}"

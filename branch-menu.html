@@ -905,6 +905,17 @@
                 });
             }
 
+            const hasZayiat = entries.some(e => e.waste_amount !== null && e.waste_amount !== undefined);
+            if (!hasZayiat && entries.length > 0) {
+                notifs.push({
+                    type: 'warn',
+                    icon: '⚠️',
+                    title: 'Zayiat Girilmedi',
+                    desc: 'Bugün için zayiat kaydı yok. Kaydetmek için tıklayın.',
+                    url: 'zayiat.html'
+                });
+            }
+
             // Badge güncelle
             const badge = document.getElementById('notifBadge');
             if (notifs.length > 0) {
@@ -922,7 +933,7 @@
                         <div class="notif-icon">✅</div>
                         <div class="notif-body">
                             <div class="notif-title">Tüm Girişler Tamam</div>
-                            <div class="notif-desc">Bugünkü gelen ve kalan tatlılar girilmiş.</div>
+                            <div class="notif-desc">Bugünkü gelen, kalan ve zayiat tatlılar girilmiş.</div>
                         </div>
                     </div>`;
                 return;
