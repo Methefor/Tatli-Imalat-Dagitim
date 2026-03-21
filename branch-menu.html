@@ -974,7 +974,11 @@
         }
 
         function logout() {
-            localStorage.clear();
+            const theme = localStorage.getItem('appTheme');
+            localStorage.removeItem('branchId');
+            localStorage.removeItem('branchName');
+            localStorage.removeItem('managerName');
+            if (theme) localStorage.setItem('appTheme', theme);
             window.location.href = 'index.html';
         }
     </script>

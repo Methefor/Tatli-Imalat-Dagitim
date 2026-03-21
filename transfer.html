@@ -375,7 +375,7 @@
 
             const toBranchSel = document.getElementById('toBranchSelect');
             (branches || []).forEach(b => {
-                if (b.id === branchId) return; // Kendi şubesini gösterme
+                if (String(b.id) === String(branchId)) return; // Kendi şubesini gösterme
                 const opt = document.createElement('option');
                 opt.value = b.id;
                 opt.textContent = b.name;

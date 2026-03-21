@@ -1,5 +1,5 @@
 // Tatlı Takip — Service Worker
-const CACHE = 'tatli-takip-v8';
+const CACHE = 'tatli-takip-v9';
 
 const STATIC = [
     '/',
@@ -10,6 +10,7 @@ const STATIC = [
     '/uretim.html',
     '/subem.html',
     '/admin-dashboard.html',
+    '/superadmin.html',
     '/tatlilar-panel.html',
     '/transfer.html',
     '/zayiat.html',

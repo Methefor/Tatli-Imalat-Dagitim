@@ -1370,6 +1370,9 @@
 
     <script src="supabase-client.js"></script>
     <script>
+        // ── Auth Guard ───────────────────────────────────
+        if (!localStorage.getItem('adminName')) window.location.replace('index.html');
+
         // ── State ────────────────────────────────────────
         let currentFilter    = 'today';
         let allData          = [];

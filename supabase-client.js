@@ -78,36 +78,6 @@ async function checkAdminPasswordOnly(password) {
     }
 }
 
-/**
- * Admin şifre kontrolü
- */
-async function checkAdminPassword(username, password) {
-    try {
-        const { data, error } = await supabaseClient
-            .from('admins')
-            .select('id, username, name')
-            .eq('username', username)
-            .eq('password', password)
-            .single()
-
-        if (error) {
-            return { success: false, error: 'Kullanıcı adı veya şifre hatalı!' }
-        }
-
-        if (data) {
-            return { 
-                success: true,
-                adminName: data.name
-            }
-        }
-
-        return { success: false, error: 'Kullanıcı adı veya şifre hatalı!' }
-    } catch (err) {
-        console.error('Admin giriş hatası:', err)
-        return { success: false, error: 'Bağlantı hatası!' }
-    }
-}
-
 // ====================================================================
 // DATA FETCH FUNCTIONS
 // ====================================================================
@@ -322,37 +292,6 @@ async function getBranchEntriesDateRange(branchId, startDate, endDate) {
         return data || []
     } catch (err) {
         console.error('Veri çekme hatası:', err)
-        return []
-    }
-}
-
-/**
- * Şube bazlı son 7 günlük verileri çek
- */
-async function getLastSevenDays(branchId) {
-    try {
-        const today = new Date()
-        const sevenDaysAgo = new Date(today)
-        sevenDaysAgo.setDate(today.getDate() - 7)
-
-        const { data, error } = await supabaseClient
-            .from('daily_entries')
-            .select(`
-                *,
-                desserts (
-                    id,
-                    name,
-                    emoji
-                )
-            `)
-            .eq('branch_id', branchId)
-            .gte('entry_date', sevenDaysAgo.toISOString().split('T')[0])
-            .order('entry_date', { ascending: false })
-
-        if (error) throw error
-        return data || []
-    } catch (err) {
-        console.error('Geçmiş veri çekme hatası:', err)
         return []
     }
 }
@@ -934,29 +873,6 @@ async function registerPushSubscription(branchId) {
     }
 }
 
-/**
- * Push aboneliğini iptal et
- */
-async function unregisterPushSubscription(branchId) {
-    try {
-        const registration = await navigator.serviceWorker.ready;
-        const sub = await registration.pushManager.getSubscription();
-        if (sub) {
-            await sub.unsubscribe();
-            if (branchId) {
-                await supabaseClient
-                    .from('push_subscriptions')
-                    .delete()
-                    .eq('branch_id', branchId);
-            }
-        }
-        return true;
-    } catch (err) {
-        console.warn('Push iptal hatası:', err);
-        return false;
-    }
-}
-
 // ====================================================================
 // ANALİTİK FONKSİYONLAR — Tahminleme, Zayiat Trendi, Yıllık Satış
 // ====================================================================
@@ -1097,10 +1013,19 @@ function initTheme() {
     }
 }
 
-// Sayfa yüklenince otomatik uygula
+// Sayfa yüklenince otomatik uygula (tema + buton ikonu)
 ;(function() {
     const theme = localStorage.getItem('appTheme') || 'dark'
     document.documentElement.setAttribute('data-theme', theme)
+    const updateBtn = () => {
+        const btn = document.getElementById('themeToggleBtn')
+        if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙'
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateBtn)
+    } else {
+        updateBtn()
+    }
 })()
 
 /**
