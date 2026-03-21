@@ -1563,10 +1563,13 @@
         async function loadData(silent = false) {
             if (!silent) toggleLoading(true);
 
-            // Zayiat herzaman bağımsız olarak o takvim ayından çekilir
+            // Zayiat + Stok herzaman bağımsız olarak çekilir (allData'dan etkilenmez)
             const zr = getZayiatDateRange();
-            zayiatData = await getDailyEntriesDateRange(zr.startDate, zr.endDate);
+            [zayiatData] = await Promise.all([
+                getDailyEntriesDateRange(zr.startDate, zr.endDate)
+            ]);
             updateZayiatTable();
+            updateStockCards();   // ← bağımsız; getCurrentStock() kendi 60 günlük sorgusunu çeker
 
             const { startDate, endDate } = getDateRange();
             // Aylık filtrede önceki ay verisi de paralel çekilir
@@ -1595,7 +1598,6 @@
             updateTrendChart();
             await updateCiroSection();
             await updateMaliyetSection();
-            await updateStockCards();
             updateForecastSection();
             updatePrintHeader();
             updateLiveStatus();
