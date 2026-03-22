@@ -631,6 +631,7 @@
 
         updateMonthUI();
         loadData();
+        initPullToRefresh(() => loadData());
     </script>
     <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>

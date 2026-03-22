@@ -531,7 +531,7 @@
             list.innerHTML = '';
 
             if (!activeDesserts || activeDesserts.length === 0) {
-                list.innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);font-size:14px;">Tatlı bulunamadı.</div>';
+                list.innerHTML = emptyStateHTML('🥧', 'Tatlı bulunamadı', 'Süper yönetici panelinden tatlı eklenebilir');
                 return;
             }
 
@@ -614,6 +614,7 @@
 
         updateDateUI();
         loadDesserts();
+        initPullToRefresh(() => loadDesserts());
     </script>
     <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>

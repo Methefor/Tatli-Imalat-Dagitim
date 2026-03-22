@@ -657,6 +657,79 @@ function showToast(message, type = 'success') {
 }
 
 /**
+ * İllüstrasyonlu boş durum HTML'i
+ */
+function emptyStateHTML(emoji, title, subtitle) {
+    return '<div style="padding:44px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;">' +
+        '<div style="font-size:54px;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.2))">' + emoji + '</div>' +
+        '<div style="font-size:15px;font-weight:700;color:var(--text);margin-top:2px">' + title + '</div>' +
+        (subtitle ? '<div style="font-size:13px;color:var(--muted);max-width:220px;line-height:1.5;margin-top:2px">' + subtitle + '</div>' : '') +
+        '</div>'
+}
+
+/**
+ * Pull-to-refresh jesti (mobil)
+ */
+function initPullToRefresh(onRefresh) {
+    if (document.getElementById('_ptr')) return // zaten init edilmişse atla
+    let startY = 0, pulling = false, refreshing = false
+    const threshold = 65
+
+    const ind = document.createElement('div')
+    ind.id = '_ptr'
+    ind.innerHTML = '↓'
+    ind.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-60px);width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;z-index:9998;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),opacity 0.25s;opacity:0;pointer-events:none'
+    document.body.appendChild(ind)
+
+    if (!document.getElementById('_ptr_css')) {
+        const s = document.createElement('style')
+        s.id = '_ptr_css'
+        s.textContent = '@keyframes _ptrspin{to{transform:rotate(360deg)}}'
+        document.head.appendChild(s)
+    }
+
+    document.addEventListener('touchstart', function(e) {
+        if (window.scrollY <= 0 && !refreshing) {
+            startY = e.touches[0].clientY
+            pulling = true
+        }
+    }, { passive: true })
+
+    document.addEventListener('touchmove', function(e) {
+        if (!pulling) return
+        const dy = e.touches[0].clientY - startY
+        if (dy > 0) {
+            ind.style.transform = 'translateX(-50%) translateY(' + (Math.min(dy * 0.5, 72) - 60) + 'px) rotate(' + (dy * 1.8) + 'deg)'
+            ind.style.opacity = String(Math.min(dy / threshold, 1))
+            ind.innerHTML = dy > threshold ? '↑' : '↓'
+        }
+    }, { passive: true })
+
+    document.addEventListener('touchend', function(e) {
+        if (!pulling) return
+        pulling = false
+        const dy = e.changedTouches[0].clientY - startY
+        if (dy > threshold && !refreshing) {
+            refreshing = true
+            ind.innerHTML = '<div style="width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:_ptrspin 0.6s linear infinite"></div>'
+            ind.style.transform = 'translateX(-50%) translateY(18px)'
+            ind.style.opacity = '1'
+            Promise.resolve(onRefresh()).finally(function() {
+                setTimeout(function() {
+                    ind.style.transform = 'translateX(-50%) translateY(-60px)'
+                    ind.style.opacity = '0'
+                    setTimeout(function() { ind.innerHTML = '↓'; refreshing = false }, 300)
+                }, 600)
+            })
+        } else {
+            ind.style.transform = 'translateX(-50%) translateY(-60px)'
+            ind.style.opacity = '0'
+            setTimeout(function() { ind.innerHTML = '↓' }, 300)
+        }
+    }, { passive: true })
+}
+
+/**
  * Loading spinner göster/gizle
  */
 function toggleLoading(show) {
@@ -1035,7 +1108,7 @@ function initTheme() {
     document.documentElement.setAttribute('data-theme', theme)
     // Sayfa geçiş animasyonu (opacity 0→1 + hafif aşağıdan yukarı)
     const ps = document.createElement('style')
-    ps.textContent = '@keyframes _pfi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}body{animation:_pfi .25s ease both}'
+    ps.textContent = '@keyframes _pfi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}body{animation:_pfi .25s ease both}@keyframes _sli{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}'
     document.head.appendChild(ps)
     const updateBtn = () => {
         const btn = document.getElementById('themeToggleBtn')

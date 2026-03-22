@@ -422,9 +422,7 @@
 
         <!-- Geçmiş Transferler -->
         <div class="history-title">Son Transferler</div>
-        <div class="history-list" id="historyList">
-            <div class="empty-history">Henüz transfer yapılmamış.</div>
-        </div>
+        <div class="history-list" id="historyList"></div>
 
     </div>
 
@@ -557,7 +555,7 @@
 
             const list = document.getElementById('historyList');
             if (!data || data.length === 0) {
-                list.innerHTML = '<div class="empty-history">Henüz transfer yapılmamış.</div>';
+                list.innerHTML = emptyStateHTML('🔄', 'Henüz transfer yapılmamış', 'Tatlı seçip şube belirleyerek ilk transferi yapabilirsiniz');
                 return;
             }
 
@@ -684,6 +682,7 @@
 
         loadSelects();
         loadHistory();
+        initPullToRefresh(() => loadHistory());
     </script>
     <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>

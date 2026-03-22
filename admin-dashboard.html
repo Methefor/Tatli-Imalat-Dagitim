@@ -1443,6 +1443,7 @@
             updateMonthLabel();
             await loadData();
             startAutoRefresh();
+            initPullToRefresh(() => loadData());
             // Yan paneller — filtreden bağımsız
             loadWasteTrend();
             loadYearlyData(currentYear);
