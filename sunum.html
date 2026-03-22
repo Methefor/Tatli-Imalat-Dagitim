@@ -179,6 +179,27 @@ ul.bl li::before{content:'▸';color:var(--accent);flex-shrink:0;font-size:13px;
   h1{font-size:26px} h2{font-size:20px}
   .sf-xl{max-height:200px}
 }
+
+@media print{
+  @page{size:landscape;margin:0}
+  html,body{
+    width:100%;height:auto;overflow:visible;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .deck{position:relative;height:auto}
+  .slide{
+    position:relative!important;
+    display:flex!important;
+    opacity:1!important;
+    transform:none!important;
+    pointer-events:all;
+    width:100vw;height:100vh;
+    page-break-after:always;break-after:page;
+    page-break-inside:avoid}
+  .slide:last-child{page-break-after:avoid;break-after:avoid}
+  .nav-bar,.key-hint,#progress{display:none!important}
+  .bg-orb,.bg-orb2{display:none}
+  .bg-grid{background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px)}
+}
 </style>
 </head>
 <body>
