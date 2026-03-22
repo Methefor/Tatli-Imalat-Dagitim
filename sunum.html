@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tatlı Takip Sistemi — Yönetici Sunumu</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --accent:#a78bfa; --acc2:#7c3aed;
+  --amber:#f59e0b;  --green:#22c55e; --red:#ef4444;
+  --bg:#070d1a;
+  --glass:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.08);
+  --text:#f0f4ff;   --muted:rgba(255,255,255,0.45);
+}
+
+html,body{width:100%;height:100%;overflow:hidden;
+  background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  color:var(--text)}
+
+/* ── Dekor ── */
+.bg-grid{position:fixed;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0}
+.bg-orb{position:fixed;top:-20%;right:-10%;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(124,58,237,0.13) 0%,transparent 70%);
+  border-radius:50%;filter:blur(60px);pointer-events:none;z-index:0}
+.bg-orb2{position:fixed;bottom:-20%;left:-10%;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(245,158,11,0.06) 0%,transparent 70%);
+  border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+
+/* ── Progress ── */
+#progress{position:fixed;top:0;left:0;height:3px;
+  background:linear-gradient(90deg,var(--acc2),var(--accent));
+  transition:width .4s ease;z-index:200}
+
+/* ── Slides ── */
+.deck{position:relative;width:100vw;height:100vh}
+
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:52px 72px;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease;
+  transform:translateX(48px)}
+
+.slide.active{opacity:1;pointer-events:all;transform:none}
+.slide.out   {opacity:0;transform:translateX(-48px)}
+.slide>*{position:relative;z-index:1}
+
+/* ── Nav ── */
+.nav-bar{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:14px;
+  background:rgba(7,13,26,0.85);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:50px;
+  padding:10px 20px;z-index:200}
+
+.nav-btn{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);
+  width:40px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;transition:all .15s}
+.nav-btn:hover{background:rgba(167,139,250,0.18);border-color:var(--accent)}
+.nav-btn:disabled{opacity:.28;cursor:default}
+
+.counter{font-size:13px;font-weight:600;color:var(--muted);min-width:52px;text-align:center}
+
+.key-hint{
+  position:fixed;top:18px;right:22px;
+  display:flex;gap:6px;align-items:center;
+  font-size:11px;color:var(--muted);z-index:200}
+.key-hint kbd{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:5px;padding:2px 7px;font-family:inherit;font-size:10px}
+
+/* ── Typography ── */
+.tag{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px}
+h1{font-size:clamp(30px,4.5vw,54px);font-weight:800;line-height:1.08;letter-spacing:-.03em}
+h2{font-size:clamp(20px,3vw,36px);font-weight:800;line-height:1.12;letter-spacing:-.025em}
+h3{font-size:clamp(14px,1.8vw,20px);font-weight:700}
+.hl{color:var(--accent)} .hl-a{color:var(--amber)} .hl-g{color:var(--green)}
+.sub{font-size:clamp(13px,1.5vw,17px);color:var(--muted);line-height:1.65;max-width:680px;text-align:center}
+
+/* ── Cards ── */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:18px;padding:22px 26px}
+.ci{font-size:26px;margin-bottom:8px}
+.ct{font-size:14px;font-weight:700;margin-bottom:5px}
+.cd{font-size:12.5px;color:var(--muted);line-height:1.6}
+
+.card-grid{display:grid;gap:14px;width:100%}
+.cg3{grid-template-columns:repeat(3,1fr)}
+.cg2{grid-template-columns:repeat(2,1fr)}
+
+/* ── 2-col layout ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;align-items:center}
+.two-col-wide{display:grid;grid-template-columns:3fr 2fr;gap:20px;width:100%;align-items:center}
+
+/* ── Screenshots ── */
+.sf{background:rgba(255,255,255,0.025);border:1px solid var(--border);
+  border-radius:18px;padding:8px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sf img{border-radius:12px;max-width:100%;max-height:100%;object-fit:contain;
+  box-shadow:0 12px 40px rgba(0,0,0,0.55)}
+
+.sf-sm{max-height:180px}
+.sf-md{max-height:220px}
+.sf-lg{max-height:260px}
+.sf-xl{max-height:340px}
+
+/* ── Bullets ── */
+ul.bl{list-style:none;display:flex;flex-direction:column;gap:10px}
+ul.bl li{display:flex;align-items:flex-start;gap:10px;
+  font-size:clamp(12px,1.4vw,15px);line-height:1.55;color:rgba(255,255,255,0.82)}
+ul.bl li::before{content:'▸';color:var(--accent);flex-shrink:0;font-size:13px;margin-top:2px}
+
+/* ── Roles ── */
+.roles{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.role{display:flex;flex-direction:column;align-items:center;gap:7px;
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:16px;padding:18px 20px;min-width:130px;text-align:center}
+.role-ico{font-size:26px}
+.role-nm{font-size:13px;font-weight:700}
+.role-ds{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* ── Stats ── */
+.stats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.stat{background:var(--glass);border:1px solid var(--border);
+  border-radius:16px;padding:18px 26px;text-align:center;min-width:110px}
+.sv{font-size:34px;font-weight:800;line-height:1}
+.sl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+
+/* ── Logo badge ── */
+.logo-badge{display:inline-flex;align-items:center;gap:8px;
+  padding:7px 18px;
+  background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(124,58,237,0.1));
+  border:1px solid rgba(167,139,250,0.3);border-radius:50px;
+  font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.07em;margin-bottom:10px}
+
+/* ── Divider ── */
+.divider{width:60px;height:3px;background:linear-gradient(90deg,var(--acc2),var(--accent));
+  border-radius:2px;margin:14px auto}
+
+/* ── Title slide centering ── */
+.title-slide{text-align:center;gap:16px}
+
+@media(max-width:900px){
+  .slide{padding:36px 24px}
+  .two-col,.two-col-wide{grid-template-columns:1fr}
+  .cg3{grid-template-columns:1fr 1fr}
+  h1{font-size:26px} h2{font-size:20px}
+  .sf-xl{max-height:200px}
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb"></div>
+<div class="bg-orb2"></div>
+<div id="progress"></div>
+<div class="key-hint"><kbd>←</kbd><kbd>→</kbd> veya <kbd>Space</kbd></div>
+
+<div class="deck" id="deck">
+
+<!-- ─────────────────────────────────────────
+     S1 · KAPAK
+───────────────────────────────────────── -->
+<div class="slide title-slide active" data-i="0">
+  <div class="logo-badge">🍰 TATLI TAKİP SİSTEMİ</div>
+  <h1>Dijital Operasyon<br><span class="hl">&amp; Verimlilik Çözümü</span></h1>
+  <div class="divider"></div>
+  <p class="sub">Çok şubeli tatlı üretim ve dağıtım operasyonlarının anlık izlenmesi,<br>
+  stok yönetimi ve satış analizini tek platformda birleştiren sistem.</p>
+  <div class="stats" style="margin-top:26px">
+    <div class="stat"><div class="sv hl">6+</div><div class="sl">Aktif Şube</div></div>
+    <div class="stat"><div class="sv hl-a">4</div><div class="sl">Kullanıcı Rolü</div></div>
+    <div class="stat"><div class="sv hl-g">PWA</div><div class="sl">Mobil Uygulama</div></div>
+    <div class="stat"><div class="sv" style="font-size:22px">☁️</div><div class="sl">Bulut Altyapı</div></div>
+  </div>
+  <p style="font-size:11px;color:var(--muted);margin-top:14px">Versiyon 2.3 · Mart 2026</p>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S2 · PROBLEM & ÇÖZÜM
+───────────────────────────────────────── -->
+<div class="slide" data-i="1">
+  <div class="tag">Motivasyon</div>
+  <h2>Neden Bu Sistem?</h2>
+  <div class="two-col" style="margin-top:26px">
+    <div class="card" style="border-color:rgba(239,68,68,0.25)">
+      <div class="ci">❌</div>
+      <div class="ct" style="color:var(--red)">Önceki Süreç — Sorunlar</div>
+      <ul class="bl" style="margin-top:12px">
+        <li>Teslim sayımları WhatsApp veya kâğıtla</li>
+        <li>Stok durumu günlerce gecikmeyle öğreniliyordu</li>
+        <li>Zayiat (fire) takibi hiç yapılamıyordu</li>
+        <li>Şubeler arası karşılaştırma imkânı yoktu</li>
+        <li>Anlık ciro ve satış tahmini mümkün değildi</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:rgba(34,197,94,0.25)">
+      <div class="ci">✅</div>
+      <div class="ct" style="color:var(--green)">Tatlı Takip ile — Çözümler</div>
+      <ul class="bl" style="margin-top:12px">
+        <li>Şube müdürleri mobil uygulamayla anlık giriş yapar</li>
+        <li>Stok, satış ve zayiat gerçek zamanlı izlenir</li>
+        <li>Şube bazlı performans karşılaştırması ve sıralama</li>
+        <li>Otomatik satış trendi grafiği ve ciro tahmini</li>
+        <li>Tüm veriler güvenli bulut veritabanında saklanır</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S3 · ROLLER
+───────────────────────────────────────── -->
+<div class="slide title-slide" data-i="2">
+  <div class="tag">Sistem Mimarisi</div>
+  <h2>Kim Ne Yapar?</h2>
+  <div class="roles" style="margin-top:24px">
+    <div class="role">
+      <div class="role-ico">🏪</div>
+      <div class="role-nm">Şube Müdürü</div>
+      <div class="role-ds">Günlük gelen,<br>kalan ve zayiat<br>girişi yapar</div>
+    </div>
+    <div class="role" style="border-color:rgba(167,139,250,0.3)">
+      <div class="role-ico">🍬</div>
+      <div class="role-nm">Tatlıcı</div>
+      <div class="role-ds">Tüm şube<br>stoklarını görür,<br>üretim planlar</div>
+    </div>
+    <div class="role" style="border-color:rgba(245,158,11,0.35)">
+      <div class="role-ico">📊</div>
+      <div class="role-nm">Yönetici</div>
+      <div class="role-ds">KPI, satış trendi,<br>zayiat raporu,<br>ciro tahmini</div>
+    </div>
+    <div class="role" style="border-color:rgba(239,68,68,0.3)">
+      <div class="role-ico">⚙️</div>
+      <div class="role-nm">Sistem Yöneticisi</div>
+      <div class="role-ds">Tatlı, fiyat,<br>şube ve PIN<br>yönetimi</div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:20px;font-size:12.5px">
+    Her rol yalnızca kendi yetkisindeki ekranlara PIN ile erişir — veri güvenliği tam olarak sağlanır
+  </p>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S4 · GİRİŞ & ŞUBE SEÇİMİ
+───────────────────────────────────────── -->
+<div class="slide" data-i="3">
+  <div class="tag">Kullanıcı Deneyimi</div>
+  <h2>Güvenli Giriş &amp; Şube Seçimi</h2>
+  <div class="two-col" style="margin-top:22px">
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Giriş Ekranı.png" alt="Giriş Ekranı">
+    </div>
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Şube seçimi.png" alt="Şube Seçimi">
+    </div>
+  </div>
+  <p class="sub" style="margin-top:14px;font-size:12.5px">
+    Rol bazlı PIN girişi · Her şube müdürü kendi şubesini seçer · Oturum güvenli saklanır
+  </p>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S5 · GÜNLÜK GİRİŞ
+───────────────────────────────────────── -->
+<div class="slide" data-i="4">
+  <div class="tag">Günlük Operasyon</div>
+  <h2>Şube Müdürü — Günlük Veri Girişi</h2>
+  <div class="two-col" style="margin-top:20px">
+    <div>
+      <ul class="bl" style="margin-bottom:18px">
+        <li><strong>Sabah:</strong> Gelen tatlı miktarı teslim alınca girilir</li>
+        <li><strong>Akşam:</strong> Kalan tatlı sayımı yapılır</li>
+        <li>Zayiat (bozulan/düşen) ayrıca kaydedilir</li>
+        <li>+1 / +5 / +10 hızlı ekleme butonları</li>
+        <li>Geçmiş gün düzeltme modu</li>
+        <li>Sayfa aşağı çekince otomatik yenileme</li>
+      </ul>
+      <div class="sf sf-md">
+        <img src="Tatlı Takip Sistemi kullanım kılavuzu/Gelen Tatlılar.png" alt="Gelen Tatlılar">
+      </div>
+    </div>
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Kalan Tatlılar.png" alt="Kalan Tatlılar">
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S6 · MÜDÜR PANELİ
+───────────────────────────────────────── -->
+<div class="slide" data-i="5">
+  <div class="tag">Şube Müdürü</div>
+  <h2>Şube Özet Paneli</h2>
+  <div class="two-col" style="margin-top:22px">
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Müdür Paneli.png" alt="Müdür Paneli">
+    </div>
+    <div>
+      <ul class="bl" style="margin-bottom:16px">
+        <li>Aylık gelen / satılan / kalan / zayiat toplamları</li>
+        <li>Tatlı bazında detay tablo</li>
+        <li>Önceki aya tek tıkla geçiş</li>
+        <li>Müdür işlem kayıt geçmişi</li>
+        <li>Şubeler arası tatlı transfer</li>
+      </ul>
+      <div class="sf sf-md">
+        <img src="Tatlı Takip Sistemi kullanım kılavuzu/Şubem istatistikler.png" alt="İstatistikler">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S7 · DAĞITIM PANELİ
+───────────────────────────────────────── -->
+<div class="slide" data-i="6">
+  <div class="tag">Üretim &amp; Dağıtım</div>
+  <h2>Dağıtım Planı &amp; Güncel Stok</h2>
+  <div class="two-col" style="margin-top:22px">
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Dağıtım Paneli.png" alt="Dağıtım Paneli">
+    </div>
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Dağıtım Planı.png" alt="Dağıtım Planı">
+    </div>
+  </div>
+  <p class="sub" style="margin-top:14px;font-size:12.5px">
+    Tüm şubelerin anlık stoğu tek ekranda · Sürükle-bırak şube sıralaması · Kritik stok renk uyarıları
+  </p>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S8 · YÖNETİCİ KPI
+───────────────────────────────────────── -->
+<div class="slide" data-i="7">
+  <div class="tag">Yönetici Paneli</div>
+  <h2>KPI &amp; Performans Analizi</h2>
+  <div class="two-col-wide" style="margin-top:22px">
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Yönetici paneli KPI ve Şube Performansları.png" alt="KPI">
+    </div>
+    <div>
+      <ul class="bl">
+        <li>Toplam dağıtım, satış ve stok KPI kartları</li>
+        <li>Bugün / Bu Hafta / Bu Ay / Tümü filtresi</li>
+        <li>Aylık takvimden geçmiş ay seçimi</li>
+        <li>Şube bazlı satış oranı karşılaştırması</li>
+        <li>En iyi şube otomatik tespit ve rozeti</li>
+        <li>Zayiat sütunu şube başarım tablosunda</li>
+        <li>CSV dışa aktarım &amp; yazdırma raporu</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S9 · SATIŞ TRENDİ & ZAYİAT
+───────────────────────────────────────── -->
+<div class="slide" data-i="8">
+  <div class="tag">Analitik</div>
+  <h2>Satış Trendi &amp; Zayiat Raporu</h2>
+  <div class="two-col" style="margin-top:22px">
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Yönetici Paneli Güncel stok durumu ve Satış trendi.png" alt="Satış Trendi">
+    </div>
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Zayiat girişi.png" alt="Zayiat">
+    </div>
+  </div>
+  <p class="sub" style="margin-top:14px;font-size:12.5px">
+    Gerçek zamanlı günlük satış grafiği · 6 aylık zayiat trendi · Otomatik ciro tahmini
+  </p>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S10 · TATLICILAR PANELİ
+───────────────────────────────────────── -->
+<div class="slide" data-i="9">
+  <div class="tag">Tatlıcı Ekranı</div>
+  <h2>Tatlıcılar Paneli — Üretim Kararları</h2>
+  <div class="two-col" style="margin-top:22px">
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Tatlıcılar Paneli.png" alt="Tatlıcılar Paneli">
+    </div>
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Tatlıcılar Paneli Şube bazlı Stok durumu.png" alt="Şube Bazlı Stok">
+    </div>
+  </div>
+  <p class="sub" style="margin-top:14px;font-size:12.5px">
+    Hangi tatlıdan ne kadar kaldığını tüm şubelerde tek ekranda görme · Üretim miktarı kararı burada alınır
+  </p>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S11 · SİSTEM YÖNETİMİ
+───────────────────────────────────────── -->
+<div class="slide" data-i="10">
+  <div class="tag">Altyapı Yönetimi</div>
+  <h2>Sistem Yönetimi</h2>
+  <div class="two-col-wide" style="margin-top:22px">
+    <div class="sf sf-xl">
+      <img src="Tatlı Takip Sistemi kullanım kılavuzu/Sistem Yönetimi Paneli.png" alt="Sistem Yönetimi">
+    </div>
+    <div>
+      <ul class="bl">
+        <li>Tatlı ekleme, düzenleme, aktif/pasif yönetimi</li>
+        <li>Tatlı satış fiyatları güncelleme</li>
+        <li>Şube müdürü atama ve PIN yönetimi</li>
+        <li>Kritik stok eşik değerleri (kırmızı/sarı uyarı)</li>
+        <li>Tatlı dağıtım yer yönetimi</li>
+        <li>Dark / Light tema tercihi</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S12 · TEKNİK ALTYAPI
+───────────────────────────────────────── -->
+<div class="slide title-slide" data-i="11">
+  <div class="tag">Teknik</div>
+  <h2>Güçlü Altyapı,<br><span class="hl">Sıfır Kurulum</span></h2>
+  <div class="card-grid cg3" style="margin-top:26px;max-width:820px;width:100%">
+    <div class="card" style="text-align:center">
+      <div class="ci">📱</div>
+      <div class="ct">Progressive Web App</div>
+      <div class="cd">Telefona ikon olarak kurulur. İnternet olmadan da çalışır (offline mod).</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="ci">☁️</div>
+      <div class="ct">Supabase Bulut DB</div>
+      <div class="cd">PostgreSQL tabanlı, gerçek zamanlı senkronizasyon. Veri kaybolmaz.</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="ci">🔒</div>
+      <div class="ct">PIN Güvenliği</div>
+      <div class="cd">Her rol ayrı PIN. Süper yönetici tüm erişim ve PIN'leri yönetir.</div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:20px">
+    Herhangi bir telefon, tablet veya bilgisayarda tarayıcıdan açılır —<br>
+    uygulama mağazası, sunucu bakımı veya güncelleme gerektirmez
+  </p>
+</div>
+
+<!-- ─────────────────────────────────────────
+     S13 · TEŞEKKÜR
+───────────────────────────────────────── -->
+<div class="slide title-slide" data-i="12">
+  <div style="font-size:60px;margin-bottom:12px">🍰</div>
+  <h2>Teşekkürler</h2>
+  <div class="divider"></div>
+  <p class="sub">Sorularınız için hazırım</p>
+  <div class="card-grid cg2" style="margin-top:28px;max-width:520px;width:100%">
+    <div class="card" style="text-align:center">
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px">DEMOya GİTMEK İÇİN</div>
+      <div style="font-size:13px">Tarayıcıda <span class="hl" style="font-weight:700">index.html</span> dosyasını açın</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px">KULLANIM KILAVUZU</div>
+      <div style="font-size:13px"><span class="hl-g" style="font-weight:700">KULLANIM_KILAVUZU.md</span> dosyasına bakın</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Nav Bar -->
+<div class="nav-bar">
+  <button class="nav-btn" id="prevBtn" onclick="go(-1)" disabled>←</button>
+  <span class="counter" id="ctr">1 / 13</span>
+  <button class="nav-btn" id="nextBtn" onclick="go(1)">→</button>
+</div>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const total  = slides.length;
+let cur = 0;
+
+function go(dir) {
+    const nxt = cur + dir;
+    if (nxt < 0 || nxt >= total) return;
+    slides[cur].classList.remove('active');
+    if (dir > 0) slides[cur].classList.add('out');
+    cur = nxt;
+    slides.forEach((s, i) => {
+        if (i !== cur) {
+            setTimeout(() => s.classList.remove('out'), 380);
+        }
+    });
+    slides[cur].classList.remove('out');
+    slides[cur].classList.add('active');
+    upd();
+}
+
+function upd() {
+    document.getElementById('ctr').textContent = (cur + 1) + ' / ' + total;
+    document.getElementById('prevBtn').disabled = cur === 0;
+    document.getElementById('nextBtn').disabled = cur === total - 1;
+    document.getElementById('progress').style.width = ((cur + 1) / total * 100) + '%';
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); go(-1); }
+    if (e.key === 'Home') { cur = 0; slides.forEach(s => s.classList.remove('active','out')); slides[0].classList.add('active'); upd(); }
+    if (e.key === 'End')  { go(total - 1 - cur); }
+});
+
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 48) go(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+upd();
+</script>
+</body>
+</html>
