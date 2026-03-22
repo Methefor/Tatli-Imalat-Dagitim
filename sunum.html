@@ -173,11 +173,13 @@ ul.bl li::before{content:'▸';color:var(--accent);flex-shrink:0;font-size:13px;
 .title-slide{text-align:center;gap:16px}
 
 @media(max-width:900px){
-  .slide{padding:36px 24px}
-  .two-col,.two-col-wide{grid-template-columns:1fr}
-  .cg3{grid-template-columns:1fr 1fr}
-  h1{font-size:26px} h2{font-size:20px}
-  .sf-xl{max-height:200px}
+  .key-hint{display:none}
+  .deck{position:fixed;width:1280px;height:720px;transform-origin:top left}
+  .nav-bar{bottom:8px;gap:8px;padding:8px 16px}
+  .nav-btn{width:48px;height:48px;font-size:20px;border-radius:12px}
+  .auto-btn{width:48px;height:48px}
+  .speed-sel{height:36px;font-size:13px;min-width:46px;padding:0 8px}
+  .counter{font-size:15px}
 }
 
 @media print{
@@ -623,6 +625,23 @@ function setSpeed(val) {
 }
 
 upd();
+
+/* ── Mobil ölçekleme ── */
+function scaleDeck() {
+    const d = document.querySelector('.deck');
+    if (window.innerWidth > 900) { d.style.cssText = ''; return; }
+    const nb = document.querySelector('.nav-bar');
+    const nbH = (nb ? nb.offsetHeight : 56) + 20;
+    const vw = window.innerWidth, vh = window.innerHeight - nbH;
+    const s = Math.min(vw / 1280, vh / 720);
+    const sw = Math.round(1280 * s), sh = Math.round(720 * s);
+    d.style.top  = Math.max(0, Math.round((vh - sh) / 2)) + 'px';
+    d.style.left = Math.max(0, Math.round((vw - sw) / 2)) + 'px';
+    d.style.transform = 'scale(' + s.toFixed(4) + ')';
+}
+window.addEventListener('resize', scaleDeck);
+window.addEventListener('orientationchange', () => setTimeout(scaleDeck, 150));
+scaleDeck();
 </script>
 </body>
 </html>
