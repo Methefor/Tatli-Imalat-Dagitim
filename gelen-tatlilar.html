@@ -310,6 +310,26 @@
             transform: scale(1.04);
         }
 
+        /* ── Hızlı ekleme butonları ── */
+        .quick-btns { display: flex; gap: 4px; margin-top: 5px; }
+        .quick-btn {
+            padding: 2px 9px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: rgba(255,255,255,0.45);
+            font-size: 11px; font-weight: 700;
+            cursor: pointer; touch-action: manipulation;
+            transition: all 0.15s;
+        }
+        .quick-btn:active {
+            background: rgba(245,158,11,0.18);
+            border-color: rgba(245,158,11,0.35);
+            color: var(--accent);
+            transform: scale(0.88);
+        }
+        [data-theme="light"] .quick-btn { color: rgba(0,0,0,0.4); background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); }
+
         /* ── Toplam ── */
         .total-card {
             display: flex; align-items: center; justify-content: space-between;
@@ -545,6 +565,12 @@
             loadDesserts();
         }
 
+        function quickAdd(btn, delta) {
+            const inp = btn.closest('.dessert-row').querySelector('.num-input');
+            inp.value = Math.max(0, (parseInt(inp.value) || 0) + delta);
+            updateTotal();
+        }
+
         function updateTotal() {
             let total = 0;
             document.querySelectorAll('.num-input').forEach(inp => {
@@ -592,6 +618,11 @@
                     <div style="flex:1;min-width:0;">
                         <div class="dessert-name">${dessert.name}</div>
                         ${badgeHtml}
+                        <div class="quick-btns">
+                            <button class="quick-btn" type="button" onclick="quickAdd(this,1)">+1</button>
+                            <button class="quick-btn" type="button" onclick="quickAdd(this,5)">+5</button>
+                            <button class="quick-btn" type="button" onclick="quickAdd(this,10)">+10</button>
+                        </div>
                     </div>
                     <input type="number" class="num-input"
                            value="${inputVal}" min="0"

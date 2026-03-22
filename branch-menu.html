@@ -966,8 +966,9 @@
             }
         });
 
-        // Sayfa yüklenince badge'i set et
+        // Sayfa yüklenince ve geri gelince badge'i güncelle
         loadNotifications();
+        window.addEventListener('pageshow', loadNotifications);
 
         function toggleTutorial() {
             document.getElementById('tutorialWrap').classList.toggle('open');

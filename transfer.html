@@ -162,24 +162,54 @@
         }
         .form-select option { background: #1e293b; color: var(--text); }
 
-        /* Miktar input */
-        .qty-input {
-            width: 100px; height: 52px;
-            background: var(--acc-dim);
-            border: 1.5px solid var(--acc-brd);
-            border-radius: 12px; color: var(--text);
-            font-size: 26px; font-weight: 800;
+        /* ── Çoklu tatlı listesi ── */
+        .dessert-qty-list {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px; overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .dq-row {
+            display: flex; align-items: center;
+            padding: 13px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.045);
+            gap: 12px;
+        }
+        .dq-row:last-child { border-bottom: none; }
+
+        .dq-emoji { font-size: 22px; flex-shrink: 0; }
+        .dq-name  { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+
+        .dq-stepper { display: flex; align-items: center; gap: 5px; }
+
+        .step-btn {
+            width: 32px; height: 32px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text); font-size: 18px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            touch-action: manipulation; transition: all 0.15s; flex-shrink: 0;
+        }
+        .step-btn:active { background: var(--acc-dim); border-color: var(--acc-brd); transform: scale(0.92); }
+
+        .step-input {
+            width: 54px; height: 32px;
+            background: var(--glass);
+            border: 1.5px solid var(--border);
+            border-radius: 8px; color: var(--text);
+            font-size: 17px; font-weight: 800;
             text-align: center; outline: none;
-            transition: all 0.2s;
             font-variant-numeric: tabular-nums;
             -webkit-appearance: none; -moz-appearance: textfield;
+            transition: all 0.2s;
         }
-        .qty-input::-webkit-inner-spin-button,
-        .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-        .qty-input:focus {
-            background: rgba(167,139,250,0.2);
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(167,139,250,0.1);
+        .step-input::-webkit-inner-spin-button,
+        .step-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+        .step-input.has-value {
+            background: var(--acc-dim);
+            border-color: var(--acc-brd);
         }
 
         /* ── Transfer oku (görsel) ── */
@@ -320,21 +350,12 @@
                 </select>
             </div>
 
-            <!-- Tatlı -->
-            <div class="form-row">
-                <span class="form-row-label">Tatlı</span>
-                <select class="form-select" id="dessertSelect">
-                    <option value="">Tatlı seç…</option>
-                </select>
-            </div>
+        </div>
 
-            <!-- Miktar -->
-            <div class="form-row">
-                <span class="form-row-label">Miktar</span>
-                <input type="number" class="qty-input" id="qtyInput"
-                       min="1" value="" placeholder="0" inputmode="numeric">
-            </div>
-
+        <!-- Tatlı + Miktar Listesi -->
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 2px;">Transfer Edilecek Tatlılar</div>
+        <div class="dessert-qty-list" id="dessertQtyList">
+            <div class="empty-history" style="padding:20px">Yükleniyor…</div>
         </div>
 
         <!-- Geçmiş Transferler -->
@@ -375,21 +396,43 @@
 
             const toBranchSel = document.getElementById('toBranchSelect');
             (branches || []).forEach(b => {
-                if (String(b.id) === String(branchId)) return; // Kendi şubesini gösterme
+                if (String(b.id) === String(branchId)) return;
                 const opt = document.createElement('option');
                 opt.value = b.id;
                 opt.textContent = b.name;
                 toBranchSel.appendChild(opt);
             });
 
-            const dessertSel = document.getElementById('dessertSelect');
-            (desserts || []).forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d.id;
-                opt.dataset.emoji = d.emoji || '🍰';
-                opt.textContent = (d.emoji ? d.emoji + ' ' : '') + d.name;
-                dessertSel.appendChild(opt);
-            });
+            // Tatlı miktar listesini oluştur
+            const list = document.getElementById('dessertQtyList');
+            if (!desserts || desserts.length === 0) {
+                list.innerHTML = '<div class="empty-history">Tatlı bulunamadı.</div>';
+                return;
+            }
+            list.innerHTML = desserts.map(d => `
+                <div class="dq-row" data-dessert-id="${d.id}" data-dessert-name="${d.name}">
+                    <span class="dq-emoji">${d.emoji || '🍰'}</span>
+                    <span class="dq-name">${d.name}</span>
+                    <div class="dq-stepper">
+                        <button class="step-btn" onclick="stepQty(this, -1)" type="button">−</button>
+                        <input class="step-input" type="number" min="0" value="0"
+                               inputmode="numeric"
+                               oninput="onQtyInput(this)">
+                        <button class="step-btn" onclick="stepQty(this, 1)" type="button">+</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function stepQty(btn, delta) {
+            const inp = btn.parentElement.querySelector('.step-input');
+            const cur = parseInt(inp.value) || 0;
+            inp.value = Math.max(0, cur + delta);
+            onQtyInput(inp);
+        }
+
+        function onQtyInput(inp) {
+            const v = parseInt(inp.value) || 0;
+            inp.classList.toggle('has-value', v > 0);
         }
 
         // Geçmiş transferleri yükle (son 30 gündeki bu şubenin transfer notları)
@@ -434,86 +477,102 @@
         }
 
         async function saveTransfer() {
-            const toBranchId  = document.getElementById('toBranchSelect').value;
-            const dessertId   = document.getElementById('dessertSelect').value;
-            const qty         = parseInt(document.getElementById('qtyInput').value) || 0;
-            const date        = document.getElementById('transferDate').value;
+            const toBranchId = document.getElementById('toBranchSelect').value;
+            const date       = document.getElementById('transferDate').value;
 
             if (!toBranchId) { showToast('Lütfen alan şubeyi seçin.', 'error'); return; }
-            if (!dessertId)  { showToast('Lütfen tatlıyı seçin.', 'error'); return; }
-            if (qty <= 0)    { showToast('Miktar 0\'dan büyük olmalı.', 'error'); return; }
             if (!date)       { showToast('Tarih seçin.', 'error'); return; }
 
-            const toBranchName = document.getElementById('toBranchSelect').selectedOptions[0].textContent;
+            // Miktar > 0 olan tatlıları topla
+            const transfers = [];
+            document.querySelectorAll('#dessertQtyList .dq-row').forEach(row => {
+                const qty = parseInt(row.querySelector('.step-input').value) || 0;
+                if (qty > 0) transfers.push({
+                    dessertId:   row.dataset.dessertId,
+                    dessertName: row.dataset.dessertName,
+                    qty
+                });
+            });
 
-            toggleLoading(true);
-
-            // Hedef ve kaynak şubelerin mevcut kayıtlarını paralel çek
-            const [{ data: destEntry }, { data: srcEntry }] = await Promise.all([
-                supabaseClient
-                    .from('daily_entries')
-                    .select('id, received_amount, remaining_amount')
-                    .eq('branch_id', toBranchId)
-                    .eq('dessert_id', dessertId)
-                    .eq('entry_date', date)
-                    .single(),
-                supabaseClient
-                    .from('daily_entries')
-                    .select('id, received_amount, remaining_amount')
-                    .eq('branch_id', branchId)
-                    .eq('dessert_id', dessertId)
-                    .eq('entry_date', date)
-                    .single()
-            ]);
-
-            // Kaynak şubenin güncel kalan stoğunu bul
-            // Önce o güne ait kayıt var mı; yoksa son bilinen stoku kullan
-            let srcRemaining;
-            if (srcEntry && srcEntry.remaining_amount != null) {
-                srcRemaining = srcEntry.remaining_amount;
-            } else {
-                // Son bilinen stoku çek
-                const latestStock = await getBranchLatestStock(branchId);
-                srcRemaining = latestStock[dessertId] ?? 0;
+            if (transfers.length === 0) {
+                showToast('En az bir tatlı için miktar girin.', 'error');
+                return;
             }
 
-            const newSrcRemaining = Math.max(0, srcRemaining - qty);
-            const note = `Transfer: ${branchName} → ${toBranchName}`;
+            const toBranchName = document.getElementById('toBranchSelect').selectedOptions[0].textContent;
+            toggleLoading(true);
 
-            // 1. Hedef şubeye received_amount ekle
-            const prevReceived = destEntry?.received_amount ?? 0;
-            const destResult = await saveDailyEntry(
-                toBranchId,
-                dessertId,
-                date,
-                prevReceived + qty,
-                destEntry?.remaining_amount ?? null,
-                null,  // transfer: waste_amount'a dokunma
-                note
-            );
+            let successCount = 0;
+            let errorCount   = 0;
+            let totalQty     = 0;
 
-            // 2. Kaynak şubenin remaining_amount'unu azalt
-            const srcReceived = srcEntry?.received_amount ?? 0;
-            const srcResult = await saveDailyEntry(
-                branchId,
-                dessertId,
-                date,
-                srcReceived || null,  // gelen yoksa null, varsa koru
-                newSrcRemaining,
-                null,  // transfer: waste_amount'a dokunma
-                `Transfer çıkış: → ${toBranchName}`
-            );
+            // Kaynak şubenin son stoku bir kez çek (her döngüde tekrar sorgu yapmamak için)
+            const latestStock = await getBranchLatestStock(branchId);
+
+            for (const t of transfers) {
+                const [{ data: destEntry }, { data: srcEntry }] = await Promise.all([
+                    supabaseClient
+                        .from('daily_entries')
+                        .select('id, received_amount, remaining_amount')
+                        .eq('branch_id', toBranchId)
+                        .eq('dessert_id', t.dessertId)
+                        .eq('entry_date', date)
+                        .single(),
+                    supabaseClient
+                        .from('daily_entries')
+                        .select('id, received_amount, remaining_amount')
+                        .eq('branch_id', branchId)
+                        .eq('dessert_id', t.dessertId)
+                        .eq('entry_date', date)
+                        .single()
+                ]);
+
+                let srcRemaining;
+                if (srcEntry && srcEntry.remaining_amount != null) {
+                    srcRemaining = srcEntry.remaining_amount;
+                } else {
+                    srcRemaining = latestStock[t.dessertId] ?? 0;
+                }
+
+                const newSrcRemaining = Math.max(0, srcRemaining - t.qty);
+                const note = `Transfer: ${branchName} → ${toBranchName}`;
+
+                const prevReceived = destEntry?.received_amount ?? 0;
+                const destResult = await saveDailyEntry(
+                    toBranchId, t.dessertId, date,
+                    prevReceived + t.qty,
+                    destEntry?.remaining_amount ?? null,
+                    null, note
+                );
+
+                const srcReceived = srcEntry?.received_amount ?? 0;
+                const srcResult = await saveDailyEntry(
+                    branchId, t.dessertId, date,
+                    srcReceived || null,
+                    newSrcRemaining,
+                    null, `Transfer çıkış: → ${toBranchName}`
+                );
+
+                if (destResult.success && srcResult.success) {
+                    successCount++;
+                    totalQty += t.qty;
+                } else {
+                    errorCount++;
+                }
+            }
 
             toggleLoading(false);
 
-            if (destResult.success && srcResult.success) {
-                showToast(`✅ ${qty} adet transfer edildi → ${toBranchName} (Kalan: ${newSrcRemaining})`, 'success');
-                document.getElementById('qtyInput').value = '';
+            if (errorCount === 0) {
+                showToast(`✅ ${successCount} çeşit tatlı, toplam ${totalQty} adet → ${toBranchName}`, 'success');
+                document.querySelectorAll('#dessertQtyList .step-input').forEach(inp => {
+                    inp.value = '0';
+                    inp.classList.remove('has-value');
+                });
                 document.getElementById('toBranchSelect').value = '';
-                document.getElementById('dessertSelect').value = '';
                 await loadHistory();
             } else {
-                showToast('❌ Transfer kaydedilemedi!', 'error');
+                showToast(`❌ ${errorCount} tatlı kaydedilemedi!`, 'error');
             }
         }
 

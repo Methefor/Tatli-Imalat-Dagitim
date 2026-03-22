@@ -602,6 +602,16 @@
             .gc-grid { grid-template-columns: 1fr; }
         }
 
+        /* Drag-to-sort */
+        .gc-ghost  { opacity: 0.35; background: rgba(255,255,255,0.04) !important; border: 1.5px dashed rgba(255,255,255,0.2) !important; }
+        .gc-chosen { box-shadow: 0 8px 32px rgba(0,0,0,0.45) !important; transform: scale(1.02); }
+        .gc-drag-handle {
+            cursor: grab; padding: 0 4px; color: rgba(255,255,255,0.2);
+            font-size: 16px; flex-shrink: 0; line-height: 1; user-select: none;
+        }
+        .gc-drag-handle:active { cursor: grabbing; }
+        [data-theme="light"] .gc-drag-handle { color: rgba(0,0,0,0.2); }
+
         .gc-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -928,6 +938,21 @@
             'Vagon',
         ];
 
+        // Kullanıcının özel sıralama düzeni (sürükle-bırak ile değişir, localStorage'da saklanır)
+        let branchOrder = (function() {
+            try { return JSON.parse(localStorage.getItem('dagitimBranchOrder')) || null; } catch { return null; }
+        })();
+        let _lastBuildArgs = null; // buildGelenTable için son argümanlar (yeniden render)
+
+        function getSortedBranches(branches) {
+            const order = branchOrder || BRANCH_PRIORITY;
+            return [...branches].sort((a, b) => {
+                const ai = order.indexOf(a.name);
+                const bi = order.indexOf(b.name);
+                return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+            });
+        }
+
         // Yüksek hacimli şubeler
         const HIGH_VOL_BRANCHES = new Set(['Rumeli İskelesi', 'Millet Bahçesi', 'Yahya Kemal']);
 
@@ -1017,11 +1042,7 @@
             branchesEl.innerHTML = '';
 
             // Satış hacmine göre sırala
-            const sortedBranches = [...branches].sort((a, b) => {
-                const ai = BRANCH_PRIORITY.indexOf(a.name);
-                const bi = BRANCH_PRIORITY.indexOf(b.name);
-                return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-            });
+            const sortedBranches = getSortedBranches(branches);
 
             sortedBranches.forEach(branch => {
                 const branchStock = allStock[branch.id] || {};
@@ -1084,11 +1105,7 @@
             thead += '<th>Durum</th></tr></thead>';
 
             // Şubeleri satış hacmine göre sırala
-            const sortedBranches = [...branches].sort((a, b) => {
-                const ai = BRANCH_PRIORITY.indexOf(a.name);
-                const bi = BRANCH_PRIORITY.indexOf(b.name);
-                return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-            });
+            const sortedBranches = getSortedBranches(branches);
 
             // Veri satırları
             let tbody = '<tbody>';
@@ -1145,7 +1162,10 @@
                 : `<strong>Yüksek hacim</strong> (${highList}): tatlı bazlı özel eşik &nbsp;·&nbsp; <strong>Diğer şubeler:</strong> yarı eşik`;
         }
 
+        let _gcSortable = null;
+
         function buildGelenTable(branches, desserts, entries) {
+            _lastBuildArgs = [branches, desserts, entries];
             const table = document.getElementById('gelenTable');
             const cards = document.getElementById('gelenCards');
 
@@ -1163,11 +1183,7 @@
             });
 
             // Şubeleri satış hacmine göre sırala
-            const sortedBranches = [...branches].sort((a, b) => {
-                const ai = BRANCH_PRIORITY.indexOf(a.name);
-                const bi = BRANCH_PRIORITY.indexOf(b.name);
-                return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-            });
+            const sortedBranches = getSortedBranches(branches);
 
             // ── Masaüstü tablosu ──
             let thead = '<thead><tr><th>Şube</th>';
@@ -1221,8 +1237,9 @@
 
                 if (!hasEntries) {
                     cardsHtml += `
-                        <div class="gc-card gc-missing">
+                        <div class="gc-card gc-missing" data-branch-name="${branch.name}">
                             <div class="gc-header" onclick="toggleGcCard(this.closest('.gc-card'))">
+                                <span class="gc-drag-handle" onclick="event.stopPropagation()">⠿</span>
                                 <span style="font-size:20px">${emoji}</span>
                                 <span class="gc-branch-name">${branch.name}</span>
                                 <span class="gt-status-none">⚠ Girilmedi</span>
@@ -1248,8 +1265,9 @@
                 });
 
                 cardsHtml += `
-                    <div class="gc-card open">
+                    <div class="gc-card open" data-branch-name="${branch.name}">
                         <div class="gc-header" onclick="toggleGcCard(this.closest('.gc-card'))">
+                            <span class="gc-drag-handle" onclick="event.stopPropagation()">⠿</span>
                             <span style="font-size:20px">${emoji}</span>
                             <span class="gc-branch-name">${branch.name}</span>
                             <span class="gt-status-ok">✓ Girildi</span>
@@ -1265,6 +1283,24 @@
                     </div>`;
             });
             cards.innerHTML = cardsHtml;
+
+            // ── Sürükle-bırak sıralama ──
+            if (_gcSortable) { _gcSortable.destroy(); _gcSortable = null; }
+            if (window.Sortable) {
+                _gcSortable = new Sortable(cards, {
+                    animation:   180,
+                    ghostClass:  'gc-ghost',
+                    chosenClass: 'gc-chosen',
+                    handle:      '.gc-drag-handle',
+                    onEnd: () => {
+                        branchOrder = Array.from(cards.querySelectorAll('.gc-card'))
+                            .map(c => c.dataset.branchName).filter(Boolean);
+                        localStorage.setItem('dagitimBranchOrder', JSON.stringify(branchOrder));
+                        // Masaüstü tablosunu da yenile
+                        if (_lastBuildArgs) buildGelenTable(..._lastBuildArgs);
+                    }
+                });
+            }
         }
 
         // Giriş yapılmışsa yükle
@@ -1275,6 +1311,7 @@
             if (sessionStorage.getItem('dagitimAuth') === '1') loadData();
         }, 300000);
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>

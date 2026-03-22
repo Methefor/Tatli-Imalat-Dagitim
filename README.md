@@ -28,17 +28,19 @@ Tatlıcı üretir → Şubeye teslim → Müdür girer → Satış otomatik → 
 
 | Özellik | Açıklama |
 |---------|----------|
-| 📦 **Gelen Tatlılar** | Biriktirme + Düzeltme modu — mevcut girişin üstüne ekle veya sıfırdan yaz |
-| ✅ **Kalan Tatlılar** | Gün sonu stok sayımı — satış `Gelen − Kalan` ile otomatik hesaplanır |
-| 🚚 **Dağıtım Paneli** | PIN korumalı panel: şube giriş takibi, eşik bazlı dağıtım planı |
-| 🔄 **Şube Arası Transfer** | Fazla stoku başka şubeye gönder, iki şubeye birden anlık yansır |
+| 📦 **Gelen Tatlılar** | Biriktirme + Düzeltme modu — mevcut girişin üstüne ekle veya sıfırdan yaz; `+1/+5/+10` hızlı ekleme butonları |
+| ✅ **Kalan Tatlılar** | Gün sonu stok sayımı — satış `Gelen − Kalan` ile otomatik hesaplanır; `+1/+5/+10` hızlı ekleme |
+| 🗑️ **Zayiat Takibi** | Şubeye özel zayiat girişi ve raporlama; `+1/+5/+10` hızlı ekleme butonları |
+| 🚚 **Dağıtım Paneli** | PIN korumalı panel: şube giriş takibi, eşik bazlı dağıtım planı; **sürükle-bırak şube sıralaması** |
+| 🔄 **Şube Arası Transfer** | **Tek seferde birden fazla tatlı transferi** — her tatlı için ayrı stepper, tek kayıt |
 | 📊 **Aylık Rapor** | Şube bazlı aylık gelen / satılan / kalan / zayiat istatistikleri |
-| 🏢 **Admin Dashboard** | KPI kartları, satış trendi grafiği, zayiat raporu ve ciro tahmini |
+| 🏢 **Admin Dashboard** | KPI kartları (performansa göre dinamik renk), satış trendi, zayiat raporu; 3 seviyeli stok renk sistemi |
 | 👨‍🍳 **Tatlıcı Paneli** | PIN korumalı anlık stok görünümü — şube bazlı açılır/kapanır kartlar |
 | 🏭 **Üretim Paneli** | Şifresiz erişimli şube × tatlı matris tablosu |
 | 🔑 **Süper Admin** | Tatlı yönetimi, şube müdür ataması, PIN yönetimi, eşik özelleştirme |
-| 🗑️ **Zayiat Takibi** | Şubeye özel zayiat girişi ve raporlama |
 | 📱 **PWA Desteği** | Ana ekrana eklenebilir, maskable ikon, Service Worker cache |
+| 🔔 **Bildirim Çanı** | Gelen/Kalan/Zayiat girilmemişse müdür menüsünde otomatik uyarı rozeti; sayfadan dönüşte anlık güncelleme |
+| ✨ **Modern UX** | Tüm sayfalarda fade-in geçiş animasyonu; ikon + ilerleme çubuğu + kaydırarak kapat toast bildirimleri |
 | 🔒 **Rol Bazlı Erişim** | Yönetici / Müdür / Tatlıcı / Üretim / Dağıtım — her rol ayrı korumalı |
 
 ---

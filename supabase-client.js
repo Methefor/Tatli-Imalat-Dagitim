@@ -607,37 +607,53 @@ async function updateAdminPassword(adminId, newPassword) {
  * Toast bildirimi göster
  */
 function showToast(message, type = 'success') {
-    const toast = document.createElement('div')
-    toast.className = `toast toast-${type}`
-    toast.textContent = message
-    
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 16px 24px;
-        border-radius: 12px;
-        color: white;
-        font-weight: 600;
-        z-index: 9999;
-        animation: slideIn 0.3s ease-out;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    `
-
-    if (type === 'success') {
-        toast.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)'
-    } else if (type === 'error') {
-        toast.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)'
-    } else {
-        toast.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)'
+    // CSS'i bir kez enjekte et
+    if (!document.getElementById('_ts')) {
+        const s = document.createElement('style')
+        s.id = '_ts'
+        s.textContent = [
+            '@keyframes _tsu{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
+            '@keyframes _tpb{from{transform:scaleX(1)}to{transform:scaleX(0)}}',
+            '._toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 32px);min-width:260px;padding:14px 18px 0;border-radius:16px;color:#fff;font-size:14px;font-weight:600;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow:hidden;cursor:pointer;animation:_tsu .3s cubic-bezier(.34,1.56,.64,1) both}',
+            '._toast-body{display:flex;align-items:center;gap:10px;padding-bottom:12px}',
+            '._toast-prog{height:3px;margin:0 -18px;background:rgba(255,255,255,0.35);transform-origin:left;animation:_tpb 3s linear both}'
+        ].join('')
+        document.head.appendChild(s)
     }
-
+    const icons = { success:'✅', error:'❌', info:'ℹ️', warn:'⚠️' }
+    const bgs   = {
+        success:'linear-gradient(135deg,#22c55e,#16a34a)',
+        error:  'linear-gradient(135deg,#ef4444,#dc2626)',
+        info:   'linear-gradient(135deg,#3b82f6,#2563eb)',
+        warn:   'linear-gradient(135deg,#f59e0b,#d97706)'
+    }
+    const toast = document.createElement('div')
+    toast.className = '_toast'
+    toast.style.background = bgs[type] || bgs.info
+    toast.innerHTML = `<div class="_toast-body"><span style="font-size:18px;line-height:1;flex-shrink:0">${icons[type]||'💬'}</span><span style="flex:1;line-height:1.4">${message}</span></div><div class="_toast-prog"></div>`
     document.body.appendChild(toast)
 
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-out'
-        setTimeout(() => toast.remove(), 300)
-    }, 3000)
+    // Swipe to dismiss (yukarı kaydır)
+    let sy = 0
+    toast.addEventListener('touchstart', e => { sy = e.touches[0].clientY }, { passive: true })
+    toast.addEventListener('touchmove', e => {
+        const dy = e.touches[0].clientY - sy
+        if (dy < -5) { toast.style.transform = `translateX(-50%) translateY(${dy}px)`; toast.style.opacity = String(Math.max(0, 1 + dy / 60)) }
+    }, { passive: true })
+    toast.addEventListener('touchend', e => {
+        if ((e.changedTouches[0].clientY - sy) < -30) dismiss()
+        else { toast.style.transform = ''; toast.style.opacity = '' }
+    })
+    toast.addEventListener('click', dismiss)
+
+    const t = setTimeout(dismiss, 3000)
+    function dismiss() {
+        clearTimeout(t)
+        toast.style.transition = 'opacity .25s,transform .25s'
+        toast.style.opacity = '0'
+        toast.style.transform = 'translateX(-50%) translateY(-12px)'
+        setTimeout(() => toast.remove(), 280)
+    }
 }
 
 /**
@@ -1013,10 +1029,14 @@ function initTheme() {
     }
 }
 
-// Sayfa yüklenince otomatik uygula (tema + buton ikonu)
+// Sayfa yüklenince otomatik uygula (tema + buton ikonu + geçiş animasyonu)
 ;(function() {
     const theme = localStorage.getItem('appTheme') || 'dark'
     document.documentElement.setAttribute('data-theme', theme)
+    // Sayfa geçiş animasyonu (opacity 0→1 + hafif aşağıdan yukarı)
+    const ps = document.createElement('style')
+    ps.textContent = '@keyframes _pfi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}body{animation:_pfi .25s ease both}'
+    document.head.appendChild(ps)
     const updateBtn = () => {
         const btn = document.getElementById('themeToggleBtn')
         if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙'

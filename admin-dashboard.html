@@ -912,7 +912,15 @@
         .delta-neg { color: var(--red);   font-size: 11px; font-weight: 700; }
         .delta-neu { color: var(--text-3);font-size: 11px; }
 
-        /* ── STOCK WARNING ───────────────────────────── */
+        /* ── STOCK RENK SİSTEMİ (3 seviye) ─────────────── */
+        .stock-item.stock-ok {
+            border-left: 3px solid rgba(34,197,94,0.5);
+            background: rgba(34,197,94,0.03);
+        }
+        .stock-item.stock-medium {
+            border-left: 3px solid rgba(245,158,11,0.55);
+            background: rgba(245,158,11,0.04);
+        }
         .stock-item.stock-warning {
             border-left: 3px solid rgba(239,68,68,0.5);
             background: rgba(239,68,68,0.04);
@@ -926,6 +934,13 @@
             border: 1px solid rgba(239,68,68,0.25);
             padding: 2px 7px;
             border-radius: 10px;
+        }
+        .stock-medium-badge {
+            font-size: 10px; font-weight: 700;
+            color: #f59e0b;
+            background: rgba(245,158,11,0.12);
+            border: 1px solid rgba(245,158,11,0.25);
+            padding: 2px 7px; border-radius: 10px;
         }
 
         /* ── TAHMINLEME TABLE ─────────────────────────── */
@@ -1824,6 +1839,29 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
             const salesRatio = dist > 0 ? ((sold / dist) * 100).toFixed(1) : 0;
             document.getElementById('salesPercentage').textContent = `%${salesRatio} satış oranı`;
+
+            // KPI kartları dinamik border rengi
+            const kpiCards = document.querySelectorAll('.kpi-card');
+            if (kpiCards[0]) {
+                // Dağıtım kartı: hedefin %80+ = yeşil, %50-79 = sarı, <%50 = kırmızı
+                const distColor = pct >= 80 ? 'rgba(34,197,94,0.45)' : pct >= 50 ? 'rgba(245,158,11,0.45)' : 'rgba(239,68,68,0.4)';
+                kpiCards[0].style.borderColor = distColor;
+                kpiCards[0].style.boxShadow   = `0 0 0 1px ${distColor}`;
+            }
+            if (kpiCards[1]) {
+                // Satış kartı: %70+ = yeşil, %50-69 = sarı, <%50 = kırmızı
+                const sr = parseFloat(salesRatio);
+                const salesColor = sr >= 70 ? 'rgba(34,197,94,0.45)' : sr >= 50 ? 'rgba(245,158,11,0.45)' : 'rgba(239,68,68,0.4)';
+                kpiCards[1].style.borderColor = salesColor;
+                kpiCards[1].style.boxShadow   = `0 0 0 1px ${salesColor}`;
+            }
+            if (kpiCards[2]) {
+                // Stok kartı: dist > 0 ve stock/dist > 0.3 = yeşil, > 0.1 = sarı, <= 0.1 = kırmızı
+                const stockRatio = dist > 0 ? stock / dist : 0;
+                const stockColor = stockRatio > 0.3 ? 'rgba(34,197,94,0.45)' : stockRatio > 0.1 ? 'rgba(245,158,11,0.45)' : 'rgba(239,68,68,0.4)';
+                kpiCards[2].style.borderColor = stockColor;
+                kpiCards[2].style.boxShadow   = `0 0 0 1px ${stockColor}`;
+            }
         }
 
         // ── Branch Table ──────────────────────────────────
@@ -2256,17 +2294,31 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
             stockData.forEach((s, i) => {
                 const threshold = thresholds ? Number(thresholds[String(s.dessertId)] || 0) : 0;
-                const isLow     = threshold > 0 && s.totalRemaining <= threshold;
+                // 3-seviye renk: kırmızı / sarı (1-2x eşik) / yeşil
+                const isCritical = threshold > 0 && s.totalRemaining <= threshold;
+                const isMedium   = threshold > 0 && !isCritical && s.totalRemaining <= threshold * 2;
+                const isOk       = threshold > 0 && !isCritical && !isMedium;
+
+                let cls = 'stock-item';
+                if (isCritical) cls += ' stock-warning';
+                else if (isMedium) cls += ' stock-medium';
+                else if (isOk)    cls += ' stock-ok';
+
+                let badge = '';
+                if (isCritical) badge = `<div class="stock-warning-badge">⚠️ Düşük Stok</div>`;
+                else if (isMedium) badge = `<div class="stock-medium-badge">⚡ Azalıyor</div>`;
+
+                const amtColor = isCritical ? 'color:var(--red)' : isMedium ? 'color:#f59e0b' : '';
 
                 const item = document.createElement('div');
-                item.className = 'stock-item' + (isLow ? ' stock-warning' : '');
+                item.className = cls;
                 item.style.animation = `fadeUp 0.4s ease ${i * 0.05}s both`;
                 item.innerHTML = `
                     <div class="stock-emoji">${s.emoji}</div>
                     <div class="stock-name">${s.dessertName}</div>
-                    <div class="stock-amount" style="${isLow ? 'color:var(--red)' : ''}">${s.totalRemaining}</div>
+                    <div class="stock-amount" style="${amtColor}">${s.totalRemaining}</div>
                     <div class="stock-unit">adet kaldı</div>
-                    ${isLow ? `<div class="stock-warning-badge">⚠️ Düşük Stok</div>` : ''}
+                    ${badge}
                 `;
                 grid.appendChild(item);
             });

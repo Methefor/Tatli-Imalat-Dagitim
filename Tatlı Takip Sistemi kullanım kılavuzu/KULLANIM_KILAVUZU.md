@@ -1,6 +1,6 @@
 # Tatlı İmalat ve Dağıtım Takip Sistemi — Kullanım Kılavuzu
 
-> **Sürüm:** 2.1 — Mart 2026
+> **Sürüm:** 2.2 — Mart 2026
 > **Hazırlayan:** Mutlukent Tatlı
 > **Platform:** Web tabanlı PWA (Progressive Web App) — mobil ve masaüstü uyumlu
 
@@ -141,10 +141,25 @@ Müdür Paneli 4 ana karttan oluşur:
 |------|------|--------|
 | **Gelen Tatlılar** | Amber/Sarı | Üretimden gelen tatlıların teslim alınması |
 | **Kalan Tatlılar** | Mavi | Günün sonunda kalan tatlı sayılarının girilmesi |
-| **Şube Arası Transfer** | Mor | Başka şubeden tatlı talep etmek veya göndermek |
+| **Şube Arası Transfer** | Mor | Tek seferde birden fazla tatlı transferi |
 | **Zayiat Girişi** | Kırmızı | Bozulan / fire olan tatlıların kaydedilmesi |
 
 **Şubem Linki:** Ekranın üst kısmındaki şube adı veya avatar ikonuna tıklandığında **Şubem** sayfası açılır — şubenin kendi istatistikleri ve aylık performansı burada görüntülenir.
+
+#### Bildirim Çanı 🔔
+
+Müdür Menüsü'nün sağ üst köşesindeki **çan ikonuna** tıklandığında günlük giriş durumu gösterilir:
+
+| Bildirim | Anlam |
+|----------|-------|
+| 📦 Gelen Tatlılar Girilmedi | Bugün için gelen tatlı kaydı yok |
+| ✅ Kalan Tatlılar Girilmedi | Gün sonu kalan stok girilmemiş |
+| ⚠️ Zayiat Girilmedi | Bugün için zayiat kaydı yok |
+
+- Üstteki sayı rozeti bekleyen bildirim sayısını gösterir
+- Tüm girişler tamamlandığında rozet kaybolur, "✅ Tüm Girişler Tamam" mesajı görünür
+- Bildirime tıklandığında ilgili giriş sayfasına yönlendirilir
+- Giriş yapıp geri döndüğünde bildirimler **otomatik güncellenir**
 
 ### 4.3 Gelen Tatlılar
 
@@ -155,6 +170,10 @@ Müdür Paneli 4 ana karttan oluşur:
 - **Tarih Gezgini:** Sağ/sol oklarla geçmiş günlere bakılabilir ve düzeltme yapılabilir
 - **Kaydet** butonuna basıldığında veri Supabase'e kaydedilir ve tüm cihazlara yansır
 
+#### Hızlı Ekleme Butonları (+1 / +5 / +10)
+
+Her tatlı satırında tatlı adının altında **`+1`**, **`+5`**, **`+10`** butonları bulunur. Bu butonlara tıklamak giriş kutusundaki değeri otomatik artırır — klavye kullanmaya gerek yoktur. Toplu teslimatlar için +10'a birkaç kez tıklamak yeterlidir.
+
 > **Önemli:** Gelen tatlı miktarı kaydedildikten sonra düzenlemek için aynı tarihe gidip değeri değiştirip tekrar kaydetmek yeterlidir. Sistem mevcut kaydı günceller, yeni kayıt oluşturmaz.
 
 ### 4.4 Kalan Tatlılar
@@ -164,6 +183,7 @@ Müdür Paneli 4 ana karttan oluşur:
 - Günün sonunda şubede rafta kalan tatlı sayıları girilir
 - Sistem otomatik olarak **Satılan = Gelen − Kalan − Zayiat** formülüyle hesaplar
 - Kalan miktarlar, Tatlıcılar Paneli ve Yönetici Dashboard'unda görüntülenir
+- Her tatlı satırında **`+1`**, **`+5`**, **`+10`** hızlı ekleme butonları mevcuttur
 
 ### 4.5 Müdür Paneli Kullanım Rehberi (Adım Adım)
 
@@ -181,17 +201,28 @@ Müdür Paneli 4 ana karttan oluşur:
 
 ![Şube Arası Transfer](Şube%20Arası%20Transfer.png)
 
-- **Kaynak Şube:** Tatlıyı gönderen şube
-- **Hedef Şube:** Tatlıyı alan şube
-- Transfer onaylandığında kaynak şubenin stoğu düşer, hedef şubenin stoğu artar
+Transfer ekranı **tek seferde birden fazla tatlı transferine** olanak tanır:
+
+1. **Alan Şube** seçilir (kendi şubesi listede gösterilmez)
+2. **Transfer Tarihi** seçilir (varsayılan bugün)
+3. Tüm aktif tatlılar listelenir — her satırda `−` ve `+` butonları ile miktar ayarlanır
+4. Miktar 0'dan büyük olan tatlıların rengi mor olarak vurgulanır
+5. **Transferi Kaydet** butonuna basılınca sadece miktarı 0'dan büyük olan tatlılar kaydedilir
+
+**Ne Değişir:**
+- Gönderen şubenin **kalan stoğu** azalır
+- Alan şubenin **gelen miktarı** artar
 - İki şube müdürü de kendi panellerinden transferi görebilir
+
+> **Eski Yöntemle Farkı:** Önceden her tatlı için ayrı ayrı transfer yapılması gerekiyordu. Artık tek formda birden fazla tatlı miktarı girilip tek kayıt ile tüm tatlılar transfer edilebilir.
 
 ### 4.7 Zayiat Girişi
 
 ![Zayiat Girişi](Zayiat%20Girişi.png)
 
 - Bozulan, düşen veya fire olan tatlılar buraya kaydedilir
-- Tatlı türü bazında miktar girilir
+- Tatlı türü bazında miktar girilir; **`+1`**, **`+5`**, **`+10`** hızlı ekleme butonları mevcuttur
+- Sıfır bırakılan tatlılar kaydedilmez (değer girilen tatlılar otomatik kayıt alınır)
 - Zayiat miktarı kaydedildiğinde Yönetici Paneli raporlarına yansır
 - Gerçek satış hesabı: **Satılan = Gelen − Kalan − Zayiat**
 
@@ -269,13 +300,24 @@ Sayfanın üst bölümünde **tüm şubelerin anlık stok özeti** bulunur. Tatl
 - Tatlı türü bazında toplam stoklar
 - Genel toplam
 
-### 7.2 Şube Bazlı Stok Detayı (Açılır/Kapanır)
+### 7.2 Şube Bazlı Stok Detayı (Açılır/Kapanır + Sürükle-Bırak Sıralama)
 
 ![Dağıtım Planı Şube bazlı stok](Dağıtım%20Planı%20Şube%20bazlı%20stok.png)
 
 Tatlıcılar Paneli ile aynı açılır/kapanır kart yapısı:
 - Mobilde başta KAPALI, masaüstünde AÇIK
 - Şube başlığına tıklayarak her şubenin detay stoğu görüntülenir
+
+#### Sürükle-Bırak Şube Sıralaması
+
+Her şube kartının sol üst köşesindeki **⠿ (tutamaç)** ikonu ile kartlar yeniden sıralanabilir:
+
+1. ⠿ ikonuna uzun basın (mobil) veya tıklayıp sürükleyin (masaüstü)
+2. Kartı istediğiniz konuma taşıyın
+3. Bırakın — yeni sıra otomatik kaydedilir
+4. Masaüstü tablosu da aynı sıraya göre güncellenir
+
+> Tercih edilen sıra tarayıcıda kaydedilir. Sonraki girişlerde aynı sıra korunur.
 
 ### 7.3 Dağıtım Planı Tablosu
 
@@ -326,14 +368,23 @@ Panelin üstündeki filtre sekmeleriyle veriler dönemsel olarak incelenir:
 
 ### 8.2 KPI Özet Kartları
 
-Ana ekranda 4 adet **Anahtar Performans Göstergesi (KPI)** kartı bulunur:
+Ana ekranda **Anahtar Performans Göstergesi (KPI)** kartları bulunur:
 
 | KPI Kartı | Gösterdiği Veri |
 |-----------|----------------|
 | **Toplam Dağıtım** | Seçilen dönemde şubelere gönderilen toplam tatlı adedi |
 | **Tahmini Satış** | Gelen − Kalan − Zayiat formülüyle hesaplanan satış adedi |
-| **Toplam Zayiat** | Seçilen dönemde kaydedilen toplam fire/bozuk tatlı adedi |
-| **Aktif Şube** | Veri girişi yapılmış aktif şube sayısı |
+| **Mevcut Stok** | Tüm şubelerin anlık toplam stoğu |
+
+#### Dinamik Renk Göstergesi
+
+KPI kartlarının kenarlıkları **performansa göre otomatik renklenir**:
+
+| Renk | Dağıtım Kartı | Satış Kartı |
+|------|--------------|-------------|
+| 🟢 Yeşil | Hedefin %80+ | Satış oranı %70+ |
+| 🟡 Sarı | Hedefin %50–79 | Satış oranı %50–69 |
+| 🔴 Kırmızı | Hedefin <%50 | Satış oranı <%50 |
 
 ### 8.3 Önceki Ay Karşılaştırması (KPI Altı)
 
@@ -399,6 +450,18 @@ Telefon ekranlarında şube performans tablosu yerine **tam ekran renkli kartlar
 - Satış yüzdesi (görsel çubuk gösterge)
 
 > Masaüstü bilgisayarlarda tablo görünümü, telefonda kart görünümü otomatik olarak aktif olur.
+
+### 8.6b Güncel Stok Durumu — 3 Seviyeli Renk Sistemi
+
+"Güncel Stok Durumu" bölümündeki tatlı kartları **3 farklı renk seviyesiyle** durumu gösterir:
+
+| Renk | Açıklama | Gösterge |
+|------|----------|----------|
+| 🟢 Yeşil kenarlık | Yeterli stok | Eşiğin 2 katından fazla |
+| 🟡 Sarı kenarlık | Azalıyor | Eşiğin 1–2 katı arası; **"⚡ Azalıyor"** rozeti |
+| 🔴 Kırmızı kenarlık | Düşük stok | Eşiğin altında; **"⚠️ Düşük Stok"** rozeti |
+
+> Renk eşikleri Sistem Yönetimi → Eşikler sekmesinden tatlı bazında ayarlanır.
 
 ### 8.7 Güncel Stok ve Satış Trendi
 
@@ -636,4 +699,24 @@ C: Yönetici Paneli'nde üst çubuktaki **📤 Rapor** butonuna basın → açı
 
 ---
 
-*Tatlı Takip Sistemi v2.1 — © 2026 Mutlukent Tatlı*
+---
+
+## 13. Sürüm Notları
+
+### v2.2 — Mart 2026
+- **Çoklu Tatlı Transferi:** Şube Arası Transfer ekranı yeniden tasarlandı; tek seferde tüm tatlılar için miktar girilebilir
+- **Hızlı Ekleme Butonları:** Gelen / Kalan / Zayiat sayfalarında her tatlı satırına `+1` `+5` `+10` chip butonları eklendi
+- **Bildirim Güncelleme:** Müdür Menüsü'ne geri dönüldüğünde bildirim çanı otomatik güncellenir
+- **KPI Dinamik Renk:** Yönetici Paneli KPI kartları performansa göre yeşil/sarı/kırmızı kenarlık alır
+- **3 Seviyeli Stok Rengi:** Admin stok kartları yeterli/azalıyor/düşük üç seviyeye ayrıldı
+- **Sürükle-Bırak Sıralama:** Dağıtım Paneli şube kartları `⠿` tutamacıyla sürüklenip sıralanabilir
+- **Sayfa Geçiş Animasyonu:** Tüm sayfalarda `opacity 0→1 + translateY` yumuşak geçiş
+- **Gelişmiş Toast Bildirimleri:** İkon + ilerleme çubuğu + yukarı kaydırarak kapat
+
+### v2.1 — Mart 2026
+- Dark/Light tema tüm sayfalarda
+- Aylık filtre Admin Dashboard'da
+- Üretim hedef paneli
+- Zayiat her zaman görünür (bağımsız veri çekimi)
+
+*Tatlı Takip Sistemi v2.2 — © 2026 Mutlukent Tatlı*
