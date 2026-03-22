@@ -368,9 +368,26 @@
 
         /* ── TEMA ─────────────────────────── */
         .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; flex-shrink:0; }
-        [data-theme="light"] { --bg:#f1f5f9; --glass:rgba(0,0,0,0.04); --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:rgba(0,0,0,0.45); }
-        [data-theme="light"] body { background:#f1f5f9; }
-        [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
+        [data-theme="light"] {
+            --bg: #eef2fa;
+            --glass: #ffffff;
+            --border: rgba(15,23,42,0.1);
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #7c3aed;
+            --acc-dim: rgba(124,58,237,0.08);
+            --acc-brd: rgba(124,58,237,0.22);
+        }
+        [data-theme="light"] body { background: #eef2fa; }
+        [data-theme="light"] .topbar { background: rgba(238,242,250,0.95) !important; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        [data-theme="light"] .bg-grid {
+            background-image:
+                linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+        }
+        [data-theme="light"] .bg-orb { background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%); }
+        [data-theme="light"] .num-input { background: #f8fafc; color: #0f172a; border-color: rgba(0,0,0,0.12); }
+        [data-theme="light"] .dessert-row { border-bottom-color: rgba(0,0,0,0.06); }
     </style>
 </head>
 <body>

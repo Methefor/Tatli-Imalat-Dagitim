@@ -1037,11 +1037,11 @@
 
         /* ── LIGHT THEME (Faz 2'de tüm sayfalara eklenir, buraya admin için ön tanım) ── */
         [data-theme="light"] {
-            --bg:          #f1f5f9;
+            --bg:          #eef2fa;
             --surface:     #ffffff;
             --panel:       #ffffff;
             --panel-hover: #f8fafc;
-            --border:      rgba(0,0,0,0.08);
+            --border:      rgba(15,23,42,0.1);
             --border-med:  rgba(0,0,0,0.14);
             --text:        #0f172a;
             --text-2:      #475569;
@@ -1049,10 +1049,16 @@
         }
 
         [data-theme="light"] body { background: var(--bg); }
-        [data-theme="light"] .topbar { background: rgba(241,245,249,0.95); border-bottom: 1px solid var(--border); }
+        [data-theme="light"] .topbar { background: rgba(238,242,250,0.95); border-bottom: 1px solid var(--border); }
         [data-theme="light"] .tab-btn { color: var(--text-2); }
         [data-theme="light"] .logout-btn { color: var(--text-2); }
         [data-theme="light"] .data-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+        [data-theme="light"] .panel { box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+        [data-theme="light"] .bg-grid {
+            background-image:
+                linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+        }
 
         /* ── Month Picker ── */
         .mpick-panel {

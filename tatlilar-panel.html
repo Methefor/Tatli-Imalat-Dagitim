@@ -434,9 +434,28 @@
 
         /* ── TEMA ─────────────────────────── */
         .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; }
-        [data-theme="light"] { --bg:#f1f5f9; --surface:#ffffff; --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:#64748b; }
-        [data-theme="light"] body { background:var(--bg); }
-        [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
+        [data-theme="light"] {
+            --bg: #eef2fa;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --border: rgba(15,23,42,0.1);
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #7c3aed;
+        }
+        [data-theme="light"] body { background: #eef2fa; }
+        [data-theme="light"] .topbar { background: rgba(238,242,250,0.95) !important; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        [data-theme="light"] .bg-grid {
+            background-image:
+                linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+        }
+        [data-theme="light"] .bg-orb { background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%); }
+        [data-theme="light"] .pin-digit { background: #f8fafc; border-color: rgba(0,0,0,0.14); color: #0f172a; }
+        [data-theme="light"] .back-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: #0f172a; }
+        [data-theme="light"] .back-btn:hover { background: rgba(0,0,0,0.08); }
+        [data-theme="light"] .refresh-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: #0f172a; }
+        [data-theme="light"] .refresh-btn:hover { background: rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>

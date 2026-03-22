@@ -332,9 +332,36 @@
 
         /* ── TEMA ─────────────────────────── */
         .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; flex-shrink:0; }
-        [data-theme="light"] { --bg:#f1f5f9; --glass:rgba(0,0,0,0.04); --border:rgba(0,0,0,0.08); --text:#0f172a; --muted:rgba(0,0,0,0.45); }
-        [data-theme="light"] body { background:#f1f5f9; }
-        [data-theme="light"] .topbar { background:rgba(241,245,249,0.95) !important; border-bottom:1px solid rgba(0,0,0,0.08); }
+        [data-theme="light"] {
+            --bg: #eef2fa;
+            --glass: #ffffff;
+            --border: rgba(15,23,42,0.1);
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #7c3aed;
+            --acc-dim: rgba(124,58,237,0.08);
+            --acc-brd: rgba(124,58,237,0.22);
+        }
+        [data-theme="light"] body { background: #eef2fa; }
+        [data-theme="light"] .topbar { background: rgba(238,242,250,0.95) !important; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        [data-theme="light"] .bg-grid {
+            background-image:
+                linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+        }
+        [data-theme="light"] .bg-orb { background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%); }
+        [data-theme="light"] .form-select {
+            background-color: #f8fafc;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(0,0,0,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            border-color: rgba(0,0,0,0.12); color: #0f172a;
+        }
+        [data-theme="light"] .date-input { color: #0f172a; }
+        [data-theme="light"] .step-btn { color: #0f172a; }
+        [data-theme="light"] .step-input { color: #0f172a; border-color: rgba(0,0,0,0.12); }
+        [data-theme="light"] .history-text { color: rgba(0,0,0,0.6); }
+        [data-theme="light"] .history-date { color: #64748b; }
+        [data-theme="light"] .save-btn { box-shadow: 0 8px 28px rgba(124,58,237,0.3); }
+        [data-theme="light"] .dp-chip { background: #f8fafc; border-color: rgba(0,0,0,0.12); color: #0f172a; }
     </style>
 </head>
 <body>
