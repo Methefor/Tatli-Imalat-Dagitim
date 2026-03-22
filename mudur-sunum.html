@@ -64,6 +64,27 @@ html,body{width:100%;height:100%;overflow:hidden;
   cursor:pointer;font-size:15px;transition:all .15s}
 .nav-btn:hover{background:rgba(245,158,11,0.2);border-color:var(--a)}
 .nav-btn:disabled{opacity:.25;cursor:default}
+
+.auto-btn{
+  position:relative;width:36px;height:36px;border-radius:50%;
+  background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);
+  color:var(--muted);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:12px;transition:all .15s;flex-shrink:0}
+.auto-btn:hover{background:rgba(245,158,11,0.2);border-color:var(--a);color:var(--text)}
+.auto-btn.on{background:rgba(245,158,11,0.15);border-color:var(--a);color:var(--a)}
+.auto-ring{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.auto-ring circle{fill:none;stroke:var(--a);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:94.2;stroke-dashoffset:94.2;
+  transform:rotate(-90deg);transform-origin:50% 50%}
+.auto-btn.on .auto-ring circle{animation:ring-fill var(--dur,7s) linear forwards}
+@keyframes ring-fill{from{stroke-dashoffset:94.2}to{stroke-dashoffset:0}}
+.speed-sel{
+  background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);
+  border-radius:8px;color:var(--muted);font-size:11px;font-weight:700;
+  padding:0 6px;height:28px;cursor:pointer;outline:none;
+  appearance:none;-webkit-appearance:none;min-width:38px;text-align:center}
+.speed-sel:focus,.speed-sel:hover{border-color:var(--a);color:var(--text)}
+
 .counter{font-size:13px;font-weight:600;color:var(--muted);min-width:52px;text-align:center}
 
 .key-hint{
@@ -789,12 +810,24 @@ ul.bl.green li::before{color:var(--green)} ul.bl.red li::before{content:'✕';co
   <button class="nav-btn" id="prevBtn" onclick="go(-1)" disabled>←</button>
   <span class="counter" id="ctr">1 / 16</span>
   <button class="nav-btn" id="nextBtn" onclick="go(1)">→</button>
+  <span style="width:1px;height:20px;background:rgba(245,158,11,0.2);display:inline-block;margin:0 2px"></span>
+  <button class="auto-btn" id="autoBtn" onclick="toggleAuto()" title="Oto-Oynat">
+    <svg class="auto-ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15"/></svg>
+    <span id="autoIcon" style="position:relative;z-index:1">▶</span>
+  </button>
+  <select class="speed-sel" id="speedSel" onchange="setSpeed(this.value)" title="Slayt süresi">
+    <option value="5">5s</option>
+    <option value="7" selected>7s</option>
+    <option value="10">10s</option>
+    <option value="15">15s</option>
+  </select>
 </div>
 
 <script>
 const slides=Array.from(document.querySelectorAll('.slide'));
 const total=slides.length;
 let cur=0;
+
 function go(dir){
   const nxt=cur+dir;
   if(nxt<0||nxt>=total)return;
@@ -805,13 +838,16 @@ function go(dir){
   slides[cur].classList.remove('out');
   slides[cur].classList.add('active');
   upd();
+  if(autoTimer)restartAutoTimer();
 }
+
 function upd(){
   document.getElementById('ctr').textContent=(cur+1)+' / '+total;
   document.getElementById('prevBtn').disabled=cur===0;
   document.getElementById('nextBtn').disabled=cur===total-1;
   document.getElementById('progress').style.width=((cur+1)/total*100)+'%';
 }
+
 document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(1);}
   if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();go(-1);}
@@ -823,6 +859,51 @@ document.addEventListener('touchend',e=>{
   const dx=e.changedTouches[0].clientX-tx;
   if(Math.abs(dx)>48)go(dx<0?1:-1);
 },{passive:true});
+
+/* ── Oto-Oynat ── */
+let autoTimer=null;
+let autoDur=7;
+
+function resetRing(){
+  const r=document.querySelector('.auto-ring circle');
+  if(!r)return;
+  r.style.animation='none';
+  void r.offsetWidth;
+  r.style.animation='';
+}
+
+function restartAutoTimer(){
+  clearInterval(autoTimer);
+  resetRing();
+  if(cur>=total-1){stopAuto();return;}
+  autoTimer=setInterval(()=>{
+    if(cur<total-1){go(1);}else{stopAuto();}
+  },autoDur*1000);
+}
+
+function startAuto(){
+  document.getElementById('autoBtn').classList.add('on');
+  document.getElementById('autoIcon').textContent='⏸';
+  document.documentElement.style.setProperty('--dur',autoDur+'s');
+  restartAutoTimer();
+}
+
+function stopAuto(){
+  clearInterval(autoTimer);
+  autoTimer=null;
+  document.getElementById('autoBtn').classList.remove('on');
+  document.getElementById('autoIcon').textContent='▶';
+  resetRing();
+}
+
+function toggleAuto(){autoTimer?stopAuto():startAuto();}
+
+function setSpeed(val){
+  autoDur=+val;
+  document.documentElement.style.setProperty('--dur',autoDur+'s');
+  if(autoTimer){stopAuto();startAuto();}
+}
+
 upd();
 </script>
 </body>
