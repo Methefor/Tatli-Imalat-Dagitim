@@ -162,7 +162,36 @@
         }
         .form-select option { background: #1e293b; color: var(--text); }
 
-        /* ── Çoklu tatlı listesi ── */
+        /* ── Tatlı seçici chip'ler ── */
+        .dessert-picker {
+            display: flex; flex-wrap: wrap; gap: 7px;
+            padding: 12px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 10px;
+        }
+
+        .dp-chip {
+            display: flex; align-items: center; gap: 5px;
+            padding: 7px 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px; font-weight: 600; color: var(--text);
+            cursor: pointer; transition: all 0.15s;
+            touch-action: manipulation; user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .dp-chip:active { transform: scale(0.93); }
+        .dp-chip.active {
+            background: var(--acc-dim);
+            border-color: var(--acc-brd);
+            color: var(--accent);
+        }
+        .dp-chip-emoji { font-size: 15px; line-height: 1; }
+
+        /* ── Seçilen tatlı listesi ── */
         .dessert-qty-list {
             background: var(--glass);
             border: 1px solid var(--border);
@@ -178,7 +207,7 @@
         }
         .dq-row:last-child { border-bottom: none; }
 
-        .dq-emoji { font-size: 22px; flex-shrink: 0; }
+        .dq-emoji { font-size: 20px; flex-shrink: 0; }
         .dq-name  { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
 
         .dq-stepper { display: flex; align-items: center; gap: 5px; }
@@ -352,10 +381,16 @@
 
         </div>
 
-        <!-- Tatlı + Miktar Listesi -->
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 2px;">Transfer Edilecek Tatlılar</div>
+        <!-- Tatlı seçici -->
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 2px;">Tatlı Seç</div>
+        <div class="dessert-picker" id="dessertPickerGrid">
+            <div class="empty-history" style="padding:8px">Yükleniyor…</div>
+        </div>
+
+        <!-- Seçilen tatlılar listesi -->
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 2px;">Miktar Gir</div>
         <div class="dessert-qty-list" id="dessertQtyList">
-            <div class="empty-history" style="padding:20px">Yükleniyor…</div>
+            <div class="empty-history" id="dqEmpty" style="padding:18px;font-size:13px;color:var(--muted)">↑ Yukarıdan tatlı seçin</div>
         </div>
 
         <!-- Geçmiş Transferler -->
@@ -387,6 +422,8 @@
         dateInput.value = getTodayDate();
         dateInput.max   = getTodayDate();
 
+        let _allDesserts = [];
+
         // Şube ve tatlıları yükle
         async function loadSelects() {
             const [branches, desserts] = await Promise.all([
@@ -403,24 +440,60 @@
                 toBranchSel.appendChild(opt);
             });
 
-            // Tatlı miktar listesini oluştur
-            const list = document.getElementById('dessertQtyList');
-            if (!desserts || desserts.length === 0) {
-                list.innerHTML = '<div class="empty-history">Tatlı bulunamadı.</div>';
+            _allDesserts = desserts || [];
+            const grid = document.getElementById('dessertPickerGrid');
+            if (_allDesserts.length === 0) {
+                grid.innerHTML = '<div class="empty-history" style="padding:8px">Tatlı bulunamadı.</div>';
                 return;
             }
-            list.innerHTML = desserts.map(d => `
-                <div class="dq-row" data-dessert-id="${d.id}" data-dessert-name="${d.name}">
+
+            // Chip grid oluştur
+            grid.innerHTML = _allDesserts.map(d => `
+                <div class="dp-chip" data-dessert-id="${d.id}" onclick="toggleDessert(this)">
+                    <span class="dp-chip-emoji">${d.emoji || '🍰'}</span>
+                    <span>${d.name}</span>
+                </div>`).join('');
+        }
+
+        function toggleDessert(chip) {
+            const id = chip.dataset.dessertId;
+            const isActive = chip.classList.toggle('active');
+            const list = document.getElementById('dessertQtyList');
+            const empty = document.getElementById('dqEmpty');
+
+            if (isActive) {
+                // Chip'e karşılık gelen tatlıyı bul
+                const d = _allDesserts.find(x => String(x.id) === String(id));
+                if (!d) return;
+                if (empty) empty.remove();
+                const row = document.createElement('div');
+                row.className = 'dq-row';
+                row.dataset.dessertId   = d.id;
+                row.dataset.dessertName = d.name;
+                row.innerHTML = `
                     <span class="dq-emoji">${d.emoji || '🍰'}</span>
                     <span class="dq-name">${d.name}</span>
                     <div class="dq-stepper">
-                        <button class="step-btn" onclick="stepQty(this, -1)" type="button">−</button>
+                        <button class="step-btn" onclick="stepQty(this,-1)" type="button">−</button>
                         <input class="step-input" type="number" min="0" value="0"
-                               inputmode="numeric"
-                               oninput="onQtyInput(this)">
-                        <button class="step-btn" onclick="stepQty(this, 1)" type="button">+</button>
-                    </div>
-                </div>`).join('');
+                               inputmode="numeric" oninput="onQtyInput(this)">
+                        <button class="step-btn" onclick="stepQty(this,1)" type="button">+</button>
+                    </div>`;
+                list.appendChild(row);
+            } else {
+                // Satırı kaldır
+                const row = list.querySelector(`.dq-row[data-dessert-id="${id}"]`);
+                if (row) row.remove();
+                // Liste boşaldıysa empty state geri ekle
+                if (!list.querySelector('.dq-row')) {
+                    const e = document.createElement('div');
+                    e.className = 'empty-history';
+                    e.id = 'dqEmpty';
+                    e.style.cssText = 'padding:18px;font-size:13px;color:var(--muted)';
+                    e.textContent = '↑ Yukarıdan tatlı seçin';
+                    list.appendChild(e);
+                }
+            }
         }
 
         function stepQty(btn, delta) {
@@ -565,10 +638,16 @@
 
             if (errorCount === 0) {
                 showToast(`✅ ${successCount} çeşit tatlı, toplam ${totalQty} adet → ${toBranchName}`, 'success');
-                document.querySelectorAll('#dessertQtyList .step-input').forEach(inp => {
-                    inp.value = '0';
-                    inp.classList.remove('has-value');
-                });
+                // Seçili chip'leri temizle
+                document.querySelectorAll('#dessertPickerGrid .dp-chip.active').forEach(c => c.classList.remove('active'));
+                // Qty listesini sıfırla
+                const qtyList = document.getElementById('dessertQtyList');
+                qtyList.innerHTML = '';
+                const e = document.createElement('div');
+                e.className = 'empty-history'; e.id = 'dqEmpty';
+                e.style.cssText = 'padding:18px;font-size:13px;color:var(--muted)';
+                e.textContent = '↑ Yukarıdan tatlı seçin';
+                qtyList.appendChild(e);
                 document.getElementById('toBranchSelect').value = '';
                 await loadHistory();
             } else {
