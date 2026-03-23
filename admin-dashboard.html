@@ -2,13 +2,13 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <meta name="theme-color" content="#f59e0b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="Tatlı Takip">
     <title>Yönetici Paneli — Tatlı Takip</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -741,8 +741,14 @@
         }
 
         @media (max-width: 768px) {
-            .topbar { padding: 0 16px; }
+            .topbar { padding: 0 12px; }
             .topbar-clock { display: none; }
+            .report-btn { display: none; }
+            .topbar-right { gap: 8px; }
+            .logout-btn { padding: 6px 10px; font-size: 12px; }
+            .topbar-brand-name { font-size: 13px; }
+            .topbar-brand-sub { display: none; }
+            .topbar-emblem { width: 30px; height: 30px; font-size: 15px; }
             .main { padding: 20px 14px 48px; }
             .page-header { flex-direction: column; align-items: flex-start; }
             .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
