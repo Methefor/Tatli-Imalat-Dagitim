@@ -745,10 +745,14 @@
             .topbar-clock { display: none; }
             .main { padding: 20px 14px 48px; }
             .page-header { flex-direction: column; align-items: flex-start; }
-            .kpi-grid { grid-template-columns: 1fr; gap: 12px; }
-            .kpi-value { font-size: 30px; }
-            .filter-tabs { width: 100%; }
-            .tab-btn { flex: 1; padding: 7px 10px; font-size: 12px; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .kpi-value { font-size: 28px; }
+            .header-actions { flex-wrap: wrap; gap: 8px; width: 100%; }
+            .filter-tabs { width: 100%; flex-wrap: wrap; gap: 5px; }
+            .tab-btn { padding: 7px 10px; font-size: 12px; flex-shrink: 0; }
+            .month-nav { flex-shrink: 0; }
+            .compare-toggle { font-size: 12px; padding: 6px 10px; }
+            .export-btn { font-size: 12px; padding: 6px 10px; }
             .stock-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
             .live-pill span:last-child { display: none; }
             /* Şube tablo → kart */
@@ -758,13 +762,123 @@
             .gelir-hero-amount { font-size: 30px; }
             .gelir-hero { padding: 18px 16px; gap: 12px; }
             .gelir-icon { font-size: 32px; }
+            /* Tablolar yatay scroll */
+            .overflow-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            /* Score grid mobil */
+            .score-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            /* Heatmap scroll */
+            .heatmap-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         }
 
         @media (max-width: 480px) {
+            .kpi-grid { grid-template-columns: 1fr; }
             .panel-header { padding: 14px 16px; }
             .data-table th, .data-table td { padding: 10px 10px; font-size: 12px; }
             .chart-wrap { height: 260px; padding: 14px 12px 18px; }
+            .score-grid { grid-template-columns: 1fr !important; }
         }
+
+        /* ── AKILLI UYARILAR ────────────────────────── */
+        .smart-alerts {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .smart-alerts:empty { display: none; }
+        .alert-item {
+            display: flex; align-items: center; gap: 7px;
+            padding: 9px 14px; border-radius: 12px;
+            font-size: 12.5px; font-weight: 600; line-height: 1.4;
+            border: 1px solid;
+            animation: fadeUp 0.4s ease both;
+        }
+        .alert-warn  { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: #fbbf24; }
+        .alert-danger{ background: rgba(239,68,68,0.1);  border-color: rgba(239,68,68,0.3);  color: #f87171; }
+        .alert-good  { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #34d399; }
+        .alert-info  { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #60a5fa; }
+        .alert-item b { font-weight: 800; }
+
+        /* ── ŞUBE SKOR KARTLARI ──────────────────────── */
+        .score-section-title {
+            font-size: 12px; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            padding: 16px 20px 10px; border-top: 1px solid var(--border);
+        }
+        .score-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; padding: 0 16px 20px;
+        }
+        .score-card {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 14px; padding: 14px 16px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .score-card-top { display: flex; align-items: center; justify-content: space-between; }
+        .score-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+        .score-val { font-size: 22px; font-weight: 900; line-height: 1; }
+        .score-val.green { color: var(--green); }
+        .score-val.amber { color: var(--amber); }
+        .score-val.red   { color: var(--red); }
+        .score-bar-track { height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+        .score-bar-fill  { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+        .score-bar-fill.green { background: linear-gradient(90deg, #10b981, #059669); }
+        .score-bar-fill.amber { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .score-bar-fill.red   { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .score-sub { font-size: 10px; color: var(--text-3); font-weight: 600; }
+
+        /* ── KARŞILAŞTIRMA GRAFİĞİ ───────────────────── */
+        .compare-chart-wrap {
+            padding: 8px 24px 20px;
+            border-top: 1px solid var(--border);
+        }
+        .compare-chart-title {
+            font-size: 11px; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            margin-bottom: 10px;
+        }
+        #compareChartCanvas { max-height: 180px; }
+
+        /* ── STOK DEVİR HIZI ─────────────────────────── */
+        .turnover-list { padding: 8px 16px 20px; display: flex; flex-direction: column; gap: 0; }
+        .turnover-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .turnover-row:last-child { border-bottom: none; }
+        .turnover-rank { font-size: 12px; font-weight: 800; color: var(--text-3); min-width: 20px; text-align: center; }
+        .turnover-emoji { font-size: 22px; flex-shrink: 0; }
+        .turnover-name { flex: 1; font-size: 13px; font-weight: 600; }
+        .turnover-badge {
+            font-size: 16px; flex-shrink: 0;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+        }
+        .turnover-ratio { font-size: 14px; font-weight: 800; min-width: 48px; text-align: right; }
+        .turnover-ratio.fast { color: var(--amber); }
+        .turnover-ratio.mid  { color: var(--blue); }
+        .turnover-ratio.slow { color: var(--text-3); }
+        .turnover-bar-wrap { width: 80px; height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+        .turnover-bar { height: 100%; background: linear-gradient(90deg, var(--amber), var(--green)); border-radius: 3px; transition: width 0.7s ease; }
+
+        /* ── ISISI HARİTASI (HEATMAP) ────────────────── */
+        .heatmap-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 8px 16px 20px; }
+        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+        .heatmap-table th {
+            padding: 8px 10px; font-size: 10px; font-weight: 700;
+            color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em;
+            text-align: center; background: var(--surface);
+            position: sticky; top: 0;
+        }
+        .heatmap-table th:first-child { text-align: left; min-width: 90px; }
+        .heatmap-table td {
+            padding: 8px 10px; text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px; font-weight: 700;
+            transition: background 0.3s;
+        }
+        .heatmap-table td:first-child {
+            text-align: left; font-size: 12px; font-weight: 600;
+            color: var(--text-2); padding-left: 4px;
+        }
+        .heatmap-table tr:last-child td { border-bottom: none; }
 
         /* ── KPI KARŞILAŞTIRMA ───────────────────────── */
         .kpi-comp {
@@ -1169,6 +1283,9 @@
             </div>
         </div>
 
+        <!-- Akıllı Uyarılar -->
+        <div id="smartAlerts" class="smart-alerts"></div>
+
         <!-- KPI Cards -->
         <div class="kpi-grid">
             <div class="kpi-card fade-up" style="animation-delay:0.05s">
@@ -1245,6 +1362,9 @@
                 </div>
                 <!-- Mobil kartlar -->
                 <div class="branch-cards" id="branchCards"></div>
+                <!-- Performans Skorları -->
+                <div class="score-section-title">🏆 Şube Performans Skoru</div>
+                <div class="score-grid" id="branchScoresGrid"></div>
             </div>
 
             <!-- Chart -->
@@ -1275,6 +1395,17 @@
             </div>
         </div>
 
+        <!-- Tatlı × Şube Satış Haritası -->
+        <div class="panel fade-up" style="animation-delay:0.32s">
+            <div class="panel-header">
+                <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
+                <span class="panel-badge" id="heatmapBadge">—</span>
+            </div>
+            <div class="heatmap-wrap">
+                <div id="heatmapContent"><div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div></div>
+            </div>
+        </div>
+
         <!-- Satış Trendi -->
         <div class="panel fade-up" style="animation-delay:0.35s">
             <div class="panel-header">
@@ -1283,6 +1414,10 @@
             </div>
             <div class="chart-wrap-trend">
                 <canvas id="trendChart"></canvas>
+            </div>
+            <div class="compare-chart-wrap" id="compareChartSection" style="display:none">
+                <div class="compare-chart-title">📅 Bu Ay vs Geçen Ay</div>
+                <canvas id="compareChartCanvas"></canvas>
             </div>
         </div>
 
@@ -1335,6 +1470,17 @@
             </div>
             <div id="forecastContent">
                 <div class="fc-note">⏳ Yükleniyor...</div>
+            </div>
+        </div>
+
+        <!-- Stok Devir Hızı -->
+        <div class="panel fade-up" style="animation-delay:0.57s">
+            <div class="panel-header">
+                <h2 class="panel-title">🔥 Stok Devir Hızı</h2>
+                <span class="panel-badge" id="turnoverBadge">Dönem</span>
+            </div>
+            <div class="turnover-list" id="turnoverContent">
+                <div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div>
             </div>
         </div>
 
@@ -1407,6 +1553,7 @@
         let trendChart       = null;
         let wasteTrendChart  = null;
         let yearlyChart      = null;
+        let compareChart     = null;
         let currentYear      = new Date().getFullYear();
         const DAILY_TARGET   = 5000;
         let autoRefreshTimer = null;
@@ -1621,6 +1768,11 @@
             await updateCiroSection();
             await updateMaliyetSection();
             updateForecastSection();
+            updateSmartAlerts();
+            updateBranchScores();
+            updateCompareChart();
+            updateStockTurnover();
+            updateHeatmap();
             updatePrintHeader();
             updateLiveStatus();
         }
@@ -2755,6 +2907,351 @@ _Mutlukent Tatlı Takip Sistemi_`;
                     }
                 }
             });
+        }
+
+        // ── Akıllı Uyarılar ──────────────────────────────
+        function updateSmartAlerts() {
+            const el = document.getElementById('smartAlerts');
+            if (!el) return;
+            if (!allData || !allData.length) { el.innerHTML = ''; return; }
+
+            const alerts = [];
+
+            // Tatlı × Şube bazında toplam
+            const bdMap = {};
+            allData.forEach(e => {
+                if (!e.branches || !e.desserts) return;
+                const key = `${e.branches.id}|${e.dessert_id}`;
+                if (!bdMap[key]) bdMap[key] = { branch: e.branches.name, dessert: e.desserts.name + (e.desserts.emoji ? ' ' + e.desserts.emoji : ''), received: 0, waste: 0 };
+                bdMap[key].received += e.received_amount || 0;
+                bdMap[key].waste    += e.waste_amount    || 0;
+            });
+
+            // Şube bazında toplam
+            const brMap = {};
+            allData.forEach(e => {
+                if (!e.branches) return;
+                const bn = e.branches.id;
+                if (!brMap[bn]) brMap[bn] = { name: e.branches.name, received: 0, waste: 0 };
+                brMap[bn].received += e.received_amount || 0;
+                brMap[bn].waste    += e.waste_amount    || 0;
+            });
+
+            // 1. Yüksek zayiat oranı (tatlı×şube bazında)
+            Object.values(bdMap).forEach(bd => {
+                if (bd.received >= 10 && bd.waste / bd.received > 0.10) {
+                    const pct = Math.round(bd.waste / bd.received * 100);
+                    alerts.push({ type: 'warn', icon: '⚠️', text: `<b>${bd.branch}</b> — <b>${bd.dessert}</b> zayi oranı %${pct}` });
+                }
+            });
+
+            // 2. Kritik zayiat oranı şube geneli
+            Object.values(brMap).forEach(br => {
+                if (br.received >= 20 && br.waste / br.received > 0.15) {
+                    const pct = Math.round(br.waste / br.received * 100);
+                    if (!alerts.find(a => a.text.includes(br.name) && a.type === 'danger')) {
+                        alerts.push({ type: 'danger', icon: '🚨', text: `<b>${br.name}</b> genelinde zayiat oranı kritik: %${pct}` });
+                    }
+                }
+            });
+
+            // 3. Satış trendi: son N gün vs önceki N gün
+            const soldByDate = {};
+            allData.forEach(e => {
+                if (!e.branches) return;
+                const d = e.entry_date;
+                if (!soldByDate[d]) soldByDate[d] = { received: 0, waste: 0 };
+                soldByDate[d].received += e.received_amount || 0;
+                soldByDate[d].waste    += e.waste_amount    || 0;
+            });
+            const dates = Object.keys(soldByDate).sort();
+            if (dates.length >= 6) {
+                const half = Math.floor(dates.length / 2);
+                const recent = dates.slice(-half).reduce((s, d) => s + soldByDate[d].received, 0);
+                const older  = dates.slice(0, half).reduce((s, d) => s + soldByDate[d].received, 0);
+                if (older > 0 && recent > older * 1.2) {
+                    const pct = Math.round((recent - older) / older * 100);
+                    alerts.push({ type: 'good', icon: '📈', text: `Son ${half} gün dağıtımı önceki döneme göre <b>%${pct} artış</b> gösteriyor` });
+                }
+            }
+
+            // 4. Tümü iyi
+            if (alerts.length === 0) {
+                alerts.push({ type: 'good', icon: '✅', text: 'Tüm şubeler normal seviyelerde — kritik uyarı yok' });
+            }
+
+            el.innerHTML = alerts.slice(0, 5).map(a =>
+                `<div class="alert-item alert-${a.type}">${a.icon} <span>${a.text}</span></div>`
+            ).join('');
+        }
+
+        // ── Şube Performans Skoru ─────────────────────────
+        function updateBranchScores() {
+            const el = document.getElementById('branchScoresGrid');
+            if (!el || !allData || !allData.length) { if (el) el.innerHTML = ''; return; }
+
+            // Şube bazında aggregate
+            const brMap = {};
+            allData.forEach(e => {
+                if (!e.branches) return;
+                const id = e.branches.id;
+                if (!brMap[id]) brMap[id] = { name: e.branches.name, received: 0, waste: 0, remaining: [], sold: 0 };
+                const r = e.received_amount || 0;
+                const k = e.remaining_amount;
+                const w = e.waste_amount || 0;
+                brMap[id].received += r;
+                brMap[id].waste    += w;
+                if (k !== null && k !== undefined) brMap[id].remaining.push(k);
+            });
+
+            // Sold hesapla (basit: received - waste - avg_remaining)
+            Object.values(brMap).forEach(br => {
+                const avgRem = br.remaining.length ? br.remaining.reduce((a, b) => a + b, 0) / br.remaining.length : 0;
+                br.sold = Math.max(0, br.received - br.waste - avgRem);
+                br.wasteRatio = br.received > 0 ? br.waste / br.received : 0;
+                br.stockRatio = br.received > 0 ? avgRem / br.received : 0;
+            });
+
+            const branches = Object.values(brMap);
+            const maxSold  = Math.max(...branches.map(b => b.sold), 1);
+
+            branches.forEach(br => {
+                // Satış puanı: 0-40
+                const salesScore = (br.sold / maxSold) * 40;
+                // Zayiat puanı: 0-30 (0% = 30 puan, 10%+ = 0 puan)
+                const wasteScore = Math.max(0, 30 - br.wasteRatio * 300);
+                // Stok puanı: 0-30 (0.05–0.20 arası ideal)
+                const sr = br.stockRatio;
+                const stockScore = (sr >= 0.05 && sr <= 0.20) ? 30 : Math.max(0, 30 - Math.abs(sr - 0.125) * 120);
+                br.score = Math.min(100, Math.round(salesScore + wasteScore + stockScore));
+            });
+
+            branches.sort((a, b) => b.score - a.score);
+
+            el.innerHTML = branches.map(br => {
+                const cls = br.score >= 70 ? 'green' : br.score >= 40 ? 'amber' : 'red';
+                const wastePct = Math.round(br.wasteRatio * 100);
+                return `<div class="score-card">
+                    <div class="score-card-top">
+                        <div class="score-name" title="${br.name}">${br.name}</div>
+                        <div class="score-val ${cls}">${br.score}</div>
+                    </div>
+                    <div class="score-bar-track">
+                        <div class="score-bar-fill ${cls}" style="width:${br.score}%"></div>
+                    </div>
+                    <div class="score-sub">Zayiat: %${wastePct} · Satış: ${Math.round(br.sold)} adet</div>
+                </div>`;
+            }).join('');
+        }
+
+        // ── Bu Ay vs Geçen Ay Karşılaştırma Grafiği ──────
+        function updateCompareChart() {
+            const section = document.getElementById('compareChartSection');
+            const ctx     = document.getElementById('compareChartCanvas');
+            if (!section || !ctx) return;
+
+            // Sadece aylık filtre aktifse göster
+            const hasData = prevMonthData && prevMonthData.length > 0;
+            section.style.display = hasData ? 'block' : 'none';
+            if (!hasData || !allData || !allData.length) {
+                if (compareChart) { compareChart.destroy(); compareChart = null; }
+                return;
+            }
+
+            // Günlük satış toplamı: gelen - zayiat
+            function buildDailyTotals(data) {
+                const map = {};
+                data.forEach(e => {
+                    const d = e.entry_date;
+                    if (!map[d]) map[d] = 0;
+                    map[d] += (e.received_amount || 0) - (e.waste_amount || 0);
+                });
+                return map;
+            }
+
+            const thisMap = buildDailyTotals(allData);
+            const prevMap = buildDailyTotals(prevMonthData);
+
+            // X ekseni: günler (1–31)
+            const maxDay = 31;
+            const labels  = Array.from({length: maxDay}, (_, i) => i + 1);
+            const thisData = labels.map(d => {
+                const key = Object.keys(thisMap).find(k => parseInt(k.split('-')[2]) === d);
+                return key ? Math.round(thisMap[key]) : null;
+            });
+            const prevData = labels.map(d => {
+                const key = Object.keys(prevMap).find(k => parseInt(k.split('-')[2]) === d);
+                return key ? Math.round(prevMap[key]) : null;
+            });
+
+            if (compareChart) compareChart.destroy();
+            compareChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Bu Ay',
+                            data: thisData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245,158,11,0.08)',
+                            borderWidth: 2.5,
+                            pointRadius: 3,
+                            tension: 0.35,
+                            spanGaps: true,
+                        },
+                        {
+                            label: 'Geçen Ay',
+                            data: prevData,
+                            borderColor: 'rgba(148,163,184,0.6)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 4],
+                            pointRadius: 2,
+                            tension: 0.35,
+                            spanGaps: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 10 } },
+                        tooltip: {
+                            backgroundColor: '#111d30', titleColor: '#e2e8f0',
+                            bodyColor: '#94a3b8', borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1, padding: 10, cornerRadius: 8,
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#5a7192', font: { size: 11 }, maxTicksLimit: 10 } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a7192', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        // ── Stok Devir Hızı ───────────────────────────────
+        function updateStockTurnover() {
+            const el = document.getElementById('turnoverContent');
+            if (!el || !allData || !allData.length) {
+                if (el) el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Veri yok</div>';
+                return;
+            }
+
+            // Tatlı bazında toplam sold ve ortalama kalan
+            const dessertMap = {};
+            allData.forEach(e => {
+                if (!e.desserts) return;
+                const id = e.dessert_id;
+                if (!dessertMap[id]) dessertMap[id] = { name: e.desserts.name, emoji: e.desserts.emoji || '🍰', received: 0, waste: 0, remainings: [] };
+                dessertMap[id].received += e.received_amount || 0;
+                dessertMap[id].waste    += e.waste_amount    || 0;
+                if (e.remaining_amount !== null && e.remaining_amount !== undefined) {
+                    dessertMap[id].remainings.push(e.remaining_amount);
+                }
+            });
+
+            const list = Object.values(dessertMap).map(d => {
+                const avgRem = d.remainings.length ? d.remainings.reduce((a, b) => a + b, 0) / d.remainings.length : 0;
+                const sold   = Math.max(0, d.received - d.waste - avgRem);
+                const ratio  = avgRem > 0 ? sold / avgRem : (sold > 0 ? 99 : 0);
+                return { name: d.name, emoji: d.emoji, sold: Math.round(sold), avgRem: Math.round(avgRem), ratio };
+            }).sort((a, b) => b.ratio - a.ratio);
+
+            const maxRatio = Math.max(...list.map(d => d.ratio), 1);
+
+            el.innerHTML = list.map((d, i) => {
+                const badge = d.ratio >= 5 ? '🔥' : d.ratio >= 2 ? '⚡' : '🐌';
+                const cls   = d.ratio >= 5 ? 'fast' : d.ratio >= 2 ? 'mid' : 'slow';
+                const barW  = Math.min(100, Math.round(d.ratio / maxRatio * 100));
+                return `<div class="turnover-row">
+                    <span class="turnover-rank">${i + 1}</span>
+                    <span class="turnover-emoji">${d.emoji}</span>
+                    <span class="turnover-name">${d.name}</span>
+                    <div class="turnover-bar-wrap"><div class="turnover-bar" style="width:${barW}%"></div></div>
+                    <span class="turnover-badge">${badge}</span>
+                    <span class="turnover-ratio ${cls}">${d.ratio >= 99 ? '∞' : d.ratio.toFixed(1)}x</span>
+                </div>`;
+            }).join('');
+
+            document.getElementById('turnoverBadge').textContent = list.length + ' tatlı';
+        }
+
+        // ── Tatlı × Şube Heatmap ──────────────────────────
+        function updateHeatmap() {
+            const el    = document.getElementById('heatmapContent');
+            const badge = document.getElementById('heatmapBadge');
+            if (!el || !allData || !allData.length) {
+                if (el) el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Veri yok</div>';
+                return;
+            }
+
+            // Tatlı × Şube satış toplamı
+            const matrix  = {}; // dessertId → branchId → sold
+            const desserts = {}; // id → { name, emoji }
+            const branches = {}; // id → name
+
+            allData.forEach(e => {
+                if (!e.branches || !e.desserts) return;
+                const did = e.dessert_id;
+                const bid = e.branches.id;
+                desserts[did] = { name: e.desserts.name, emoji: e.desserts.emoji || '' };
+                branches[bid] = e.branches.name;
+                if (!matrix[did]) matrix[did] = {};
+                if (!matrix[did][bid]) matrix[did][bid] = { received: 0, waste: 0, remaining: [] };
+                matrix[did][bid].received += e.received_amount || 0;
+                matrix[did][bid].waste    += e.waste_amount    || 0;
+                if (e.remaining_amount !== null) matrix[did][bid].remaining.push(e.remaining_amount);
+            });
+
+            // Satılan hesapla
+            const sold = {}; // dessertId → branchId → soldAmt
+            let globalMax = 0;
+            Object.entries(matrix).forEach(([did, bmap]) => {
+                sold[did] = {};
+                Object.entries(bmap).forEach(([bid, vals]) => {
+                    const avgRem = vals.remaining.length ? vals.remaining.reduce((a, b) => a + b, 0) / vals.remaining.length : 0;
+                    const s = Math.max(0, Math.round(vals.received - vals.waste - avgRem));
+                    sold[did][bid] = s;
+                    if (s > globalMax) globalMax = s;
+                });
+            });
+
+            const dessertIds = Object.keys(desserts).sort((a, b) => {
+                const ta = Object.values(sold[a] || {}).reduce((s, v) => s + v, 0);
+                const tb = Object.values(sold[b] || {}).reduce((s, v) => s + v, 0);
+                return tb - ta;
+            });
+            const branchIds = Object.keys(branches);
+
+            if (!dessertIds.length || !branchIds.length) {
+                el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3)">Veri yok</div>';
+                return;
+            }
+
+            let html = `<table class="heatmap-table"><thead><tr>
+                <th>Tatlı</th>
+                ${branchIds.map(bid => `<th>${branches[bid].split(' ')[0]}</th>`).join('')}
+                <th>Toplam</th>
+            </tr></thead><tbody>`;
+
+            dessertIds.forEach(did => {
+                const rowTotal = branchIds.reduce((s, bid) => s + (sold[did]?.[bid] || 0), 0);
+                html += `<tr><td>${desserts[did].emoji} ${desserts[did].name}</td>`;
+                branchIds.forEach(bid => {
+                    const v = sold[did]?.[bid] || 0;
+                    const opacity = globalMax > 0 ? Math.max(0.05, v / globalMax) : 0.05;
+                    const textColor = opacity > 0.55 ? 'color:#000;font-weight:800' : 'color:var(--text)';
+                    html += `<td style="background:rgba(245,158,11,${opacity.toFixed(2)});${textColor}">${v || '—'}</td>`;
+                });
+                html += `<td style="font-weight:700;color:var(--amber)">${rowTotal}</td></tr>`;
+            });
+
+            html += '</tbody></table>';
+            el.innerHTML = html;
+            if (badge) badge.textContent = `${dessertIds.length} × ${branchIds.length}`;
         }
 
         function changeYear(delta) {
