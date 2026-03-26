@@ -12,6 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Tatlı Takip">
     <title>Kalan Tatlılar</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="prefetch" href="branch-menu.html">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -586,21 +587,21 @@
             if (inputs.length === 0) return;
 
             toggleLoading(true);
-            let successCount = 0;
 
-            for (const input of inputs) {
+            const savePromises = Array.from(inputs).map(input => {
                 const remaining = parseInt(input.value) || 0;
-
-                const result = await saveDailyEntry(
+                return saveDailyEntry(
                     branchId,
                     input.dataset.id,
                     selectedDate,
-                    parseInt(input.dataset.received) || null,  // kalan kaydı: received yoksa dokunma
+                    parseInt(input.dataset.received) || null,
                     remaining,
-                    null, ''  // kalan kaydı: waste_amount'a dokunma
+                    null, ''
                 );
-                if (result.success) successCount++;
-            }
+            });
+
+            const results = await Promise.all(savePromises);
+            const successCount = results.filter(r => r.success).length;
 
             toggleLoading(false);
 

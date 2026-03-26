@@ -1167,6 +1167,7 @@ async function handleToggleDessert(dessertId, checkbox) {
     const isActive = checkbox.checked;
     try {
         await updateDessertActive(dessertId, isActive);
+        clearDessertsCache();
         showToast(isActive ? 'Tatlı aktif edildi' : 'Tatlı pasife alındı', 'success');
         // Update label and del button
         const row = document.getElementById('drow-' + dessertId);
@@ -1197,6 +1198,7 @@ async function handleUpdateDessert(dessertId, btn) {
     btn.innerHTML = '<span class="spinner"></span>';
     try {
         await updateDessert(dessertId, { name, emoji, display_order: order });
+        clearDessertsCache();
         showToast('Tatlı güncellendi', 'success');
     } catch (err) {
         showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');
@@ -1233,6 +1235,7 @@ async function handleAddDessert() {
     btn.innerHTML = '<span class="spinner"></span>';
     try {
         await addDessert(name, emoji, order);
+        clearDessertsCache();
         showToast('Yeni tatlı eklendi', 'success');
         document.getElementById('new-dessert-emoji').value = '';
         document.getElementById('new-dessert-name').value = '';

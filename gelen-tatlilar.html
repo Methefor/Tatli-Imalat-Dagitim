@@ -12,6 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Tatlı Takip">
     <title>Gelen Tatlılar</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="prefetch" href="branch-menu.html">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -252,21 +253,21 @@
             padding: 16px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.045);
             opacity: 0;
-            animation: rowIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+            animation: rowIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .dessert-row:last-child { border-bottom: none; }
 
-        .dessert-row:nth-child(1)  { animation-delay: 0.08s; }
-        .dessert-row:nth-child(2)  { animation-delay: 0.14s; }
-        .dessert-row:nth-child(3)  { animation-delay: 0.20s; }
-        .dessert-row:nth-child(4)  { animation-delay: 0.26s; }
-        .dessert-row:nth-child(5)  { animation-delay: 0.32s; }
-        .dessert-row:nth-child(6)  { animation-delay: 0.38s; }
-        .dessert-row:nth-child(7)  { animation-delay: 0.44s; }
-        .dessert-row:nth-child(8)  { animation-delay: 0.50s; }
-        .dessert-row:nth-child(9)  { animation-delay: 0.56s; }
-        .dessert-row:nth-child(10) { animation-delay: 0.62s; }
+        .dessert-row:nth-child(1)  { animation-delay: 0.03s; }
+        .dessert-row:nth-child(2)  { animation-delay: 0.06s; }
+        .dessert-row:nth-child(3)  { animation-delay: 0.09s; }
+        .dessert-row:nth-child(4)  { animation-delay: 0.12s; }
+        .dessert-row:nth-child(5)  { animation-delay: 0.15s; }
+        .dessert-row:nth-child(6)  { animation-delay: 0.18s; }
+        .dessert-row:nth-child(7)  { animation-delay: 0.21s; }
+        .dessert-row:nth-child(8)  { animation-delay: 0.24s; }
+        .dessert-row:nth-child(9)  { animation-delay: 0.27s; }
+        .dessert-row:nth-child(10) { animation-delay: 0.30s; }
 
         @keyframes rowIn {
             from { opacity: 0; transform: translateX(-12px); filter: blur(4px); }
@@ -660,27 +661,18 @@
             if (inputs.length === 0) return;
 
             toggleLoading(true);
-            let successCount = 0;
 
-            for (const input of inputs) {
-                const newAmt   = parseInt(input.value) || 0;
-                const existing = parseInt(input.dataset.existing) || 0;
+            const savePromises = Array.from(inputs)
+                .filter(input => isEditMode || (parseInt(input.value) || 0) !== 0)
+                .map(input => {
+                    const newAmt   = parseInt(input.value) || 0;
+                    const existing = parseInt(input.dataset.existing) || 0;
+                    const received = isEditMode ? newAmt : existing + newAmt;
+                    return saveDailyEntry(branchId, input.dataset.id, selectedDate, received, null, null, '');
+                });
 
-                // Normal modda hiç girilmemişse atla
-                if (!isEditMode && newAmt === 0) continue;
-
-                const received = isEditMode ? newAmt : existing + newAmt;
-
-                const result = await saveDailyEntry(
-                    branchId,
-                    input.dataset.id,
-                    selectedDate,
-                    received,
-                    null,  // gelen kaydı: remaining_amount'a dokunma
-                    null, ''  // gelen kaydı: waste_amount'a dokunma
-                );
-                if (result.success) successCount++;
-            }
+            const results = await Promise.all(savePromises);
+            const successCount = results.filter(r => r.success).length;
 
             toggleLoading(false);
 
