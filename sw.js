@@ -1,5 +1,5 @@
 // Tatlı Takip — Service Worker
-const CACHE = 'tatli-takip-v12';
+const CACHE = 'tatli-takip-v13';
 
 const STATIC = [
     '/',
@@ -27,7 +27,9 @@ const STATIC = [
 
 self.addEventListener('install', e => {
     e.waitUntil(
-        caches.open(CACHE).then(c => c.addAll(STATIC)).then(() => self.skipWaiting())
+        caches.open(CACHE)
+            .then(c => c.addAll(STATIC).catch(() => {})) // ağ hatası install'ı durdurmasın
+            .then(() => self.skipWaiting())
     );
 });
 
