@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "mutlukent-tatli-takip",
   "builds": [
     {
       "src": "**",
@@ -41,7 +40,19 @@
       ]
     },
     {
-      "source": "/(.*\\.(png|svg|ico|webp|jpg|jpeg))",
+      "source": "/(.*\\.png)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*\\.svg)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*\\.ico)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
       ]
