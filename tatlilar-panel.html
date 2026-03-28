@@ -396,41 +396,131 @@
             .branches-grid { grid-template-columns: 1fr; }
         }
 
-        /* ── ÜRETİM HEDEFİ ──────────────────── */
-        .stock-card-target { font-size: 11px; color: var(--muted); margin-top: 1px; }
-        .stock-card-progress {
-            width: 100%; height: 5px;
-            background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden;
-            margin-top: 6px;
+        /* ── HAFTALIK TAKVİM ─────────────────── */
+        .schedule-section { margin-top: 36px; }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
         }
-        .stock-card-progress-fill {
-            height: 100%; border-radius: 3px;
-            transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+
+        .schedule-table th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            padding: 10px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
         }
-        .pfill-green  { background: linear-gradient(90deg, #10b981, #059669); }
-        .pfill-amber  { background: linear-gradient(90deg, #f59e0b, #d97706); }
-        .pfill-red    { background: linear-gradient(90deg, #ef4444, #dc2626); }
-        .target-edit-row {
-            width: 100%; display: flex; align-items: center; gap: 4px;
-            margin-top: 6px;
+
+        .schedule-table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: middle;
         }
-        .target-input {
-            flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 6px; color: var(--text); font-size: 12px;
-            padding: 4px 6px; text-align: center; max-width: 60px;
+
+        .schedule-table tr:last-child td { border-bottom: none; }
+
+        .schedule-day-col {
+            font-weight: 700;
+            width: 110px;
+            color: rgba(255,255,255,0.7);
         }
-        .target-save-btn {
-            font-size: 11px; padding: 4px 8px;
-            background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.25);
-            border-radius: 6px; color: var(--primary); cursor: pointer;
-            white-space: nowrap;
+
+        .schedule-day-col.today-day {
+            color: var(--primary);
         }
-        .target-edit-mode-btn {
-            font-size: 12px; padding: 6px 12px;
+
+        .schedule-dessert-col { color: var(--text); }
+
+        .schedule-qty-col {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--primary);
+            text-align: right;
+            width: 90px;
+        }
+
+        .schedule-row-today { background: rgba(245,158,11,0.06); }
+
+        .schedule-edit-input {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            padding: 6px 10px;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .schedule-edit-input:focus { border-color: var(--primary); }
+
+        .schedule-qty-input {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 8px;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 700;
+            padding: 6px 10px;
+            width: 80px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .schedule-qty-input:focus { border-color: var(--primary); }
+
+        .schedule-edit-btn {
+            font-size: 12px; padding: 6px 14px;
             background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2);
             border-radius: 8px; color: var(--primary); cursor: pointer;
-            margin-left: auto;
+            font-weight: 600; transition: background 0.2s;
         }
+        .schedule-edit-btn:hover { background: rgba(245,158,11,0.2); }
+        .schedule-save-btn {
+            font-size: 12px; padding: 6px 14px;
+            background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 8px; color: #10b981; cursor: pointer;
+            font-weight: 700; transition: background 0.2s;
+        }
+        .schedule-save-btn:hover { background: rgba(16,185,129,0.25); }
+        .schedule-cancel-btn {
+            font-size: 12px; padding: 6px 14px;
+            background: transparent; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: rgba(255,255,255,0.4); cursor: pointer;
+            transition: background 0.2s;
+        }
+        .schedule-cancel-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+        /* Şifre modalı */
+        .sched-auth-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(5,8,18,0.9);
+            z-index: 9000;
+            align-items: center;
+            justify-content: center;
+        }
+        .sched-auth-overlay.active { display: flex; }
+        .sched-auth-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px 28px;
+            text-align: center;
+            width: 90%;
+            max-width: 300px;
+        }
+        .sched-auth-inputs { display: flex; gap: 8px; justify-content: center; margin: 18px 0; }
 
         /* ── TEMA ─────────────────────────── */
         .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; }
@@ -486,7 +576,6 @@
             <span class="topbar-title">👨‍🍳 Tatlıcılar Paneli</span>
             <span class="topbar-date" id="todayBadge">—</span>
             <button class="refresh-btn" onclick="loadData()">🔄 Yenile</button>
-            <button class="target-edit-mode-btn" id="targetModeBtn" onclick="toggleTargetMode()">🎯 Hedef</button>
             <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
         </div>
 
@@ -554,6 +643,36 @@
                 </div>
             </div>
 
+            <!-- Bölüm 3: Haftalık Üretim Takvimi -->
+            <div class="schedule-section">
+                <div class="section-header" style="margin-bottom:14px">
+                    <span class="section-title">📅 Haftalık Üretim Takvimi</span>
+                    <div class="section-line"></div>
+                    <button class="schedule-edit-btn" id="schedEditBtn" onclick="openSchedAuth()">✏️ Düzenle</button>
+                </div>
+                <div id="scheduleTableWrap">
+                    <div class="loading-state" style="padding:24px 0">Yükleniyor...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Takvim düzenleme şifre modalı -->
+    <div class="sched-auth-overlay" id="schedAuthOverlay">
+        <div class="sched-auth-box">
+            <div style="font-size:40px;margin-bottom:12px;">🔐</div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Yönetici Şifresi</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Takvimi düzenlemek için şifre girin</div>
+            <div class="sched-auth-inputs">
+                <input type="password" class="pin-digit" maxlength="1" id="sa1" inputmode="numeric">
+                <input type="password" class="pin-digit" maxlength="1" id="sa2" inputmode="numeric">
+                <input type="password" class="pin-digit" maxlength="1" id="sa3" inputmode="numeric">
+                <input type="password" class="pin-digit" maxlength="1" id="sa4" inputmode="numeric">
+            </div>
+            <div id="schedAuthError" style="font-size:12px;color:#ef4444;min-height:16px;margin-bottom:12px;"></div>
+            <button class="pin-btn" onclick="checkSchedAuth()" style="font-size:14px;padding:11px;">Giriş</button>
+            <button class="pin-back" onclick="closeSchedAuth()" style="margin-top:10px;">İptal</button>
         </div>
     </div>
 
@@ -593,6 +712,7 @@
                 sessionStorage.setItem('tatlicilarAuth', '1');
                 document.getElementById('pinOverlay').classList.remove('active');
                 loadData();
+                loadSchedule();
             } else {
                 document.getElementById('pinError').textContent = 'Hatalı şifre!';
                 pinIds.forEach(id => document.getElementById(id).value = '');
@@ -635,11 +755,10 @@
             document.getElementById('grandTotalVal').textContent = '—';
             document.getElementById('branchesGrid').innerHTML = '';
 
-            const [branches, desserts, allStock, targets] = await Promise.all([
+            const [branches, desserts, allStock] = await Promise.all([
                 getBranches(),
                 getActiveDesserts(),
-                getAllLatestStock(),
-                getProductionTargets().catch(() => ({}))
+                getAllLatestStock()
             ]);
 
             if (!branches || !desserts) {
@@ -653,35 +772,12 @@
             summaryEl.innerHTML = '';
             let grandTotal = 0;
 
-            // Hedefleri sakla (hedef güncelleme için)
-            window._lastTargets  = targets;
-            window._lastDesserts = desserts;
-
             desserts.forEach(dessert => {
-                // Tüm şubelerdeki bu tatlının toplamı
                 let total = 0;
                 branches.forEach(branch => {
                     total += (allStock[branch.id]?.[dessert.id] ?? 0);
                 });
                 grandTotal += total;
-
-                const target   = Number(targets[String(dessert.id)] || 0);
-                const hasTarget = target > 0;
-                const ratio    = hasTarget ? Math.min(total / target, 1) : 0;
-                const pct      = Math.round(ratio * 100);
-                const fillClass = pct >= 100 ? 'pfill-green' : pct >= 50 ? 'pfill-amber' : 'pfill-red';
-                const targetHtml = hasTarget
-                    ? `<div class="stock-card-target">Hedef: ${target} adet/gün · %${pct}</div>
-                       <div class="stock-card-progress">
-                           <div class="stock-card-progress-fill ${fillClass}" style="width:${pct}%"></div>
-                       </div>`
-                    : `<div class="stock-card-target" style="opacity:0.4">Hedef yok</div>`;
-
-                const editHtml = `
-                    <div class="target-edit-row target-edit-section" id="tgt-${dessert.id}" style="display:none">
-                        <input class="target-input" type="number" min="0" placeholder="${target || '0'}" value="${target || ''}">
-                        <button class="target-save-btn" onclick="saveTarget(${dessert.id}, this)">✓</button>
-                    </div>`;
 
                 const card = document.createElement('div');
                 card.className = 'stock-card';
@@ -689,8 +785,6 @@
                     <div class="stock-card-emoji">${dessert.emoji || '🍰'}</div>
                     <div class="stock-card-name">${dessert.name}</div>
                     <div class="stock-card-value ${total === 0 ? 'zero' : ''}">${total}</div>
-                    ${targetHtml}
-                    ${editHtml}
                 `;
                 summaryEl.appendChild(card);
             });
@@ -744,37 +838,130 @@
             card.classList.toggle('open');
         }
 
-        // ── Üretim Hedefi ─────────────────────────────
-        let targetEditMode = false;
+        // ── Haftalık Takvim ────────────────────────────
+        const DAYS = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+        // JS getDay(): 0=Pazar,1=Pzt,...,6=Cmt → offset to DAYS array index
+        const JS_DAY_MAP = [6,0,1,2,3,4,5]; // Pazar→6, Pzt→0, ...
+        const todayDayIdx = JS_DAY_MAP[new Date().getDay()];
 
-        function toggleTargetMode() {
-            targetEditMode = !targetEditMode;
-            document.querySelectorAll('.target-edit-section').forEach(el => {
-                el.style.display = targetEditMode ? 'flex' : 'none';
-            });
-            const btn = document.getElementById('targetModeBtn');
-            btn.style.background   = targetEditMode ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.1)';
-            btn.style.borderColor  = targetEditMode ? 'rgba(245,158,11,0.5)'  : 'rgba(245,158,11,0.2)';
-            btn.textContent = targetEditMode ? '✓ Tamam' : '🎯 Hedef';
+        let _scheduleData = null;
+        let _schedEditMode = false;
+
+        async function loadSchedule() {
+            _scheduleData = await getWeeklySchedule();
+            renderSchedule(false);
         }
 
-        async function saveTarget(dessertId, btn) {
-            const row   = document.getElementById(`tgt-${dessertId}`);
-            const input = row?.querySelector('input');
-            if (!input) return;
-            const val = parseInt(input.value);
-            if (isNaN(val) || val < 0) { showToast('Geçersiz değer', 'error'); return; }
+        function renderSchedule(editMode) {
+            _schedEditMode = editMode;
+            const wrap = document.getElementById('scheduleTableWrap');
+            if (!_scheduleData) { wrap.innerHTML = '<div class="loading-state" style="padding:24px 0">Yükleniyor...</div>'; return; }
+
+            let rows = '';
+            DAYS.forEach((day, i) => {
+                const entry = _scheduleData[day] || { dessert: '—', qty: 0 };
+                const isToday = i === todayDayIdx;
+                const rowCls = isToday ? 'schedule-row-today' : '';
+                const dayCls = isToday ? 'today-day' : '';
+                const todayBadge = isToday ? ' <span style="font-size:10px;color:var(--primary);font-weight:700;">● Bugün</span>' : '';
+
+                if (editMode) {
+                    rows += `<tr class="${rowCls}">
+                        <td class="schedule-day-col ${dayCls}">${day}${todayBadge}</td>
+                        <td class="schedule-dessert-col"><input class="schedule-edit-input" id="sched-d-${i}" value="${entry.dessert}" placeholder="Tatlı adı"></td>
+                        <td class="schedule-qty-col"><input class="schedule-qty-input" id="sched-q-${i}" type="number" min="0" value="${entry.qty}"></td>
+                    </tr>`;
+                } else {
+                    rows += `<tr class="${rowCls}">
+                        <td class="schedule-day-col ${dayCls}">${day}${todayBadge}</td>
+                        <td class="schedule-dessert-col">${entry.dessert}</td>
+                        <td class="schedule-qty-col">${entry.qty > 0 ? entry.qty + ' adet' : '—'}</td>
+                    </tr>`;
+                }
+            });
+
+            const actionRow = editMode
+                ? `<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+                       <button class="schedule-cancel-btn" onclick="renderSchedule(false)">İptal</button>
+                       <button class="schedule-save-btn" onclick="saveSchedule()">💾 Kaydet</button>
+                   </div>`
+                : '';
+
+            wrap.innerHTML = `
+                <table class="schedule-table">
+                    <thead><tr>
+                        <th>Gün</th>
+                        <th>Tatlı</th>
+                        <th style="text-align:right">Adet</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                ${actionRow}
+            `;
+        }
+
+        async function saveSchedule() {
+            const newSched = {};
+            DAYS.forEach((day, i) => {
+                const d = document.getElementById(`sched-d-${i}`)?.value?.trim() || '—';
+                const q = parseInt(document.getElementById(`sched-q-${i}`)?.value) || 0;
+                newSched[day] = { dessert: d, qty: q };
+            });
             try {
-                await setProductionTarget(dessertId, val);
-                showToast('Hedef kaydedildi ✓', 'success');
-                loadData();
+                await saveWeeklySchedule(newSched);
+                _scheduleData = newSched;
+                renderSchedule(false);
+                showToast('Takvim kaydedildi ✓', 'success');
             } catch (err) {
                 showToast('Kayıt hatası: ' + (err.message || ''), 'error');
             }
         }
 
+        // ── Takvim Şifre Modalı ──────────────────────
+        const saIds = ['sa1','sa2','sa3','sa4'];
+
+        function openSchedAuth() {
+            saIds.forEach(id => document.getElementById(id).value = '');
+            document.getElementById('schedAuthError').textContent = '';
+            document.getElementById('schedAuthOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('sa1').focus(), 100);
+        }
+
+        function closeSchedAuth() {
+            document.getElementById('schedAuthOverlay').classList.remove('active');
+        }
+
+        saIds.forEach((id, idx) => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', e => {
+                if (e.target.value && idx < 3) document.getElementById(saIds[idx + 1]).focus();
+                if (e.target.value && idx === 3) checkSchedAuth();
+            });
+            el.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !e.target.value && idx > 0) document.getElementById(saIds[idx - 1]).focus();
+                if (e.key === 'Enter') checkSchedAuth();
+            });
+        });
+
+        async function checkSchedAuth() {
+            const pin = saIds.map(id => document.getElementById(id).value).join('');
+            if (pin.length !== 4) return;
+            const result = await checkAdminPasswordOnly(pin);
+            if (result.success) {
+                closeSchedAuth();
+                renderSchedule(true);
+            } else {
+                document.getElementById('schedAuthError').textContent = 'Şifre hatalı!';
+                saIds.forEach(id => document.getElementById(id).value = '');
+                document.getElementById('sa1').focus();
+            }
+        }
+
         // Giriş yapılmışsa yükle
-        if (sessionStorage.getItem('tatlicilarAuth') === '1') loadData();
+        if (sessionStorage.getItem('tatlicilarAuth') === '1') {
+            loadData();
+            loadSchedule();
+        }
 
         // 60 saniyede bir yenile
         setInterval(() => {

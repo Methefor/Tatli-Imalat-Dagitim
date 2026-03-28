@@ -660,6 +660,89 @@
             .pin-input { width: 54px; height: 62px; font-size: 24px; }
         }
 
+        /* ── GÜNCELLEME BANNER ──────────────── */
+        #updateBanner {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9000;
+            background: linear-gradient(90deg, #10b981, #059669);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 16px;
+            text-align: center;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        #updateBanner.visible { display: flex; }
+        #updateBanner button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #updateBanner button:hover { background: rgba(255,255,255,0.35); }
+
+        /* ── CHANGELOG ─────────────────────── */
+        .changelog-btn {
+            background: none;
+            border: none;
+            font-size: 11px;
+            color: rgba(255,255,255,0.18);
+            cursor: pointer;
+            padding: 4px 6px;
+            transition: color 0.2s;
+        }
+        .changelog-btn:hover { color: rgba(255,255,255,0.5); }
+
+        .changelog-content { max-width: 460px; }
+        .cl-version {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .cl-version-badge {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.3);
+            color: var(--primary);
+            border-radius: 20px;
+            padding: 3px 10px;
+        }
+        .cl-date { font-size: 11px; color: var(--text-tertiary); }
+        .cl-items { list-style: none; margin-bottom: 20px; }
+        .cl-items li {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 8px;
+        }
+        .cl-items li:last-child { border-bottom: none; }
+        .cl-tag {
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 4px;
+            padding: 2px 6px;
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 1px;
+        }
+        .cl-tag-perf { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+        .cl-tag-feat { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+        .cl-tag-fix  { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+
         /* ── TEMA ─────────────────────────── */
         #themeToggleBtn {
             position: fixed; top: 16px; right: 16px; z-index: 1000;
@@ -710,7 +793,10 @@
         </div>
 
         <!-- Footer -->
-        <div class="footer">© 2026 Mutlukent Esenlik Hizmetleri A.Ş</div>
+        <div class="footer" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+            <span>© 2026 Mutlukent Esenlik Hizmetleri A.Ş</span>
+            <button class="changelog-btn" onclick="openChangelog()" title="Güncelleme notları">📋 v2.3</button>
+        </div>
 
         <!-- VIP Yönetici Kartı -->
         <div class="admin-link-wrap" style="margin-bottom:0">
@@ -728,6 +814,44 @@
         </div>
         <!-- Gizli sistem erişimi -->
         <div class="sys-link"><a href="superadmin.html">sys</a></div>
+    </div>
+
+    <!-- GÜNCELLEME BANNER -->
+    <div id="updateBanner">
+        <span>🎉 Yeni güncelleme mevcut!</span>
+        <button onclick="applyUpdate()">Şimdi Güncelle</button>
+        <button onclick="document.getElementById('updateBanner').classList.remove('visible')" style="background:transparent;border-color:rgba(255,255,255,0.2);font-weight:400;">✕</button>
+    </div>
+
+    <!-- CHANGELOG MODAL -->
+    <div class="modal" id="changelogModal">
+        <div class="modal-content changelog-content">
+            <h3 class="modal-title" style="margin-bottom:20px;">📋 Güncelleme Notları</h3>
+
+            <div class="cl-version">
+                <span class="cl-version-badge">v2.3</span>
+                <span class="cl-date">Mart 2026</span>
+            </div>
+            <ul class="cl-items">
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlıcılar paneline haftalık üretim takvimi eklendi</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici paneli aylık karşılaştırma artık doğru çalışıyor</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlıcılar panelinden Hedef bölümü kaldırıldı</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Ana sayfa açılış süresi büyük ölçüde iyileştirildi</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Şifre girişi sırasındaki kasma giderildi</li>
+            </ul>
+
+            <div class="cl-version">
+                <span class="cl-version-badge">v2.2</span>
+                <span class="cl-date">Mart 2026</span>
+            </div>
+            <ul class="cl-items">
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici paneline 5 yeni analitik bölüm eklendi</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Panel arası geçiş kasması giderildi</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>PWA mobil ekran kaydırma ve zoom kilitleme düzeltildi</li>
+            </ul>
+
+            <button class="modal-close" onclick="document.getElementById('changelogModal').classList.remove('active')">Kapat</button>
+        </div>
     </div>
 
     <!-- ŞUBE SEÇİMİ MODAL -->
@@ -968,6 +1092,47 @@
             }
         });
     </script>
-    <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
+    <script>
+        // ── Service Worker güncelleme tespiti ──────────────
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                // Güncelleme kontrolü
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            document.getElementById('updateBanner').classList.add('visible');
+                        }
+                    });
+                });
+            });
+
+            // Controller değişince (update uygulandıysa) sayfayı yenile
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+
+        function applyUpdate() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration().then(reg => {
+                    if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                });
+            }
+            window.location.reload();
+        }
+
+        function openChangelog() {
+            document.getElementById('changelogModal').classList.add('active');
+        }
+
+        document.getElementById('changelogModal').addEventListener('click', e => {
+            if (e.target.id === 'changelogModal') e.target.classList.remove('active');
+        });
+    </script>
 </body>
 </html>

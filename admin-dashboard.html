@@ -1752,9 +1752,12 @@
                 ? getDailyEntriesDateRange(getPrevMonthRange().startDate, getPrevMonthRange().endDate)
                 : Promise.resolve([]);
 
-            [allData, prevMonthData] = await Promise.all([
+            const fetchComp = comparisonActive ? fetchCompPeriodData() : Promise.resolve(comparisonData);
+
+            [allData, prevMonthData, comparisonData] = await Promise.all([
                 getDailyEntriesDateRange(startDate, endDate),
-                fetchPrev
+                fetchPrev,
+                fetchComp
             ]);
 
             if (!silent) toggleLoading(false);
@@ -1767,7 +1770,7 @@
             }
 
             updateStats();
-            updateComparison(prevMonthData);
+            updateComparison(comparisonActive ? comparisonData : prevMonthData);
             updateBranchTable();
             updateCharts();
             updateTrendChart();
@@ -1864,22 +1867,33 @@
             return { dist, sold, waste };
         }
 
-        // ── Önceki ay karşılaştırma ──────────────────────
+        // ── Önceki dönem karşılaştırma ───────────────────
         function updateComparison(prevData) {
             const clearComp = () => ['compDist','compSales','compWaste'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '';
             });
 
-            if (!prevData || prevData.length === 0 || currentFilter !== 'month') {
+            if (!prevData || prevData.length === 0) {
                 clearComp();
                 return;
             }
 
             const curr = buildMetrics(allData);
             const prev = buildMetrics(prevData);
-            const MONTHS_TR2 = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-            const prevLabel  = MONTHS_TR2[(navMonth - 2 + 12) % 12];
+
+            // Karşılaştırılan dönemin etiketi
+            let prevLabel;
+            if (comparisonActive && comparisonData.length > 0) {
+                // Karşılaştırma modu: veri tarihinden hesapla
+                const dates = comparisonData.map(e => e.entry_date).sort();
+                const mid = new Date(dates[Math.floor(dates.length / 2)]);
+                const MONTHS_TR2 = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+                prevLabel = MONTHS_TR2[mid.getMonth()] + ' ' + mid.getFullYear();
+            } else {
+                const MONTHS_TR2 = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+                prevLabel = MONTHS_TR2[(navMonth - 2 + 12) % 12];
+            }
 
             function setComp(elId, currVal, prevVal) {
                 const el = document.getElementById(elId);
@@ -1888,10 +1902,10 @@
                 const pct  = Math.round(Math.abs(diff / prevVal) * 100);
                 if (diff > 0) {
                     el.className = 'kpi-comp kpi-comp--up';
-                    el.innerHTML = `↑ %${pct} ${prevLabel}'a göre`;
+                    el.innerHTML = `↑ %${pct} — ${prevLabel}'a göre`;
                 } else if (diff < 0) {
                     el.className = 'kpi-comp kpi-comp--down';
-                    el.innerHTML = `↓ %${pct} ${prevLabel}'a göre`;
+                    el.innerHTML = `↓ %${pct} — ${prevLabel}'a göre`;
                 } else {
                     el.className = 'kpi-comp kpi-comp--flat';
                     el.innerHTML = `→ ${prevLabel} ile aynı`;
@@ -2527,25 +2541,31 @@ _Mutlukent Tatlı Takip Sistemi_`;
             showToast('CSV indirildi.', 'success');
         }
 
+        // ── Comparison Helper ─────────────────────────────
+        async function fetchCompPeriodData() {
+            const { startDate, endDate } = getDateRange();
+            const start  = new Date(startDate);
+            const end    = new Date(endDate);
+            const diffMs = end - start;
+            const prevEnd   = new Date(start.getTime() - 86400000);
+            const prevStart = new Date(prevEnd.getTime() - diffMs);
+            const fmt = d => d.toISOString().split('T')[0];
+            return getDailyEntriesDateRange(fmt(prevStart), fmt(prevEnd));
+        }
+
         // ── Comparison Toggle ─────────────────────────────
         async function toggleComparison(btn) {
             comparisonActive = !comparisonActive;
             btn.classList.toggle('active', comparisonActive);
 
             if (comparisonActive) {
-                const { startDate, endDate } = getDateRange();
-                const start = new Date(startDate);
-                const end   = new Date(endDate);
-                const diffMs = end - start;
-                const prevEnd   = new Date(start.getTime() - 86400000);
-                const prevStart = new Date(prevEnd.getTime() - diffMs);
-                const fmt = d => d.toISOString().split('T')[0];
-                comparisonData = await getDailyEntriesDateRange(fmt(prevStart), fmt(prevEnd));
+                comparisonData = await fetchCompPeriodData();
             } else {
                 comparisonData = [];
             }
 
             updateBranchTable();
+            updateComparison(comparisonActive ? comparisonData : prevMonthData);
         }
 
         // ── Maliyet & Karlılık Section ─────────────────────

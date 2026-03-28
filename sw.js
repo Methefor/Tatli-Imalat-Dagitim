@@ -66,6 +66,10 @@ self.addEventListener('notificationclick', event => {
     );
 });
 
+self.addEventListener('message', e => {
+    if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('fetch', e => {
     // Supabase API isteklerini her zaman ağdan çek
     if (e.request.url.includes('supabase.co')) {

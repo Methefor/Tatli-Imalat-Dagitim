@@ -1152,4 +1152,32 @@ function toggleTheme() {
     if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙'
 }
 
+// ====================================================================
+// HAFTALIK ÜRETİM TAKVİMİ
+// ====================================================================
+
+const _DEFAULT_SCHEDULE = {
+    'Pazartesi': { dessert: 'Magnolya',      qty: 600 },
+    'Salı':      { dessert: 'Tiramisu',      qty: 400 },
+    'Çarşamba':  { dessert: 'Truff',         qty: 200 },
+    'Perşembe':  { dessert: 'Mozaik',        qty: 200 },
+    'Cuma':      { dessert: 'Cheesecake',    qty: 200 },
+    'Cumartesi': { dessert: 'San Sebastian', qty: 200 },
+    'Pazar':     { dessert: 'Trileçe',       qty: 200 }
+}
+
+async function getWeeklySchedule() {
+    try {
+        const val = await getSetting('weeklySchedule')
+        if (!val) return { ..._DEFAULT_SCHEDULE }
+        return JSON.parse(val)
+    } catch (e) {
+        return { ..._DEFAULT_SCHEDULE }
+    }
+}
+
+async function saveWeeklySchedule(schedule) {
+    return setSetting('weeklySchedule', JSON.stringify(schedule))
+}
+
 console.log('✅ Supabase Client yüklendi')
