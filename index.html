@@ -1096,7 +1096,11 @@
         // ── Service Worker güncelleme tespiti ──────────────
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').then(reg => {
-                // Güncelleme kontrolü
+                // Zaten bekleyen bir güncelleme varsa hemen göster
+                if (reg.waiting) {
+                    document.getElementById('updateBanner').classList.add('visible');
+                }
+                // Yeni SW yüklenince banner göster
                 reg.addEventListener('updatefound', () => {
                     const newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
@@ -1105,6 +1109,8 @@
                         }
                     });
                 });
+                // Her açılışta güncelleme kontrolü yap (browser bazen 24s bekler)
+                reg.update();
             });
 
             // Controller değişince (update uygulandıysa) sayfayı yenile

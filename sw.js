@@ -1,5 +1,5 @@
 // Tatlı Takip — Service Worker
-const CACHE = 'tatli-takip-v11';
+const CACHE = 'tatli-takip-v12';
 
 const STATIC = [
     '/',
@@ -81,7 +81,8 @@ self.addEventListener('fetch', e => {
         caches.match(e.request).then(cached => {
             const fresh = fetch(e.request).then(res => {
                 if (res && res.status === 200 && res.type === 'basic') {
-                    caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+                    const resClone = res.clone();
+                    caches.open(CACHE).then(c => c.put(e.request, resClone));
                 }
                 return res;
             }).catch(() => cached);
