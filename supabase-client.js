@@ -101,9 +101,19 @@ async function getBranches() {
 }
 
 /**
- * Aktif tatlıları çek
+ * Aktif tatlıları çek (sessionStorage'da 5 dk önbellek)
  */
 async function getActiveDesserts() {
+    const CACHE_KEY = 'cache_active_desserts'
+    const CACHE_TTL = 5 * 60 * 1000
+    try {
+        const cached = sessionStorage.getItem(CACHE_KEY)
+        if (cached) {
+            const { data, ts } = JSON.parse(cached)
+            if (Date.now() - ts < CACHE_TTL) return data
+        }
+    } catch (_) {}
+
     try {
         const { data, error } = await supabaseClient
             .from('desserts')
@@ -112,11 +122,20 @@ async function getActiveDesserts() {
             .order('display_order', { ascending: true })
 
         if (error) throw error
-        return data || []
+        const result = data || []
+        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: result, ts: Date.now() })) } catch (_) {}
+        return result
     } catch (err) {
         console.error('Tatlı çekme hatası:', err)
         return []
     }
+}
+
+/**
+ * Aktif tatlı önbelleğini temizle (superadmin değişiklik yaptıktan sonra çağır)
+ */
+function clearDessertsCache() {
+    try { sessionStorage.removeItem('cache_active_desserts') } catch (_) {}
 }
 
 /**
