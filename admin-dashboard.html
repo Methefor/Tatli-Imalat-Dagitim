@@ -1496,7 +1496,7 @@
                 <h2 class="panel-title">Zayiat Trendi (Son 6 Ay)</h2>
                 <span class="panel-badge panel-badge--red" id="wasteTrendBadge">6 Ay</span>
             </div>
-            <div class="chart-wrap-tall">
+            <div class="chart-wrap-tall" id="wasteTrendWrap">
                 <canvas id="wasteTrendChart"></canvas>
             </div>
         </div>
@@ -2805,17 +2805,26 @@ _Mutlukent Tatlı Takip Sistemi_`;
         // ── Zayiat Trendi Chart ───────────────────────────
         async function loadWasteTrend() {
             const months = await getWasteTrendData(6);
-            if (!months || months.length === 0) return;
 
             // Tüm tatlı ID'leri topla
             const dessertMap = {}; // id → name
-            months.forEach(m => {
+            (months || []).forEach(m => {
                 Object.entries(m.byDessert).forEach(([id, d]) => {
                     if (!dessertMap[id]) dessertMap[id] = d.name;
                 });
             });
 
             const dessertIds = Object.keys(dessertMap);
+
+            if (!dessertIds.length) {
+                const wrap = document.getElementById('wasteTrendWrap');
+                if (wrap) wrap.innerHTML = `<div class="empty-state" style="padding:40px 20px">
+                    <div class="empty-state-icon">✅</div>
+                    <div class="empty-state-title">Son 6 ayda zayiat kaydı yok</div>
+                    <div class="empty-state-sub">Zayiat girişi yapıldığında burada görünür</div>
+                </div>`;
+                return;
+            }
             const labels = months.map(m => m.month);
 
             const palette = [
@@ -3309,6 +3318,12 @@ _Mutlukent Tatlı Takip Sistemi_`;
             </div>`;
             const zayiatTotalEl = document.getElementById('zayiatTotal');
             if (zayiatTotalEl) zayiatTotalEl.textContent = 'Yok';
+
+            const heatmapEl = document.getElementById('heatmapContent');
+            if (heatmapEl) heatmapEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px">Seçilen dönemde veri yok</div>';
+
+            const forecastEl = document.getElementById('forecastContent');
+            if (forecastEl) forecastEl.innerHTML = '<div class="fc-note">Seçilen dönemde veri yok.</div>';
         }
 
         // ── Sort Table ────────────────────────────────────
