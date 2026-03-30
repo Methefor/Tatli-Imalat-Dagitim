@@ -1197,15 +1197,19 @@ async function saveWeeklySchedule(schedule) {
  * Her şubenin son veri giriş tarihini döner
  * Dönüş: [ { id, name, manager_name, password, lastDate } ]
  */
+function _localDate(d = new Date()) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
 async function getBranchLastActivity() {
     try {
         const branches = await getBranches()
         if (!branches || branches.length === 0) return []
 
-        const today = new Date().toISOString().split('T')[0]
+        const today = _localDate()
         const past  = new Date()
         past.setDate(past.getDate() - 60)
-        const pastDate = past.toISOString().split('T')[0]
+        const pastDate = _localDate(past)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
@@ -1242,7 +1246,7 @@ async function getCorrectionEntries(days = 30) {
     try {
         const past = new Date()
         past.setDate(past.getDate() - days)
-        const pastDate = past.toISOString().split('T')[0]
+        const pastDate = _localDate(past)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
@@ -1269,7 +1273,7 @@ async function getWasteWithReasons(days = 30) {
     try {
         const startDate = new Date()
         startDate.setDate(startDate.getDate() - days)
-        const startStr = startDate.toISOString().split('T')[0]
+        const startStr = _localDate(startDate)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')

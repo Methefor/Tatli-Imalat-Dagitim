@@ -218,21 +218,42 @@
         .alert-name { font-size: 13px; font-weight: 700; color: rgba(252,165,165,0.9); }
         .alert-mgr  { font-size: 11px; color: rgba(252,165,165,0.5); margin-top: 2px; }
 
-        /* ── Correction rows ── */
-        .corr-row {
+        /* ── Correction groups ── */
+        .corr-group {
             background: rgba(245,158,11,0.04);
-            border: 1px solid rgba(245,158,11,0.12);
-            border-radius: 12px; padding: 11px 14px; margin-bottom: 7px;
+            border: 1px solid rgba(245,158,11,0.14);
+            border-radius: 12px; margin-bottom: 8px; overflow: hidden;
         }
-        .corr-head {
-            display: flex; align-items: center; gap: 7px; margin-bottom: 6px; flex-wrap: wrap;
+        .corr-group-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 14px; cursor: pointer;
+            min-height: 48px; transition: background 0.15s;
+            -webkit-tap-highlight-color: transparent;
         }
-        .corr-date   { font-size: 11px; color: var(--muted); }
-        .corr-mgr    { font-size: 13px; font-weight: 700; color: rgba(245,158,11,0.9); }
-        .corr-branch { font-size: 11px; color: var(--muted); }
+        .corr-group-header:hover { background: rgba(245,158,11,0.06); }
+        .corr-group-header:active { background: rgba(245,158,11,0.1); }
+        .corr-group-mgr { font-size: 14px; font-weight: 700; color: rgba(251,191,36,0.9); }
+        .corr-group-branch { font-size: 11px; color: var(--muted); }
+        .corr-group-count {
+            margin-left: auto; font-size: 11px; font-weight: 700;
+            background: rgba(245,158,11,0.15); color: rgba(251,191,36,0.8);
+            border-radius: 99px; padding: 2px 8px; flex-shrink: 0;
+        }
+        .corr-group-chevron { font-size: 11px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+        .corr-group.collapsed .corr-group-chevron { transform: rotate(-90deg); }
+        .corr-group.collapsed .corr-group-body { display: none; }
+
+        .corr-group-body { border-top: 1px solid rgba(245,158,11,0.1); }
+        .corr-row {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .corr-row:last-child { border-bottom: none; }
+        .corr-date   { font-size: 11px; color: var(--muted); min-width: 48px; padding-top: 1px; flex-shrink: 0; }
         .corr-type   {
             font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-            border-radius: 6px; padding: 2px 6px; margin-left: auto;
+            border-radius: 6px; padding: 2px 6px; flex-shrink: 0; align-self: flex-start; margin-top: 1px;
         }
         .corr-type-gelen   { background: rgba(59,130,246,0.15); color: rgba(147,197,253,0.9); }
         .corr-type-kalan   { background: rgba(245,158,11,0.15); color: rgba(251,191,36,0.9); }
@@ -362,8 +383,11 @@
         window.location.href = 'admin-dashboard.html';
     }
 
-    const TODAY = new Date().toISOString().split('T')[0];
-    const YESTERDAY = (() => { const d = new Date(); d.setDate(d.getDate()-1); return d.toISOString().split('T')[0]; })();
+    function localDate(d = new Date()) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    const TODAY = localDate();
+    const YESTERDAY = (() => { const d = new Date(); d.setDate(d.getDate()-1); return localDate(d); })();
 
     // Bölüm toggle
     function toggleSection(id) {
@@ -565,39 +589,56 @@
             return;
         }
 
-        const html = list.map((c, i) => {
-            const match   = (c.notes || '').match(/\[DÜZ ([^\]]+)\]/);
-            const corrTime = match ? match[1] : '—';
-            const branch  = c.branches?.name        || '?';
-            const mgr     = c.branches?.manager_name || '—';
-            const dessert = (c.desserts?.emoji || '') + ' ' + (c.desserts?.name || '?');
+        // Şube + müdür bazında grupla
+        const groups = {};
+        list.forEach(c => {
+            const branch = c.branches?.name        || '?';
+            const mgr    = c.branches?.manager_name || '—';
+            const key    = branch + '||' + mgr;
+            if (!groups[key]) groups[key] = { branch, mgr, items: [] };
+            groups[key].items.push(c);
+        });
 
-            // Düzeltme türünü belirle
-            let typeLabel = '', typeCls = '';
-            if (c.received_amount !== null && c.received_amount !== undefined) {
-                typeLabel = 'Gelen Tatlı'; typeCls = 'corr-type-gelen';
-            } else if (c.remaining_amount !== null && c.remaining_amount !== undefined) {
-                typeLabel = 'Kalan Tatlı'; typeCls = 'corr-type-kalan';
-            } else if (c.waste_amount > 0) {
-                typeLabel = 'Zayiat'; typeCls = 'corr-type-zayiat';
-            } else {
-                typeLabel = 'Düzeltme'; typeCls = 'corr-type-kalan';
-            }
+        let gIdx = 0;
+        const html = Object.values(groups).map(g => {
+            const gId = 'cgrp-' + (gIdx++);
 
-            return `<div class="corr-row fade-in" style="animation-delay:${i*0.03}s">
-                <div class="corr-head">
+            const rows = g.items.map(c => {
+                const match    = (c.notes || '').match(/\[DÜZ ([^\]]+)\]/);
+                const corrTime = match ? match[1] : '—';
+                const dessert  = (c.desserts?.emoji || '') + ' ' + (c.desserts?.name || '?');
+
+                let typeLabel = '', typeCls = '';
+                if (c.received_amount  !== null && c.received_amount  !== undefined) {
+                    typeLabel = 'Gelen'; typeCls = 'corr-type-gelen';
+                } else if (c.remaining_amount !== null && c.remaining_amount !== undefined) {
+                    typeLabel = 'Kalan'; typeCls = 'corr-type-kalan';
+                } else if (c.waste_amount > 0) {
+                    typeLabel = 'Zayiat'; typeCls = 'corr-type-zayiat';
+                } else {
+                    typeLabel = 'Düzeltme'; typeCls = 'corr-type-kalan';
+                }
+
+                return `<div class="corr-row">
                     <span class="corr-date">${formatTR(c.entry_date)}</span>
-                    <span class="corr-mgr">${mgr}</span>
-                    <span class="corr-branch">— ${branch}</span>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:12px;color:var(--text)">${dessert}</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:2px">Düzeltildi: ${corrTime}</div>
+                    </div>
                     <span class="corr-type ${typeCls}">${typeLabel}</span>
+                </div>`;
+            }).join('');
+
+            return `<div class="corr-group fade-in" id="${gId}">
+                <div class="corr-group-header" onclick="this.closest('.corr-group').classList.toggle('collapsed')">
+                    <div style="flex:1;min-width:0">
+                        <div class="corr-group-mgr">${g.mgr}</div>
+                        <div class="corr-group-branch">${g.branch}</div>
+                    </div>
+                    <span class="corr-group-count">${g.items.length} düzeltme</span>
+                    <span class="corr-group-chevron">▼</span>
                 </div>
-                <div class="corr-detail">
-                    <div class="corr-item">Tatlı: <span>${dessert}</span></div>
-                    <div class="corr-item">Düzeltildi: <span>${corrTime}</span></div>
-                    ${c.received_amount  != null ? `<div class="corr-item">Gelen: <span>${c.received_amount}</span></div>` : ''}
-                    ${c.remaining_amount != null ? `<div class="corr-item">Kalan: <span>${c.remaining_amount}</span></div>` : ''}
-                    ${c.waste_amount > 0         ? `<div class="corr-item">Zayiat: <span>${c.waste_amount}</span></div>` : ''}
-                </div>
+                <div class="corr-group-body">${rows}</div>
             </div>`;
         }).join('');
 
