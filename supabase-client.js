@@ -535,11 +535,13 @@ async function getAllAdmins() {
 /** Şube şifresi güncelle */
 async function updateBranchPassword(branchId, newPassword) {
     try {
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from('branches')
             .update({ password: newPassword })
             .eq('id', branchId)
+            .select('id')
         if (error) throw error
+        if (!data || data.length === 0) throw new Error('Güncelleme izni yok — Supabase RLS politikasını kontrol edin')
         return { success: true }
     } catch (err) {
         console.error('Şifre güncelleme hatası:', err)
@@ -550,11 +552,13 @@ async function updateBranchPassword(branchId, newPassword) {
 /** Müdür adı güncelle */
 async function updateBranchManager(branchId, managerName) {
     try {
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from('branches')
             .update({ manager_name: managerName })
             .eq('id', branchId)
+            .select('id')
         if (error) throw error
+        if (!data || data.length === 0) throw new Error('Güncelleme izni yok — Supabase RLS politikasını kontrol edin')
         return { success: true }
     } catch (err) {
         console.error('Müdür güncelleme hatası:', err)
@@ -609,11 +613,13 @@ async function addDessert(name, emoji, displayOrder) {
 /** Admin şifresi güncelle */
 async function updateAdminPassword(adminId, newPassword) {
     try {
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from('admins')
             .update({ password: newPassword })
             .eq('id', adminId)
+            .select('id')
         if (error) throw error
+        if (!data || data.length === 0) throw new Error('Güncelleme izni yok — Supabase RLS politikasını kontrol edin')
         return { success: true }
     } catch (err) {
         console.error('Admin şifre güncelleme hatası:', err)
