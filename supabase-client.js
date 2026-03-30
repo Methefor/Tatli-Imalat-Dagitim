@@ -1264,4 +1264,28 @@ async function getCorrectionEntries(days = 30) {
     }
 }
 
+/** Sebep girilmiş zayiat girişlerini çek ([ZAY: ...] tag içerenler) */
+async function getWasteWithReasons(days = 30) {
+    try {
+        const startDate = new Date()
+        startDate.setDate(startDate.getDate() - days)
+        const startStr = startDate.toISOString().split('T')[0]
+
+        const { data, error } = await supabaseClient
+            .from('daily_entries')
+            .select('entry_date, waste_amount, notes, entry_time, branches(name, manager_name), desserts(name, emoji)')
+            .gt('waste_amount', 0)
+            .like('notes', '%[ZAY:%')
+            .gte('entry_date', startStr)
+            .order('entry_date', { ascending: false })
+            .order('entry_time', { ascending: false })
+
+        if (error) throw error
+        return data || []
+    } catch (err) {
+        console.error('Zayiat sebep sorgu hatası:', err)
+        return []
+    }
+}
+
 console.log('✅ Supabase Client yüklendi')

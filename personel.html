@@ -92,6 +92,10 @@
             display: grid; grid-template-columns: repeat(3, 1fr);
             gap: 10px; margin-bottom: 24px;
         }
+        @media (max-width: 380px) {
+            .summary-row { grid-template-columns: repeat(2, 1fr); }
+            .summary-row .summary-chip:last-child { grid-column: span 2; }
+        }
 
         .summary-chip {
             background: var(--glass); border: 1px solid var(--border);
@@ -103,43 +107,100 @@
         .chip-yellow .chip-num{ color: var(--amber); }
         .chip-red   .chip-num { color: var(--red); }
 
-        /* ── Section header ── */
-        .section-head {
-            display: flex; align-items: center; gap: 8px;
-            margin-bottom: 10px; margin-top: 24px;
-        }
-        .section-head:first-of-type { margin-top: 0; }
-        .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-        .section-badge {
-            font-size: 10px; font-weight: 700;
-            padding: 2px 7px; border-radius: 99px;
-            background: rgba(255,255,255,0.07);
-            color: var(--muted);
+        /* ── Collapsible section ── */
+        .section {
+            margin-bottom: 8px;
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
         }
 
-        /* ── Branch activity rows ── */
-        .branch-row {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px;
-            background: var(--glass); border: 1px solid var(--border);
+        .section-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 16px;
+            cursor: pointer; user-select: none;
+            min-height: 52px;
+            transition: background 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .section-header:hover { background: rgba(255,255,255,0.03); }
+        .section-header:active { background: rgba(255,255,255,0.06); }
+
+        .section-icon { font-size: 16px; flex-shrink: 0; }
+        .section-title-wrap { flex: 1; min-width: 0; }
+        .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+        .section-sub   { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+        .section-badge {
+            font-size: 11px; font-weight: 700;
+            padding: 3px 8px; border-radius: 99px;
+            background: rgba(255,255,255,0.08);
+            color: var(--muted); flex-shrink: 0;
+        }
+
+        .section-chevron {
+            font-size: 12px; color: var(--muted); flex-shrink: 0;
+            transition: transform 0.25s; display: inline-block;
+        }
+
+        .section-body { padding: 0 12px 12px; }
+
+        .section.collapsed .section-body { display: none; }
+        .section.collapsed .section-chevron { transform: rotate(-90deg); }
+
+        /* ── Müdür özet kartları ── */
+        .mgr-card {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.025); border: 1px solid var(--border);
             border-radius: 12px; margin-bottom: 6px;
         }
-
-        .branch-dot {
+        .mgr-dot {
             width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+            margin-top: 4px;
         }
         .dot-green  { background: var(--green);  box-shadow: 0 0 6px rgba(16,185,129,0.6); }
         .dot-yellow { background: var(--amber);  box-shadow: 0 0 6px rgba(245,158,11,0.6); }
         .dot-red    { background: var(--red);    box-shadow: 0 0 6px rgba(239,68,68,0.5); }
         .dot-gray   { background: rgba(255,255,255,0.2); }
 
+        .mgr-info { flex: 1; min-width: 0; }
+        .mgr-name { font-size: 14px; font-weight: 700; }
+        .mgr-branch { font-size: 11px; color: var(--muted); margin-top: 1px; }
+        .mgr-stats { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .stat-pill {
+            font-size: 11px; font-weight: 600;
+            padding: 3px 8px; border-radius: 99px;
+        }
+        .pill-green  { background: rgba(16,185,129,0.12); color: rgba(110,231,183,0.9); border: 1px solid rgba(16,185,129,0.2); }
+        .pill-amber  { background: rgba(245,158,11,0.12); color: rgba(251,191,36,0.9); border: 1px solid rgba(245,158,11,0.2); }
+        .pill-red    { background: rgba(239,68,68,0.12);  color: rgba(252,165,165,0.9); border: 1px solid rgba(239,68,68,0.2); }
+        .pill-gray   { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+        .pill-blue   { background: rgba(59,130,246,0.12); color: rgba(147,197,253,0.9); border: 1px solid rgba(59,130,246,0.2); }
+
+        .today-badge {
+            font-size: 11px; font-weight: 700;
+            padding: 3px 9px; border-radius: 99px; flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .badge-active { background: rgba(16,185,129,0.15); color: var(--green); }
+        .badge-missing { background: rgba(239,68,68,0.12); color: rgba(252,165,165,0.85); }
+
+        /* ── Branch activity rows ── */
+        .branch-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+            border-radius: 10px; margin-bottom: 5px;
+        }
+
+        .branch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
         .branch-info { flex: 1; min-width: 0; }
-        .branch-name-text { font-size: 14px; font-weight: 700; }
+        .branch-name-text { font-size: 13px; font-weight: 700; }
         .branch-manager   { font-size: 11px; color: var(--muted); margin-top: 1px; }
 
-        .branch-status {
-            font-size: 11px; font-weight: 600; text-align: right; flex-shrink: 0;
-        }
+        .branch-status { font-size: 11px; font-weight: 600; text-align: right; flex-shrink: 0; }
         .status-green  { color: var(--green); }
         .status-yellow { color: var(--amber); }
         .status-red    { color: var(--red); }
@@ -147,45 +208,55 @@
 
         /* ── Alert list (bugün eksik) ── */
         .alert-row {
-            display: flex; align-items: center; gap: 10px;
+            display: flex; align-items: flex-start; gap: 10px;
             padding: 10px 14px;
-            background: rgba(239,68,68,0.07);
-            border: 1px solid rgba(239,68,68,0.18);
-            border-radius: 10px; margin-bottom: 6px;
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.15);
+            border-radius: 10px; margin-bottom: 5px;
         }
-        .alert-icon { font-size: 16px; flex-shrink: 0; }
+        .alert-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
         .alert-name { font-size: 13px; font-weight: 700; color: rgba(252,165,165,0.9); }
-        .alert-mgr  { font-size: 11px; color: rgba(252,165,165,0.5); margin-top: 1px; }
+        .alert-mgr  { font-size: 11px; color: rgba(252,165,165,0.5); margin-top: 2px; }
 
         /* ── Correction rows ── */
         .corr-row {
-            background: rgba(245,158,11,0.05);
-            border: 1px solid rgba(245,158,11,0.14);
-            border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+            background: rgba(245,158,11,0.04);
+            border: 1px solid rgba(245,158,11,0.12);
+            border-radius: 12px; padding: 11px 14px; margin-bottom: 7px;
         }
         .corr-head {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;
+            display: flex; align-items: center; gap: 7px; margin-bottom: 6px; flex-wrap: wrap;
         }
-        .corr-branch { font-size: 13px; font-weight: 700; color: rgba(245,158,11,0.9); }
-        .corr-mgr    { font-size: 11px; color: var(--muted); }
-        .corr-tag    { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(245,158,11,0.15); color: var(--amber); border-radius: 6px; padding: 2px 6px; }
-        .corr-detail {
-            display: flex; gap: 16px; flex-wrap: wrap;
+        .corr-date   { font-size: 11px; color: var(--muted); }
+        .corr-mgr    { font-size: 13px; font-weight: 700; color: rgba(245,158,11,0.9); }
+        .corr-branch { font-size: 11px; color: var(--muted); }
+        .corr-type   {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+            border-radius: 6px; padding: 2px 6px; margin-left: auto;
         }
-        .corr-item { font-size: 12px; color: rgba(255,255,255,0.55); }
+        .corr-type-gelen   { background: rgba(59,130,246,0.15); color: rgba(147,197,253,0.9); }
+        .corr-type-kalan   { background: rgba(245,158,11,0.15); color: rgba(251,191,36,0.9); }
+        .corr-type-zayiat  { background: rgba(239,68,68,0.15);  color: rgba(252,165,165,0.9); }
+
+        .corr-detail { display: flex; gap: 14px; flex-wrap: wrap; }
+        .corr-item   { font-size: 12px; color: rgba(255,255,255,0.5); }
         .corr-item span { color: var(--text); font-weight: 600; }
 
         /* ── Empty / loading ── */
         .empty-msg {
-            text-align: center; padding: 28px 16px;
+            text-align: center; padding: 22px 16px;
             color: rgba(255,255,255,0.25); font-size: 13px;
+        }
+        .empty-ok {
+            text-align: center; padding: 22px 16px;
+            color: rgba(16,185,129,0.6); font-size: 13px;
         }
 
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(12px); }
+            from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .fade-in { animation: fadeUp 0.4s ease both; }
+        .fade-in { animation: fadeUp 0.3s ease both; }
     </style>
 </head>
 <body>
@@ -214,30 +285,73 @@
         </div>
         <div class="summary-chip chip-red">
             <div class="chip-num" id="cntRed">—</div>
-            <div class="chip-lbl">Hiç / 2+ Gün</div>
+            <div class="chip-lbl">Veri Yok</div>
         </div>
     </div>
 
-    <!-- Şube aktivite durumu -->
-    <div class="section-head">
-        <span class="section-title">Şube Aktivite Durumu</span>
-        <span class="section-badge" id="badgeBranch">—</span>
+    <!-- Müdür Özeti -->
+    <div class="section" id="secMgr">
+        <div class="section-header" onclick="toggleSection('secMgr')">
+            <span class="section-icon">👤</span>
+            <div class="section-title-wrap">
+                <div class="section-title">Müdür Özeti</div>
+                <div class="section-sub">Bu ay aktivite ve düzeltmeler</div>
+            </div>
+            <span class="section-badge" id="badgeMgr">—</span>
+            <span class="section-chevron">▼</span>
+        </div>
+        <div class="section-body">
+            <div id="mgrSummaryList"><div class="empty-msg">Yükleniyor…</div></div>
+        </div>
     </div>
-    <div id="branchActivityList"><div class="empty-msg">Yükleniyor…</div></div>
 
-    <!-- Bugün eksik -->
-    <div class="section-head" style="margin-top:28px">
-        <span class="section-title" style="color:rgba(252,165,165,0.7)">⚠ Bugün Veri Girmeyen</span>
-        <span class="section-badge" id="badgeMissing">—</span>
+    <!-- Bugün Veri Girmeyen — varsayılan KAPALI -->
+    <div class="section collapsed" id="secMissing">
+        <div class="section-header" onclick="toggleSection('secMissing')" style="border-left: 3px solid rgba(239,68,68,0.5)">
+            <span class="section-icon">⚠️</span>
+            <div class="section-title-wrap">
+                <div class="section-title" style="color:rgba(252,165,165,0.8)">Bugün Veri Girmeyen</div>
+                <div class="section-sub">Tıkla görmek için</div>
+            </div>
+            <span class="section-badge" id="badgeMissing" style="background:rgba(239,68,68,0.12);color:rgba(252,165,165,0.7)">—</span>
+            <span class="section-chevron">▼</span>
+        </div>
+        <div class="section-body">
+            <div id="missingList"><div class="empty-msg">Yükleniyor…</div></div>
+        </div>
     </div>
-    <div id="missingList"><div class="empty-msg">Yükleniyor…</div></div>
 
-    <!-- Düzeltme geçmişi -->
-    <div class="section-head" style="margin-top:28px">
-        <span class="section-title" style="color:rgba(251,191,36,0.7)">✏ Düzeltme Geçmişi (Son 30 Gün)</span>
-        <span class="section-badge" id="badgeCorr">—</span>
+    <!-- Şube Aktivite Durumu -->
+    <div class="section" id="secActivity">
+        <div class="section-header" onclick="toggleSection('secActivity')">
+            <span class="section-icon">📊</span>
+            <div class="section-title-wrap">
+                <div class="section-title">Şube Aktivite Durumu</div>
+                <div class="section-sub">Son giriş tarihleri</div>
+            </div>
+            <span class="section-badge" id="badgeBranch">—</span>
+            <span class="section-chevron">▼</span>
+        </div>
+        <div class="section-body">
+            <div id="branchActivityList"><div class="empty-msg">Yükleniyor…</div></div>
+        </div>
     </div>
-    <div id="correctionList"><div class="empty-msg">Yükleniyor…</div></div>
+
+    <!-- Düzeltme Geçmişi -->
+    <div class="section" id="secCorr">
+        <div class="section-header" onclick="toggleSection('secCorr')">
+            <span class="section-icon">✏️</span>
+            <div class="section-title-wrap">
+                <div class="section-title">Düzeltme Geçmişi</div>
+                <div class="section-sub">Son 30 gün · fazla giriş tespiti</div>
+            </div>
+            <span class="section-badge" id="badgeCorr">—</span>
+            <span class="section-chevron">▼</span>
+        </div>
+        <div class="section-body">
+            <div id="correctionList"><div class="empty-msg">Yükleniyor…</div></div>
+        </div>
+    </div>
 
 </div>
 
@@ -251,45 +365,138 @@
     const TODAY = new Date().toISOString().split('T')[0];
     const YESTERDAY = (() => { const d = new Date(); d.setDate(d.getDate()-1); return d.toISOString().split('T')[0]; })();
 
+    // Bölüm toggle
+    function toggleSection(id) {
+        const sec = document.getElementById(id);
+        sec.classList.toggle('collapsed');
+        try { sessionStorage.setItem('personel_' + id, sec.classList.contains('collapsed') ? '1' : '0'); } catch(e) {}
+    }
+
+    // sessionStorage'dan collapsed durumunu yükle
+    function initSectionStates() {
+        ['secMgr','secMissing','secActivity','secCorr'].forEach(id => {
+            const saved = sessionStorage.getItem('personel_' + id);
+            const sec = document.getElementById(id);
+            if (saved === '1') sec.classList.add('collapsed');
+            else if (saved === '0') sec.classList.remove('collapsed');
+            // Default: secMissing collapsed (zaten HTML'de collapsed var)
+        });
+    }
+    initSectionStates();
+
     async function loadAll(btn) {
-        if (btn) btn.classList.add('spin');
+        if (btn) { btn.classList.add('spin'); btn.disabled = true; }
         try {
             const [activity, corrections] = await Promise.all([
                 getBranchLastActivity(),
                 getCorrectionEntries(30)
             ]);
-            renderActivity(activity);
-            renderCorrections(corrections);
+            renderAll(activity, corrections);
             document.getElementById('lastUpdated').textContent =
                 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'});
         } catch(e) {
             console.error(e);
         } finally {
-            if (btn) btn.classList.remove('spin');
+            if (btn) { btn.classList.remove('spin'); btn.disabled = false; }
         }
+    }
+
+    function renderAll(activity, corrections) {
+        // Düzeltmeleri şube bazında grupla
+        const corrByBranch = {};
+        corrections.forEach(c => {
+            const key = c.branches?.name || '?';
+            if (!corrByBranch[key]) corrByBranch[key] = { gelen: 0, kalan: 0, zayiat: 0 };
+            if (c.received_amount  !== null && c.received_amount  !== undefined) corrByBranch[key].gelen++;
+            if (c.remaining_amount !== null && c.remaining_amount !== undefined) corrByBranch[key].kalan++;
+            if (c.waste_amount > 0) corrByBranch[key].zayiat++;
+        });
+
+        renderMgrSummary(activity, corrByBranch);
+        renderActivity(activity);
+        renderCorrections(corrections);
+    }
+
+    function renderMgrSummary(list, corrByBranch) {
+        const el = document.getElementById('mgrSummaryList');
+        if (!list || list.length === 0) {
+            el.innerHTML = '<div class="empty-msg">Şube bulunamadı</div>';
+            document.getElementById('badgeMgr').textContent = '0 müdür';
+            return;
+        }
+
+        list.sort((a, b) => (b.lastDate || '').localeCompare(a.lastDate || ''));
+
+        const html = list.map((b, i) => {
+            const last   = b.lastDate;
+            const mgr    = b.manager_name || 'Müdür atanmamış';
+            const corr   = corrByBranch[b.name] || { gelen: 0, kalan: 0, zayiat: 0 };
+            const isToday = last === TODAY;
+            const totalCorr = corr.gelen + corr.kalan + corr.zayiat;
+
+            let dotCls;
+            if (!last)               dotCls = 'dot-gray';
+            else if (last === TODAY) dotCls = 'dot-green';
+            else if (last === YESTERDAY) dotCls = 'dot-yellow';
+            else                     dotCls = 'dot-red';
+
+            // Düzeltme açıklama metni
+            let corrParts = [];
+            if (corr.gelen  > 0) corrParts.push(corr.gelen  + ' gelen');
+            if (corr.kalan  > 0) corrParts.push(corr.kalan  + ' kalan');
+            if (corr.zayiat > 0) corrParts.push(corr.zayiat + ' zayiat');
+
+            const corrText = corrParts.length > 0
+                ? corrParts.join(' + ') + ' tatlı düzeltmesi yaptı'
+                : 'Bu ay düzeltme yapmadı';
+
+            const pills = [];
+            if (isToday) {
+                pills.push(`<span class="stat-pill pill-green">✓ Bugün giriş yaptı</span>`);
+            } else if (!last) {
+                pills.push(`<span class="stat-pill pill-red">Hiç veri girmedi</span>`);
+            } else {
+                const days = Math.round((new Date(TODAY) - new Date(last)) / 86400000);
+                pills.push(`<span class="stat-pill pill-red">${days} gündür giriş yok</span>`);
+            }
+
+            if (totalCorr > 0) {
+                pills.push(`<span class="stat-pill pill-amber">⚠ ${corrText}</span>`);
+            } else {
+                pills.push(`<span class="stat-pill pill-gray">${corrText}</span>`);
+            }
+
+            return `<div class="mgr-card fade-in" style="animation-delay:${i*0.04}s">
+                <div class="mgr-dot ${dotCls}"></div>
+                <div class="mgr-info">
+                    <div class="mgr-name">${mgr}</div>
+                    <div class="mgr-branch">${b.name}</div>
+                    <div class="mgr-stats">${pills.join('')}</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        el.innerHTML = html;
+        document.getElementById('badgeMgr').textContent = list.length + ' müdür';
     }
 
     function renderActivity(list) {
         const el = document.getElementById('branchActivityList');
         const missingEl = document.getElementById('missingList');
+
         if (!list || list.length === 0) {
             el.innerHTML = '<div class="empty-msg">Şube bulunamadı</div>';
             missingEl.innerHTML = '<div class="empty-msg">—</div>';
             return;
         }
 
-        // Sırala: bugün → dün → eski → hiç
-        list.sort((a, b) => {
-            const da = a.lastDate || '0000-00-00';
-            const db = b.lastDate || '0000-00-00';
-            return db.localeCompare(da);
-        });
+        list.sort((a, b) => (b.lastDate || '').localeCompare(a.lastDate || ''));
 
         let green = 0, yellow = 0, red = 0;
         let actHtml = '';
         let missingHtml = '';
 
-        list.forEach(b => {
+        list.forEach((b, i) => {
             const last = b.lastDate;
             let dotCls, statusCls, statusTxt;
 
@@ -308,7 +515,7 @@
                 statusTxt = days + ' gün önce'; red++;
             }
 
-            actHtml += `<div class="branch-row fade-in">
+            actHtml += `<div class="branch-row fade-in" style="animation-delay:${i*0.03}s">
                 <div class="branch-dot ${dotCls}"></div>
                 <div class="branch-info">
                     <div class="branch-name-text">${b.name}</div>
@@ -318,11 +525,12 @@
             </div>`;
 
             if (last !== TODAY) {
-                missingHtml += `<div class="alert-row fade-in">
+                const mgr = b.manager_name || '—';
+                missingHtml += `<div class="alert-row fade-in" style="animation-delay:${i*0.03}s">
                     <span class="alert-icon">⚠️</span>
                     <div>
-                        <div class="alert-name">${b.name}</div>
-                        <div class="alert-mgr">${b.manager_name || '—'} · Son giriş: ${last ? formatTR(last) : 'Hiçbir zaman'}</div>
+                        <div class="alert-name">${mgr} — ${b.name}</div>
+                        <div class="alert-mgr">Son giriş: ${last ? formatTR(last) : 'Hiçbir zaman'}</div>
                     </div>
                 </div>`;
             }
@@ -332,10 +540,20 @@
         document.getElementById('cntYellow').textContent = yellow;
         document.getElementById('cntRed').textContent    = red;
         document.getElementById('badgeBranch').textContent = list.length + ' şube';
-        document.getElementById('badgeMissing').textContent = (list.length - green) + ' şube';
 
-        el.innerHTML = actHtml || '<div class="empty-msg">—</div>';
-        missingEl.innerHTML = missingHtml || '<div class="empty-msg" style="color:rgba(16,185,129,0.6)">✓ Tüm şubeler bugün giriş yaptı</div>';
+        const missingCount = list.length - green;
+        document.getElementById('badgeMissing').textContent = missingCount + ' şube';
+        // Kaç şube eksik olduğunu section alt başlığına da yansıt
+        const missingSection = document.getElementById('secMissing');
+        const missingHeaderSub = missingSection.querySelector('.section-sub');
+        if (missingHeaderSub) {
+            missingHeaderSub.textContent = missingCount > 0
+                ? missingCount + ' şube bugün veri girmedi'
+                : 'Tüm şubeler bugün aktif';
+        }
+
+        el.innerHTML      = actHtml      || '<div class="empty-msg">—</div>';
+        missingEl.innerHTML = missingHtml || '<div class="empty-ok">✓ Tüm şubeler bugün giriş yaptı</div>';
     }
 
     function renderCorrections(list) {
@@ -347,27 +565,38 @@
             return;
         }
 
-        const html = list.map(c => {
-            // [DÜZ 30.03.2026 14:32] gibi etiketi parse et
-            const match = (c.notes || '').match(/\[DÜZ ([^\]]+)\]/);
+        const html = list.map((c, i) => {
+            const match   = (c.notes || '').match(/\[DÜZ ([^\]]+)\]/);
             const corrTime = match ? match[1] : '—';
-            const branch  = c.branches?.name || '?';
+            const branch  = c.branches?.name        || '?';
             const mgr     = c.branches?.manager_name || '—';
             const dessert = (c.desserts?.emoji || '') + ' ' + (c.desserts?.name || '?');
 
-            return `<div class="corr-row fade-in">
+            // Düzeltme türünü belirle
+            let typeLabel = '', typeCls = '';
+            if (c.received_amount !== null && c.received_amount !== undefined) {
+                typeLabel = 'Gelen Tatlı'; typeCls = 'corr-type-gelen';
+            } else if (c.remaining_amount !== null && c.remaining_amount !== undefined) {
+                typeLabel = 'Kalan Tatlı'; typeCls = 'corr-type-kalan';
+            } else if (c.waste_amount > 0) {
+                typeLabel = 'Zayiat'; typeCls = 'corr-type-zayiat';
+            } else {
+                typeLabel = 'Düzeltme'; typeCls = 'corr-type-kalan';
+            }
+
+            return `<div class="corr-row fade-in" style="animation-delay:${i*0.03}s">
                 <div class="corr-head">
-                    <span class="corr-branch">${branch}</span>
+                    <span class="corr-date">${formatTR(c.entry_date)}</span>
                     <span class="corr-mgr">${mgr}</span>
-                    <span class="corr-tag">Düzeltme</span>
+                    <span class="corr-branch">— ${branch}</span>
+                    <span class="corr-type ${typeCls}">${typeLabel}</span>
                 </div>
                 <div class="corr-detail">
                     <div class="corr-item">Tatlı: <span>${dessert}</span></div>
-                    <div class="corr-item">Tarih: <span>${formatTR(c.entry_date)}</span></div>
                     <div class="corr-item">Düzeltildi: <span>${corrTime}</span></div>
                     ${c.received_amount  != null ? `<div class="corr-item">Gelen: <span>${c.received_amount}</span></div>` : ''}
                     ${c.remaining_amount != null ? `<div class="corr-item">Kalan: <span>${c.remaining_amount}</span></div>` : ''}
-                    ${c.waste_amount     != null && c.waste_amount > 0 ? `<div class="corr-item">Zayiat: <span>${c.waste_amount}</span></div>` : ''}
+                    ${c.waste_amount > 0         ? `<div class="corr-item">Zayiat: <span>${c.waste_amount}</span></div>` : ''}
                 </div>
             </div>`;
         }).join('');
@@ -378,7 +607,7 @@
     function formatTR(dateStr) {
         if (!dateStr) return '—';
         const d = new Date(dateStr + 'T12:00:00');
-        return d.toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
+        return d.toLocaleDateString('tr-TR', { day:'numeric', month:'long' });
     }
 
     loadAll(null);

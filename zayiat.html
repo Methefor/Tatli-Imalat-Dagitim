@@ -218,12 +218,27 @@
         }
 
         .dessert-row {
-            display: flex; align-items: center; gap: 14px;
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
             padding: 16px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.045);
             opacity: 0;
             animation: rowIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
         }
+
+        .reason-wrap {
+            width: 100%; align-items: center; gap: 8px;
+            margin-top: 8px; padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .reason-label { font-size: 11px; color: rgba(245,158,11,0.7); font-weight: 600; flex-shrink: 0; }
+        .reason-input {
+            flex: 1; background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.15);
+            border-radius: 10px; padding: 8px 12px;
+            color: var(--text); font-size: 13px; outline: none;
+            font-family: inherit;
+        }
+        .reason-input::placeholder { color: rgba(255,255,255,0.22); }
+        .reason-input:focus { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.06); }
 
         .dessert-row:last-child { border-bottom: none; }
 
@@ -562,7 +577,19 @@
         function quickAdd(btn, delta) {
             const inp = btn.closest('.dessert-row').querySelector('.num-input');
             inp.value = Math.max(0, (parseInt(inp.value) || 0) + delta);
+            onWasteInput(inp);
+        }
+
+        function onWasteInput(input) {
             updateTotal();
+            const val = parseInt(input.value) || 0;
+            const rw = document.getElementById('rw-' + input.dataset.id);
+            if (!rw) return;
+            rw.style.display = val > 0 ? 'flex' : 'none';
+            if (val === 0) {
+                const ri = rw.querySelector('.reason-input');
+                if (ri) ri.value = '';
+            }
         }
 
         function updateTotal() {
@@ -595,6 +622,11 @@
                 const wasteAmt     = entry?.waste_amount    ?? 0;
                 const receivedAmt  = entry?.received_amount ?? 0;
 
+                const existingReason = (() => {
+                    const m = (entry?.notes || '').match(/\[ZAY: ([^\]]+)\]/);
+                    return m ? m[1] : '';
+                })();
+
                 const receivedHint = receivedAmt > 0
                     ? `<div class="dessert-received">Gelen: ${receivedAmt} adet</div>`
                     : '';
@@ -618,7 +650,15 @@
                            data-id="${dessert.id}"
                            data-received="${receivedAmt}"
                            inputmode="numeric"
-                           oninput="updateTotal()">
+                           oninput="onWasteInput(this)">
+                    <div class="reason-wrap" id="rw-${dessert.id}" style="display:${wasteAmt > 0 ? 'flex' : 'none'}">
+                        <span class="reason-label">⚠ Neden?</span>
+                        <input type="text" class="reason-input"
+                               data-id="${dessert.id}"
+                               placeholder="Örn: 3 gün süresi geçti, kıl çıktı..."
+                               maxlength="120"
+                               value="${existingReason.replace(/"/g, '&quot;')}">
+                    </div>
                 `;
                 list.appendChild(row);
             });
@@ -635,8 +675,11 @@
             const savePromises = Array.from(inputs)
                 .filter(input => (parseInt(input.value) || 0) !== 0)
                 .map(input => {
-                    const wasteAmt = parseInt(input.value) || 0;
-                    return saveDailyEntry(branchId, input.dataset.id, selectedDate, null, null, wasteAmt, '');
+                    const wasteAmt  = parseInt(input.value) || 0;
+                    const reasonEl  = document.querySelector(`.reason-input[data-id="${input.dataset.id}"]`);
+                    const reason    = reasonEl?.value.trim() || '';
+                    const notes     = reason ? `[ZAY: ${reason}]` : '';
+                    return saveDailyEntry(branchId, input.dataset.id, selectedDate, null, null, wasteAmt, notes);
                 });
 
             const results = await Promise.all(savePromises);
