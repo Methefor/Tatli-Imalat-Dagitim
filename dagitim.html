@@ -896,9 +896,6 @@
     <script src="supabase-client.js"></script>
     <script>
         // ─── PIN ───
-        let _panelPin = '1234'; // DB yüklenene kadar default
-        getSetting('dagitimPin').then(val => { if (val) _panelPin = String(val); });
-
         const pinIds = ['pd1','pd2','pd3','pd4'];
 
         if (sessionStorage.getItem('dagitimAuth') === '1') {
@@ -923,9 +920,11 @@
                 document.getElementById('pd1').focus();
         }, 150);
 
-        function checkPin() {
+        async function checkPin() {
             const entered = pinIds.map(id => document.getElementById(id).value).join('');
-            if (entered === _panelPin) {
+            // Her seferinde DB'den taze oku (PIN değişikliği anında geçerli olsun)
+            const currentPin = String((await getSetting('dagitimPin')) || '1234');
+            if (entered === currentPin) {
                 sessionStorage.setItem('dagitimAuth', '1');
                 document.getElementById('pinOverlay').classList.remove('active');
                 loadData();

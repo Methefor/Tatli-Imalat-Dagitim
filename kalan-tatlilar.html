@@ -475,20 +475,30 @@
             return toDateStr(d);
         }
 
+        function getYesterdayDate() {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return toDateStr(d);
+        }
+
         function updateDateUI() {
-            const today = getTodayDate();
+            const today     = getTodayDate();
+            const yesterday = getYesterdayDate();
             document.getElementById('dateDisplay').textContent = formatDateTurkish(selectedDate);
             document.getElementById('datePicker').value = selectedDate;
             document.getElementById('datePicker').max   = today;
+            document.getElementById('datePicker').min   = yesterday;
             document.getElementById('nextDayBtn').disabled = (selectedDate >= today);
+            document.getElementById('prevDayBtn').disabled = (selectedDate <= yesterday);
         }
 
         function changeDate(delta) {
             const d = new Date(selectedDate + 'T12:00:00');
             d.setDate(d.getDate() + delta);
-            const next  = toDateStr(d);
-            const today = getTodayDate();
-            if (next > today) return;
+            const next      = toDateStr(d);
+            const today     = getTodayDate();
+            const yesterday = getYesterdayDate();
+            if (next > today || next < yesterday) return;
             selectedDate = next;
             updateDateUI();
             loadDesserts();
@@ -496,8 +506,11 @@
 
         function onDatePick(val) {
             if (!val) return;
-            const today = getTodayDate();
-            selectedDate = val > today ? today : val;
+            const today     = getTodayDate();
+            const yesterday = getYesterdayDate();
+            if (val > today)     val = today;
+            if (val < yesterday) val = yesterday;
+            selectedDate = val;
             updateDateUI();
             loadDesserts();
         }

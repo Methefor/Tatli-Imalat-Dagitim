@@ -679,9 +679,6 @@
     <script src="supabase-client.js"></script>
     <script>
         // ─── PIN ───
-        let _panelPin = '0000'; // DB yüklenene kadar default
-        getSetting('tatlicilarPin').then(val => { if (val) _panelPin = String(val); });
-
         const pinIds = ['pd1','pd2','pd3','pd4'];
 
         if (sessionStorage.getItem('tatlicilarAuth') === '1') {
@@ -706,9 +703,11 @@
                 document.getElementById('pd1').focus();
         }, 150);
 
-        function checkPin() {
+        async function checkPin() {
             const entered = pinIds.map(id => document.getElementById(id).value).join('');
-            if (entered === _panelPin) {
+            // Her seferinde DB'den taze oku (PIN değişikliği anında geçerli olsun)
+            const currentPin = String((await getSetting('tatlicilarPin')) || '0000');
+            if (entered === currentPin) {
                 sessionStorage.setItem('tatlicilarAuth', '1');
                 document.getElementById('pinOverlay').classList.remove('active');
                 loadData();

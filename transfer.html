@@ -210,7 +210,7 @@
         .dq-emoji { font-size: 20px; flex-shrink: 0; }
         .dq-name  { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
 
-        .dq-stepper { display: flex; align-items: center; gap: 5px; }
+        .dq-stepper { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
 
         .step-btn {
             width: 32px; height: 32px;
@@ -222,6 +222,15 @@
             touch-action: manipulation; transition: all 0.15s; flex-shrink: 0;
         }
         .step-btn:active { background: var(--acc-dim); border-color: var(--acc-brd); transform: scale(0.92); }
+
+        .step-fast {
+            width: auto; padding: 0 8px;
+            font-size: 11px; font-weight: 700;
+            background: rgba(245,158,11,0.1);
+            border-color: rgba(245,158,11,0.25);
+            color: #f59e0b;
+        }
+        .step-fast:active { background: rgba(245,158,11,0.25); }
 
         .step-input {
             width: 54px; height: 32px;
@@ -502,7 +511,9 @@
                         <button class="step-btn" onclick="stepQty(this,-1)" type="button">−</button>
                         <input class="step-input" type="number" min="0" value="0"
                                inputmode="numeric" oninput="onQtyInput(this)">
-                        <button class="step-btn" onclick="stepQty(this,1)" type="button">+</button>
+                        <button class="step-btn" onclick="stepQty(this,1)" type="button">+1</button>
+                        <button class="step-btn step-fast" onclick="stepQty(this,5)" type="button">+5</button>
+                        <button class="step-btn step-fast" onclick="stepQty(this,10)" type="button">+10</button>
                     </div>`;
                 list.appendChild(row);
             } else {

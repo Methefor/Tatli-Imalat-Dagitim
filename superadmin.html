@@ -961,8 +961,9 @@ async function handleUpdateBranchPassword(branchId, inputId, btn) {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>';
     try {
-        await updateBranchPassword(branchId, newVal);
-        showToast('Şube şifresi güncellendi', 'success');
+        const result = await updateBranchPassword(branchId, newVal);
+        if (result && result.success === false) throw new Error(result.error || 'Güncellenemedi');
+        showToast('Şube şifresi güncellendi ✓', 'success');
         input.value = '';
         input.placeholder = '••••';
     } catch (err) {
@@ -1058,7 +1059,8 @@ async function handleUpdateManager(branchId, inputId, btn) {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>';
     try {
-        await updateBranchManager(branchId, newVal);
+        const result = await updateBranchManager(branchId, newVal);
+        if (result && result.success === false) throw new Error(result.error || 'Güncellenemedi');
         showToast('Müdür adı güncellendi', 'success');
     } catch (err) {
         showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');

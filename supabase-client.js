@@ -156,8 +156,11 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
         }
 
         if (existing) {
-            // Güncelleme: null gelen alanları mevcut DB değerinin üzerine YAZMAsın
-            const updateData = { notes: notes, entry_time: new Date().toISOString() }
+            // Güncelleme: düzeltme zaman damgası ekle
+            const now = new Date()
+            const corrTag = `[DÜZ ${now.toLocaleDateString('tr-TR')} ${now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}]`
+            const corrNotes = corrTag + (notes ? ' ' + notes : '')
+            const updateData = { notes: corrNotes, entry_time: now.toISOString() }
             if (received  !== null && received  !== undefined) updateData.received_amount  = received
             if (remaining !== null && remaining !== undefined) updateData.remaining_amount = remaining
             if (waste     !== null && waste     !== undefined) updateData.waste_amount     = waste
@@ -1178,6 +1181,81 @@ async function getWeeklySchedule() {
 
 async function saveWeeklySchedule(schedule) {
     return setSetting('weeklySchedule', JSON.stringify(schedule))
+}
+
+// ====================================================================
+// PERSONEL YÖNETİMİ
+// ====================================================================
+
+/**
+ * Her şubenin son veri giriş tarihini döner
+ * Dönüş: [ { id, name, manager_name, password, lastDate } ]
+ */
+async function getBranchLastActivity() {
+    try {
+        const branches = await getBranches()
+        if (!branches || branches.length === 0) return []
+
+        const today = new Date().toISOString().split('T')[0]
+        const past  = new Date()
+        past.setDate(past.getDate() - 60)
+        const pastDate = past.toISOString().split('T')[0]
+
+        const { data, error } = await supabaseClient
+            .from('daily_entries')
+            .select('branch_id, entry_date')
+            .gte('entry_date', pastDate)
+            .lte('entry_date', today)
+
+        if (error) throw error
+
+        // Son tarihi şube bazında hesapla
+        const lastByBranch = {}
+        ;(data || []).forEach(e => {
+            const bid = String(e.branch_id)
+            if (!lastByBranch[bid] || e.entry_date > lastByBranch[bid]) {
+                lastByBranch[bid] = e.entry_date
+            }
+        })
+
+        return branches.map(b => ({
+            ...b,
+            lastDate: lastByBranch[String(b.id)] || null
+        }))
+    } catch (err) {
+        console.error('Aktivite sorgu hatası:', err)
+        return []
+    }
+}
+
+/**
+ * Son N günde yapılan düzeltme girişlerini döner ([DÜZ içeren notes)
+ * Dönüş: [ { entry_date, notes, branches:{name,manager_name}, desserts:{name,emoji} } ]
+ */
+async function getCorrectionEntries(days = 30) {
+    try {
+        const past = new Date()
+        past.setDate(past.getDate() - days)
+        const pastDate = past.toISOString().split('T')[0]
+
+        const { data, error } = await supabaseClient
+            .from('daily_entries')
+            .select(`
+                id, entry_date, notes, entry_time,
+                received_amount, remaining_amount, waste_amount,
+                branches ( name, manager_name ),
+                desserts ( name, emoji )
+            `)
+            .gte('entry_date', pastDate)
+            .like('notes', '%[DÜZ%')
+            .order('entry_time', { ascending: false })
+
+        if (error) throw error
+        return data || []
+    } catch (err) {
+        console.error('Düzeltme sorgu hatası:', err)
+        return []
+    }
 }
 
 console.log('✅ Supabase Client yüklendi')
