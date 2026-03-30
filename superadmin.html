@@ -944,7 +944,7 @@ async function loadBranchPasswords() {
                     ${branchEmoji(branch.name)} ${branch.name}
                 </div>
                 <input class="form-input" type="text" id="bp-${branch.id}" value="${branch.password || ''}" placeholder="••••" autocomplete="off">
-                <button class="save-btn" onclick="handleUpdateBranchPassword(${branch.id}, 'bp-${branch.id}', this)">Kaydet</button>
+                <button class="save-btn" onclick="handleUpdateBranchPassword('${branch.id}', 'bp-${branch.id}', this)">Kaydet</button>
             `;
             container.appendChild(row);
         });
@@ -992,7 +992,7 @@ async function loadAdminPasswords() {
                     <span class="form-label-sub">@${admin.username}</span>
                 </div>
                 <input class="form-input" type="text" id="ap-${admin.id}" placeholder="Yeni şifre" autocomplete="off">
-                <button class="save-btn" onclick="handleUpdateAdminPassword(${admin.id}, 'ap-${admin.id}', this)">Kaydet</button>
+                <button class="save-btn" onclick="handleUpdateAdminPassword('${admin.id}', 'ap-${admin.id}', this)">Kaydet</button>
             `;
             container.appendChild(row);
         });
@@ -1041,7 +1041,7 @@ async function loadManagers() {
                     ${branchEmoji(branch.name)} ${branch.name}
                 </div>
                 <input class="form-input wide" type="text" id="mgr-${branch.id}" value="${branch.manager_name || ''}" placeholder="Müdür adı" autocomplete="off">
-                <button class="save-btn" onclick="handleUpdateManager(${branch.id}, 'mgr-${branch.id}', this)">Kaydet</button>
+                <button class="save-btn" onclick="handleUpdateManager('${branch.id}', 'mgr-${branch.id}', this)">Kaydet</button>
             `;
             container.appendChild(row);
         });
@@ -1088,7 +1088,7 @@ async function loadBranchStatus() {
             row.innerHTML = `
                 <div class="form-label">${branchEmoji(branch.name)} ${branch.name}</div>
                 <label class="toggle" title="${isActive ? 'Aktif' : 'Pasif'}">
-                    <input type="checkbox" id="bstat-${branch.id}" ${isActive ? 'checked' : ''} onchange="saveBranchStatus(${branch.id}, this)">
+                    <input type="checkbox" id="bstat-${branch.id}" ${isActive ? 'checked' : ''} onchange="saveBranchStatus('${branch.id}', this)">
                     <span class="toggle-track"></span>
                     <span class="toggle-thumb"></span>
                 </label>
@@ -1148,7 +1148,7 @@ function buildDessertRow(d) {
     const isActive = d.is_active !== false;
     row.innerHTML = `
         <label class="toggle">
-            <input type="checkbox" ${isActive ? 'checked' : ''} onchange="handleToggleDessert(${d.id}, this)">
+            <input type="checkbox" ${isActive ? 'checked' : ''} onchange="handleToggleDessert('${d.id}', this)">
             <div class="toggle-track"></div>
             <div class="toggle-thumb"></div>
         </label>
@@ -1158,8 +1158,8 @@ function buildDessertRow(d) {
         <input class="form-input emoji-input" type="text" id="de-${d.id}" value="${d.emoji || ''}" maxlength="2" title="Emoji">
         <input class="form-input wide" type="text" id="dn-${d.id}" value="${d.name || ''}" placeholder="Tatlı adı">
         <input class="form-input small" type="number" id="do-${d.id}" value="${d.display_order || 99}" min="1" title="Sıra">
-        <button class="save-btn" onclick="handleUpdateDessert(${d.id}, this)">Kaydet</button>
-        <button class="del-btn" id="del-${d.id}" ${isActive ? 'disabled title="Önce pasife alın"' : ''} onclick="handleDeactivateDessert(${d.id}, this)">Sil</button>
+        <button class="save-btn" onclick="handleUpdateDessert('${d.id}', this)">Kaydet</button>
+        <button class="del-btn" id="del-${d.id}" ${isActive ? 'disabled title="Önce pasife alın"' : ''} onclick="handleDeactivateDessert('${d.id}', this)">Sil</button>
     `;
     return row;
 }
