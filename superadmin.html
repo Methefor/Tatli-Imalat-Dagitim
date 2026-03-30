@@ -943,7 +943,7 @@ async function loadBranchPasswords() {
                 <div class="form-label">
                     ${branchEmoji(branch.name)} ${branch.name}
                 </div>
-                <input class="form-input" type="text" id="bp-${branch.id}" placeholder="••••" autocomplete="off">
+                <input class="form-input" type="text" id="bp-${branch.id}" value="${branch.password || ''}" placeholder="••••" autocomplete="off">
                 <button class="save-btn" onclick="handleUpdateBranchPassword(${branch.id}, 'bp-${branch.id}', this)">Kaydet</button>
             `;
             container.appendChild(row);
@@ -964,7 +964,6 @@ async function handleUpdateBranchPassword(branchId, inputId, btn) {
         const result = await updateBranchPassword(branchId, newVal);
         if (result && result.success === false) throw new Error(result.error || 'Güncellenemedi');
         showToast('Şube şifresi güncellendi ✓', 'success');
-        input.value = '';
         input.placeholder = '••••';
     } catch (err) {
         showToast('Hata: ' + (err.message || 'Güncellenemedi'), 'error');
