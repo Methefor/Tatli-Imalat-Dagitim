@@ -1230,22 +1230,39 @@ async function getBranchLastActivity() {
         past.setDate(past.getDate() - 60)
         const pastDate = _localDate(past)
 
-        const { data, error } = await supabaseClient
-            .from('daily_entries')
-            .select('branch_id, entry_date')
-            .gte('entry_date', pastDate)
-            .lte('entry_date', today)
+        // İki sorgu: bugün aktif mi? + son 30 günde son tarih
+        const [todayRes, recentRes] = await Promise.all([
+            supabaseClient
+                .from('daily_entries')
+                .select('branch_id')
+                .eq('entry_date', today)
+                .limit(500),
+            supabaseClient
+                .from('daily_entries')
+                .select('branch_id, entry_date')
+                .gte('entry_date', pastDate)
+                .lte('entry_date', today)
+                .order('entry_date', { ascending: false })
+                .limit(3000)
+        ])
 
-        if (error) throw error
+        if (todayRes.error) throw todayRes.error
+        if (recentRes.error) throw recentRes.error
 
-        // Son tarihi şube bazında hesapla
+        // Bugün aktif olan şubeler
+        const todayActive = new Set((todayRes.data || []).map(e => String(e.branch_id)))
+
+        // Son tarihi şube bazında hesapla (son 30 gün)
         const lastByBranch = {}
-        ;(data || []).forEach(e => {
+        ;(recentRes.data || []).forEach(e => {
             const bid = String(e.branch_id)
             if (!lastByBranch[bid] || e.entry_date > lastByBranch[bid]) {
                 lastByBranch[bid] = e.entry_date
             }
         })
+
+        // Bugün aktif olanların son tarihini bugün yap (sorgu kesintisi olursa diye güvence)
+        todayActive.forEach(bid => { lastByBranch[bid] = today })
 
         return branches.map(b => ({
             ...b,
