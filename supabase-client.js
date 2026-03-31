@@ -145,7 +145,7 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
     try {
         const { data: existing, error: checkError } = await supabaseClient
             .from('daily_entries')
-            .select('id')
+            .select('id, received_amount, remaining_amount, waste_amount, notes')
             .eq('branch_id', branchId)
             .eq('dessert_id', dessertId)
             .eq('entry_date', date)
@@ -156,11 +156,30 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
         }
 
         if (existing) {
-            // Güncelleme: düzeltme zaman damgası ekle
+            // Hangi değerler değişti?
+            const changes = []
+            if (received  !== null && received  !== undefined && received  !== existing.received_amount)
+                changes.push(`gelen:${existing.received_amount ?? '—'}→${received}`)
+            if (remaining !== null && remaining !== undefined && remaining !== existing.remaining_amount)
+                changes.push(`kalan:${existing.remaining_amount ?? '—'}→${remaining}`)
+            if (waste     !== null && waste     !== undefined && waste     !== existing.waste_amount)
+                changes.push(`zayiat:${existing.waste_amount ?? '—'}→${waste}`)
+
             const now = new Date()
-            const corrTag = `[DÜZ ${now.toLocaleDateString('tr-TR')} ${now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}]`
-            const corrNotes = corrTag + (notes ? ' ' + notes : '')
-            const updateData = { notes: corrNotes, entry_time: now.toISOString() }
+            // Mevcut notes'tan başla; [ZAY: ...] tag'ini yenisiyle değiştir
+            let baseNotes = existing.notes || ''
+            if (notes && notes.includes('[ZAY:')) {
+                baseNotes = baseNotes.replace(/\[ZAY:[^\]]*\]/g, '').trim()
+                baseNotes = (baseNotes ? baseNotes + ' ' : '') + notes.trim()
+            }
+
+            // Sadece değer değiştiyse [DÜZ] etiketi ekle
+            if (changes.length > 0) {
+                const corrTag = `[DÜZ ${now.toLocaleDateString('tr-TR')} ${now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} ${changes.join(',')}]`
+                baseNotes = (baseNotes ? baseNotes + ' ' : '') + corrTag
+            }
+
+            const updateData = { notes: baseNotes.trim(), entry_time: now.toISOString() }
             if (received  !== null && received  !== undefined) updateData.received_amount  = received
             if (remaining !== null && remaining !== undefined) updateData.remaining_amount = remaining
             if (waste     !== null && waste     !== undefined) updateData.waste_amount     = waste
@@ -327,7 +346,7 @@ async function getBranchLatestStock(branchId) {
     try {
         const past = new Date()
         past.setDate(past.getDate() - 60)
-        const pastDate = past.toISOString().split('T')[0]
+        const pastDate = _localDate(past)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
@@ -378,7 +397,7 @@ async function getAllLatestStock() {
     try {
         const past = new Date()
         past.setDate(past.getDate() - 60)
-        const pastDate = past.toISOString().split('T')[0]
+        const pastDate = _localDate(past)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
@@ -432,7 +451,7 @@ async function getCurrentStock() {
     try {
         const past = new Date()
         past.setDate(past.getDate() - 60)
-        const pastDate = past.toISOString().split('T')[0]
+        const pastDate = _localDate(past)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
