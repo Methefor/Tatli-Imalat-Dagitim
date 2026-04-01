@@ -1386,7 +1386,7 @@
 
         </div>
 
-        <!-- Stock Status -->
+        <!-- Güncel Stok Durumu -->
         <div class="panel fade-up" style="animation-delay:0.3s">
             <div class="panel-header">
                 <h2 class="panel-title">Güncel Stok Durumu</h2>
@@ -1402,19 +1402,33 @@
             </div>
         </div>
 
-        <!-- Tatlı × Şube Satış Haritası -->
-        <div class="panel fade-up" style="animation-delay:0.32s">
+        <!-- Zayiat Raporu -->
+        <div class="panel fade-up" style="animation-delay:0.35s">
             <div class="panel-header">
-                <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
-                <span class="panel-badge" id="heatmapBadge">—</span>
+                <h2 class="panel-title">Zayiat Raporu</h2>
+                <span class="panel-badge panel-badge--red" id="zayiatTotal">—</span>
             </div>
-            <div class="heatmap-wrap">
-                <div id="heatmapContent"><div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div></div>
+            <div id="zayiatContent">
+                <div class="empty-state" style="padding:32px">
+                    <div class="empty-state-icon">⏳</div>
+                    <div class="empty-state-title">Yükleniyor</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zayiat Kayıtları — hangi şube, hangi tatlı, neden (detaylı) -->
+        <div class="panel fade-up" style="animation-delay:0.4s">
+            <div class="panel-header">
+                <h2 class="panel-title">⚠️ Zayiat Kayıtları (Son 30 Gün)</h2>
+                <span class="panel-badge panel-badge--red" id="wasteReasonsBadge">—</span>
+            </div>
+            <div id="wasteReasonsContent" style="min-height:60px">
+                <div style="text-align:center;padding:28px;color:rgba(255,255,255,0.25);font-size:13px">Yükleniyor…</div>
             </div>
         </div>
 
         <!-- Satış Trendi -->
-        <div class="panel fade-up" style="animation-delay:0.35s">
+        <div class="panel fade-up" style="animation-delay:0.45s">
             <div class="panel-header">
                 <h2 class="panel-title">Satış Trendi</h2>
                 <span class="panel-badge" id="trendBadge">—</span>
@@ -1428,22 +1442,8 @@
             </div>
         </div>
 
-        <!-- Zayiat Raporu -->
-        <div class="panel fade-up" style="animation-delay:0.4s">
-            <div class="panel-header">
-                <h2 class="panel-title">Zayiat Raporu</h2>
-                <span class="panel-badge panel-badge--red" id="zayiatTotal">—</span>
-            </div>
-            <div id="zayiatContent">
-                <div class="empty-state" style="padding:32px">
-                    <div class="empty-state-icon">⏳</div>
-                    <div class="empty-state-title">Yükleniyor</div>
-                </div>
-            </div>
-        </div>
-
         <!-- Elde Edilen Gelir -->
-        <div class="panel fade-up" style="animation-delay:0.45s">
+        <div class="panel fade-up" style="animation-delay:0.5s">
             <div class="panel-header">
                 <h2 class="panel-title">💰 Elde Edilen Gelir</h2>
                 <span class="panel-badge panel-badge--green" id="ciroTotalBadge">—</span>
@@ -1456,21 +1456,8 @@
             </div>
         </div>
 
-        <!-- Maliyet & Karlılık -->
-        <div class="panel fade-up" style="animation-delay:0.5s">
-            <div class="panel-header">
-                <h2 class="panel-title">Maliyet & Karlılık</h2>
-                <span class="panel-badge panel-badge--green" id="maliyetKarBadge">—</span>
-            </div>
-            <div id="maliyetContent">
-                <div class="profit-no-cost">
-                    ⚙️ Maliyet hesabı için üretim maliyetlerini Süper Admin panelinden girin.
-                </div>
-            </div>
-        </div>
-
         <!-- Ortalama Satış Tahmini (Son 30 Gün) -->
-        <div class="panel fade-up" style="animation-delay:0.55s">
+        <div class="panel fade-up" style="animation-delay:0.53s">
             <div class="panel-header">
                 <h2 class="panel-title">Ort. Günlük Satış (Son 30 Gün)</h2>
                 <span class="panel-badge" id="forecastBadge">30 Gün</span>
@@ -1481,7 +1468,7 @@
         </div>
 
         <!-- Stok Devir Hızı -->
-        <div class="panel fade-up" style="animation-delay:0.57s">
+        <div class="panel fade-up" style="animation-delay:0.56s">
             <div class="panel-header">
                 <h2 class="panel-title">🔥 Stok Devir Hızı</h2>
                 <span class="panel-badge" id="turnoverBadge">Dönem</span>
@@ -1492,7 +1479,7 @@
         </div>
 
         <!-- Zayiat Trendi (Son 6 Ay) -->
-        <div class="panel fade-up" style="animation-delay:0.6s">
+        <div class="panel fade-up" style="animation-delay:0.59s">
             <div class="panel-header">
                 <h2 class="panel-title">Zayiat Trendi (Son 6 Ay)</h2>
                 <span class="panel-badge panel-badge--red" id="wasteTrendBadge">6 Ay</span>
@@ -1502,19 +1489,8 @@
             </div>
         </div>
 
-        <!-- Zayiat Açıklamaları -->
-        <div class="panel fade-up" style="animation-delay:0.63s">
-            <div class="panel-header">
-                <h2 class="panel-title">⚠️ Zayiat Kayıtları (Son 30 Gün)</h2>
-                <span class="panel-badge panel-badge--red" id="wasteReasonsBadge">—</span>
-            </div>
-            <div id="wasteReasonsContent" style="min-height:60px">
-                <div style="text-align:center;padding:28px;color:rgba(255,255,255,0.25);font-size:13px">Yükleniyor…</div>
-            </div>
-        </div>
-
-        <!-- Yıllık Satış Trendi -->
-        <div class="panel fade-up" style="animation-delay:0.65s">
+        <!-- Yıllık Dağıtım Trendi -->
+        <div class="panel fade-up" style="animation-delay:0.62s">
             <div class="panel-header">
                 <h2 class="panel-title">Yıllık Dağıtım Trendi</h2>
                 <div class="year-nav">
@@ -1525,6 +1501,30 @@
             </div>
             <div class="chart-wrap-tall">
                 <canvas id="yearlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tatlı × Şube Satış Haritası -->
+        <div class="panel fade-up" style="animation-delay:0.65s">
+            <div class="panel-header">
+                <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
+                <span class="panel-badge" id="heatmapBadge">—</span>
+            </div>
+            <div class="heatmap-wrap">
+                <div id="heatmapContent"><div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div></div>
+            </div>
+        </div>
+
+        <!-- Maliyet & Karlılık -->
+        <div class="panel fade-up" style="animation-delay:0.68s">
+            <div class="panel-header">
+                <h2 class="panel-title">Maliyet & Karlılık</h2>
+                <span class="panel-badge panel-badge--green" id="maliyetKarBadge">—</span>
+            </div>
+            <div id="maliyetContent">
+                <div class="profit-no-cost">
+                    ⚙️ Maliyet hesabı için üretim maliyetlerini Süper Admin panelinden girin.
+                </div>
             </div>
         </div>
 

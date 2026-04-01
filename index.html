@@ -1033,6 +1033,7 @@
                 localStorage.setItem('branchId',   result.branchId);
                 localStorage.setItem('branchName', result.branchName);
                 if (result.managerName) localStorage.setItem('managerName', result.managerName);
+                sessionStorage.setItem('justLoggedIn', '1'); // welcome modal için
                 window.location.href = 'branch-menu.html';
             } else {
                 const group = document.querySelector('#pinModal .pin-input-group');
