@@ -965,7 +965,8 @@
         document.getElementById('todayDate').textContent       = '📅 ' + formatDateTurkish(getTodayDate());
 
         // Şifre ile giriş yapıldıysa welcome modal göster
-        showWelcomeIfNeeded();
+        // (HTML fully parsed olduğunda çalışsın - modal DOM'dan sonra yükleniyor)
+        window.addEventListener('load', showWelcomeIfNeeded);
 
         // Saat
         function tick() {

@@ -953,15 +953,37 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // ⌂ butonuyla gelindiyse auto-redirect yapma (giriş bilgisi korunmuş)
             const noAuto = sessionStorage.getItem('noAutoRedirect');
+            const savedBranchId   = localStorage.getItem('branchId');
+            const savedBranchName = localStorage.getItem('branchName');
             if (noAuto) {
                 sessionStorage.removeItem('noAutoRedirect');
-            } else if (localStorage.getItem('branchId')) {
+                // ⌂ ile gelindi — şifreye gerek yok, hızlı dönüş göster
+                if (savedBranchId && savedBranchName) showQuickReturn(savedBranchName);
+            } else if (savedBranchId) {
                 // Daha önce giriş yapılmışsa direkt branch-menu'ya git
                 window.location.href = 'branch-menu.html';
                 return;
             }
             branchesCache = await getBranches();
         });
+
+        function showQuickReturn(branchName) {
+            const banner = document.createElement('div');
+            banner.id = 'quickReturnBanner';
+            banner.style.cssText = 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:16px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+            banner.innerHTML = `
+                <div style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:22px">🏪</span>
+                    <div style="text-align:left">
+                        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85)">${branchName}</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.4)">Giriş bilgisi korunuyor</div>
+                    </div>
+                </div>
+                <button onclick="window.location.href='branch-menu.html'" style="background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);border-radius:10px;color:rgba(16,185,129,0.9);font-size:13px;font-weight:700;padding:8px 16px;cursor:pointer;white-space:nowrap;touch-action:manipulation;">← Geri Dön</button>
+            `;
+            const btnGroup = document.querySelector('.btn-group');
+            btnGroup.parentNode.insertBefore(banner, btnGroup);
+        }
 
         // ─── Şube seçimi ───
         function openBranchSelection() {

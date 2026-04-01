@@ -2894,7 +2894,17 @@ _Mutlukent Tatlı Takip Sistemi_`;
         async function loadWasteReasons() {
             const container = document.getElementById('wasteReasonsContent');
             try {
-                const list = await getWasteWithReasons(30);
+                // SW cache'i bypass etmek için doğrudan sorgu (getWasteWithReasons kullanma)
+                const d = new Date(); d.setDate(d.getDate() - 30);
+                const startStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                const { data: list, error } = await window.supabaseInstance
+                    .from('daily_entries')
+                    .select('entry_date, waste_amount, notes, entry_time, branches(name, manager_name), desserts(name, emoji)')
+                    .gt('waste_amount', 0)
+                    .gte('entry_date', startStr)
+                    .order('entry_date', { ascending: false })
+                    .limit(200);
+                if (error) throw error;
                 const badge = document.getElementById('wasteReasonsBadge');
 
                 if (!list || list.length === 0) {
