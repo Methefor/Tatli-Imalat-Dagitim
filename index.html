@@ -951,8 +951,12 @@
 
         // Sayfa yüklenince şubeleri arka planda çek
         document.addEventListener('DOMContentLoaded', async () => {
-            // Daha önce giriş yapılmışsa direkt branch-menu'ya git
-            if (localStorage.getItem('branchId')) {
+            // ⌂ butonuyla gelindiyse auto-redirect yapma (giriş bilgisi korunmuş)
+            const noAuto = sessionStorage.getItem('noAutoRedirect');
+            if (noAuto) {
+                sessionStorage.removeItem('noAutoRedirect');
+            } else if (localStorage.getItem('branchId')) {
+                // Daha önce giriş yapılmışsa direkt branch-menu'ya git
                 window.location.href = 'branch-menu.html';
                 return;
             }

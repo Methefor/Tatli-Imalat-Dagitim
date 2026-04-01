@@ -1505,7 +1505,7 @@
         <!-- Zayiat Açıklamaları -->
         <div class="panel fade-up" style="animation-delay:0.63s">
             <div class="panel-header">
-                <h2 class="panel-title">📋 Zayiat Açıklamaları (Son 30 Gün)</h2>
+                <h2 class="panel-title">⚠️ Zayiat Kayıtları (Son 30 Gün)</h2>
                 <span class="panel-badge panel-badge--red" id="wasteReasonsBadge">—</span>
             </div>
             <div id="wasteReasonsContent" style="min-height:60px">
@@ -2899,26 +2899,30 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
                 if (!list || list.length === 0) {
                     badge.textContent = '0 kayıt';
-                    container.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.25);font-size:13px">Son 30 günde açıklamalı zayiat girişi yok</div>';
+                    container.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.25);font-size:13px">Son 30 günde zayiat girişi yok</div>';
                     return;
                 }
 
-                badge.textContent = list.length + ' kayıt';
+                const withReason = list.filter(e => (e.notes || '').includes('[ZAY:'));
+                badge.textContent = list.length + ' kayıt' + (withReason.length > 0 ? ` · ${withReason.length} açıklamalı` : '');
 
                 const rows = list.map(entry => {
-                    const reason = (entry.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || '—';
-                    const branch = entry.branches?.name || '?';
-                    const mgr    = entry.branches?.manager_name || '—';
-                    const dessert= (entry.desserts?.emoji || '') + ' ' + (entry.desserts?.name || '?');
-                    const dateStr= entry.entry_date ? new Date(entry.entry_date + 'T12:00:00')
+                    const reason  = (entry.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || null;
+                    const branch  = entry.branches?.name || '?';
+                    const mgr     = entry.branches?.manager_name || '—';
+                    const dessert = (entry.desserts?.emoji || '') + ' ' + (entry.desserts?.name || '?');
+                    const dateStr = entry.entry_date ? new Date(entry.entry_date + 'T12:00:00')
                         .toLocaleDateString('tr-TR', { day:'numeric', month:'short' }) : '—';
+                    const reasonHtml = reason
+                        ? `<div style="font-size:12px;color:rgba(251,191,36,0.85);margin-top:4px;font-style:italic">"${reason}"</div>`
+                        : `<div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:3px;font-style:italic">Açıklama girilmedi</div>`;
 
                     return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05)">
                         <div style="min-width:52px;font-size:11px;color:rgba(255,255,255,0.35);padding-top:1px">${dateStr}</div>
                         <div style="flex:1;min-width:0">
                             <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85)">${mgr} <span style="font-weight:400;color:rgba(255,255,255,0.35)">— ${branch}</span></div>
                             <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">${dessert} · <span style="color:rgba(239,68,68,0.8);font-weight:600">${entry.waste_amount} adet zayiat</span></div>
-                            <div style="font-size:12px;color:rgba(251,191,36,0.85);margin-top:4px;font-style:italic">"${reason}"</div>
+                            ${reasonHtml}
                         </div>
                     </div>`;
                 }).join('');
