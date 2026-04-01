@@ -505,7 +505,8 @@
         .greeting-overlay {
             display: none; position: fixed; inset: 0;
             background: rgba(6,10,20,0.82);
-            z-index: 8000; align-items: center; justify-content: center;
+            z-index: 8000; align-items: flex-start; justify-content: center;
+            padding-top: 48px;
             backdrop-filter: blur(4px);
         }
         .greeting-overlay.active { display: flex; }
@@ -693,7 +694,7 @@
                 <div class="section-header" style="margin-bottom:14px">
                     <span class="section-title">📅 Haftalık Üretim Takvimi</span>
                     <div class="section-line"></div>
-                    <button class="schedule-edit-btn" id="schedEditBtn" onclick="openSchedAuth()">✏️ Düzenle</button>
+                    <button class="schedule-edit-btn" id="schedEditBtn" onclick="renderSchedule(true)">✏️ Düzenle</button>
                 </div>
                 <div id="scheduleTableWrap">
                     <div class="loading-state" style="padding:24px 0">Yükleniyor...</div>

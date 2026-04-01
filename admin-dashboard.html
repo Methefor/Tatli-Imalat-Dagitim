@@ -2003,27 +2003,37 @@
                               : currentFilter === 'month'  ? `${MONTHS_TR2[navMonth-1]} ${navYear}`
                               : 'Tüm Zamanlar';
 
-            const { dist, sold, waste } = buildMetrics(allData);
             const latestMap = buildCurrentStockMap(allData);
+            const dist  = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
+            const waste = allData.reduce((s, e) => s + (e.waste_amount    || 0), 0);
             const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
-            const soldRate = dist > 0 ? ((sold / dist) * 100).toFixed(1) : 0;
+            // Devir stok dahil (updateStats ile aynı formül)
+            const openingTotal = Object.values(openingStockMap).reduce((s, v) => s + v, 0);
+            const sold = Math.max(0, openingTotal + dist - stock - waste);
+            const base = openingTotal + dist;
+            const soldRate = base > 0 ? ((sold / base) * 100).toFixed(1) : 0;
 
-            // Şube detayları
+            // Şube detayları (devir stok per-branch)
             const bd = {};
             allData.forEach(e => {
                 const id = e.branches?.id;
                 if (!id) return;
-                if (!bd[id]) bd[id] = { name: e.branches.name, received: 0, remaining: 0, waste: 0 };
+                if (!bd[id]) bd[id] = { name: e.branches.name, received: 0, remaining: 0, waste: 0, opening: 0 };
                 bd[id].received += e.received_amount || 0;
                 bd[id].waste    += e.waste_amount    || 0;
             });
-            Object.entries(buildCurrentStockMap(allData)).forEach(([key, rem]) => {
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const bid = key.split('|')[0];
+                if (bd[bid]) bd[bid].opening += rem;
+            });
+            Object.entries(latestMap).forEach(([key, rem]) => {
                 const bid = key.split('|')[0];
                 if (bd[bid]) bd[bid].remaining += rem;
             });
             Object.values(bd).forEach(b => {
-                b.sold = Math.max(0, b.received - b.remaining - b.waste);
-                b.pct  = b.received > 0 ? ((b.sold / b.received) * 100).toFixed(1) : 0;
+                b.sold = Math.max(0, b.opening + b.received - b.remaining - b.waste);
+                const bbase = b.opening + b.received;
+                b.pct  = bbase > 0 ? ((b.sold / bbase) * 100).toFixed(1) : 0;
             });
             const sorted     = Object.values(bd).sort((a, b) => b.pct - a.pct);
             const bestBranch = sorted[0];
