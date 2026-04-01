@@ -481,6 +481,44 @@
             .zw-col-left { border-right: none; border-bottom: 1px solid var(--border); }
         }
 
+        /* ── ZAYİAT KAYIT KARTLARI ──────────────────── */
+        .wrc-list { display: flex; flex-direction: column; }
+        .wrc-card {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.15s;
+        }
+        .wrc-card:last-child { border-bottom: none; }
+        .wrc-card:hover { background: rgba(239,68,68,0.04); }
+        .wrc-date {
+            min-width: 42px;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.18);
+            border-radius: 9px;
+            padding: 7px 4px 6px;
+            text-align: center; flex-shrink: 0;
+        }
+        .wrc-date-day { font-size: 17px; font-weight: 800; color: rgba(239,68,68,0.9); line-height: 1; }
+        .wrc-date-mon { font-size: 9px; font-weight: 700; color: rgba(239,68,68,0.5); text-transform: uppercase; margin-top: 3px; letter-spacing: 0.04em; }
+        .wrc-body { flex: 1; min-width: 0; }
+        .wrc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+        .wrc-dessert { font-size: 14px; font-weight: 700; color: var(--text); }
+        .wrc-amount {
+            font-size: 11px; font-weight: 800; color: rgba(239,68,68,0.9);
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0;
+        }
+        .wrc-who { font-size: 12px; color: var(--text-3); margin-bottom: 6px; }
+        .wrc-who strong { color: var(--text-2); font-weight: 600; }
+        .wrc-reason {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; color: rgba(251,191,36,0.85); font-style: italic;
+            background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 6px; padding: 4px 9px;
+        }
+        .wrc-no-reason { font-size: 11px; color: rgba(255,255,255,0.2); font-style: italic; }
+
         /* ── ŞUBE PERFORMANS KARTLARI (mobil) ────────── */
         .branch-cards {
             display: none;
@@ -2410,30 +2448,6 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 </div>`;
             }).join('');
 
-            // Detay satırları: tarih | müdür — şube | tatlı | miktar | neden
-            const detailRows = [...rows].sort((a, b) =>
-                (b.entry_date || '') > (a.entry_date || '') ? 1 : -1
-            ).map(r => {
-                const reason  = (r.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || null;
-                const branch  = r.branches?.name        || '?';
-                const mgr     = r.branches?.manager_name || '—';
-                const dessert = (r.desserts?.emoji || '') + ' ' + (r.desserts?.name || '?');
-                const dateStr = r.entry_date
-                    ? new Date(r.entry_date + 'T12:00:00').toLocaleDateString('tr-TR', { day:'numeric', month:'short' })
-                    : '—';
-                const reasonHtml = reason
-                    ? `<div style="font-size:12px;color:rgba(251,191,36,0.85);margin-top:3px;font-style:italic">"${reason}"</div>`
-                    : `<div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:2px;font-style:italic">Açıklama girilmedi</div>`;
-                return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05)">
-                    <div style="min-width:52px;font-size:11px;color:rgba(255,255,255,0.35);padding-top:1px">${dateStr}</div>
-                    <div style="flex:1;min-width:0">
-                        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85)">${mgr} <span style="font-weight:400;color:rgba(255,255,255,0.35)">— ${branch}</span></div>
-                        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">${dessert} · <span style="color:rgba(239,68,68,0.8);font-weight:600">${r.waste} adet zayiat</span></div>
-                        ${reasonHtml}
-                    </div>
-                </div>`;
-            }).join('');
-
             container.innerHTML = `
                 <div class="zw-layout">
                     <div class="zw-col-left">
@@ -2444,10 +2458,6 @@ _Mutlukent Tatlı Takip Sistemi_`;
                         <div class="zw-col-head">🍰 Tatlı Bazlı</div>
                         ${dessertRows}
                     </div>
-                </div>
-                <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.07);padding-top:4px">
-                    <div class="zw-col-head" style="padding:8px 16px">📋 Kayıt Detayları</div>
-                    <div style="border-radius:0 0 14px 14px;overflow:hidden">${detailRows}</div>
                 </div>
             `;
         }
@@ -2970,32 +2980,49 @@ _Mutlukent Tatlı Takip Sistemi_`;
             badge.textContent = list.length + ' kayıt' + (withReason.length > 0 ? ` · ${withReason.length} açıklamalı` : '');
 
             if (list.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.25);font-size:13px">Bu dönemde zayiat girişi yok</div>';
+                container.innerHTML = `<div style="text-align:center;padding:36px 20px;color:rgba(255,255,255,0.2)">
+                    <div style="font-size:36px;margin-bottom:10px">✅</div>
+                    <div style="font-size:13px">Bu dönemde zayiat girişi yok</div>
+                </div>`;
                 return;
             }
 
-            const rows = list.map(entry => {
+            const MONTHS_TR_SHORT = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+
+            const cards = list.map(entry => {
                 const reason  = (entry.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || null;
                 const branch  = entry.branches?.name         || '?';
                 const mgr     = entry.branches?.manager_name || '—';
-                const dessert = (entry.desserts?.emoji || '') + ' ' + (entry.desserts?.name || '?');
-                const dateStr = entry.entry_date
-                    ? new Date(entry.entry_date + 'T12:00:00').toLocaleDateString('tr-TR', { day:'numeric', month:'short' })
-                    : '—';
+                const dessert = (entry.desserts?.emoji || '🍰') + ' ' + (entry.desserts?.name || '?');
+
+                let dayStr = '—', monStr = '';
+                if (entry.entry_date) {
+                    const d = new Date(entry.entry_date + 'T12:00:00');
+                    dayStr = d.getDate();
+                    monStr = MONTHS_TR_SHORT[d.getMonth()];
+                }
+
                 const reasonHtml = reason
-                    ? `<div style="font-size:12px;color:rgba(251,191,36,0.85);margin-top:4px;font-style:italic">"${reason}"</div>`
-                    : `<div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:3px;font-style:italic">Açıklama girilmedi</div>`;
-                return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05)">
-                    <div style="min-width:52px;font-size:11px;color:rgba(255,255,255,0.35);padding-top:1px">${dateStr}</div>
-                    <div style="flex:1;min-width:0">
-                        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85)">${mgr} <span style="font-weight:400;color:rgba(255,255,255,0.35)">— ${branch}</span></div>
-                        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">${dessert} · <span style="color:rgba(239,68,68,0.8);font-weight:600">${entry.waste_amount} adet zayiat</span></div>
+                    ? `<div class="wrc-reason">💬 "${reason}"</div>`
+                    : `<div class="wrc-no-reason">Açıklama girilmedi</div>`;
+
+                return `<div class="wrc-card">
+                    <div class="wrc-date">
+                        <div class="wrc-date-day">${dayStr}</div>
+                        <div class="wrc-date-mon">${monStr}</div>
+                    </div>
+                    <div class="wrc-body">
+                        <div class="wrc-top">
+                            <span class="wrc-dessert">${dessert}</span>
+                            <span class="wrc-amount">${entry.waste_amount} adet</span>
+                        </div>
+                        <div class="wrc-who"><strong>${mgr}</strong> — ${branch}</div>
                         ${reasonHtml}
                     </div>
                 </div>`;
             }).join('');
 
-            container.innerHTML = `<div style="border-radius:0 0 14px 14px;overflow:hidden">${rows}</div>`;
+            container.innerHTML = `<div class="wrc-list">${cards}</div>`;
         }
 
         // ── Yıllık Satış Chart ────────────────────────────
