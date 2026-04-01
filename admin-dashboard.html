@@ -1419,7 +1419,7 @@
         <!-- Zayiat Kayıtları — hangi şube, hangi tatlı, neden (detaylı) -->
         <div class="panel fade-up" style="animation-delay:0.4s">
             <div class="panel-header">
-                <h2 class="panel-title">⚠️ Zayiat Kayıtları (Son 30 Gün)</h2>
+                <h2 class="panel-title" id="wasteReasonsTitle">⚠️ Zayiat Kayıtları</h2>
                 <span class="panel-badge panel-badge--red" id="wasteReasonsBadge">—</span>
             </div>
             <div id="wasteReasonsContent" style="min-height:60px">
@@ -1612,7 +1612,6 @@
             initPullToRefresh(() => loadData());
             // Yan paneller — filtreden bağımsız
             loadWasteTrend();
-            loadWasteReasons();
             loadYearlyData(currentYear);
         });
 
@@ -1738,14 +1737,17 @@
         }
 
         function getZayiatDateRange() {
-            // month-specific seçiliyse o ayın tam aralığı, diğer filtreler için cari ay
-            if (currentFilter === 'month-specific') return getDateRange();
-            const today = new Date();
-            const y = today.getFullYear(), m = today.getMonth() + 1;
-            return {
-                startDate: `${y}-${String(m).padStart(2,'0')}-01`,
-                endDate:   today.toISOString().split('T')[0]
-            };
+            // Ana filtre ile aynı tarih aralığını kullan
+            return getDateRange();
+        }
+
+        function getCurrentPeriodLabel() {
+            const MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+            if (currentFilter === 'today')          return 'Bugün';
+            if (currentFilter === 'week')           return 'Son 7 Gün';
+            if (currentFilter === 'all')            return 'Tüm Dönem';
+            if (currentFilter === 'month-specific') return `${MONTHS_TR[filterMonth-1]} ${filterYear}`;
+            return `${MONTHS_TR[navMonth-1]} ${navYear}`;
         }
 
         // ── Load Data ────────────────────────────────────
@@ -1758,6 +1760,7 @@
                 getDailyEntriesDateRange(zr.startDate, zr.endDate)
             ]);
             updateZayiatTable();
+            updateWasteReasons();
             updateStockCards();   // ← bağımsız; getCurrentStock() kendi 60 günlük sorgusunu çeker
 
             const { startDate, endDate } = getDateRange();
@@ -2405,6 +2408,30 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 </div>`;
             }).join('');
 
+            // Detay satırları: tarih | müdür — şube | tatlı | miktar | neden
+            const detailRows = [...rows].sort((a, b) =>
+                (b.entry_date || '') > (a.entry_date || '') ? 1 : -1
+            ).map(r => {
+                const reason  = (r.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || null;
+                const branch  = r.branches?.name        || '?';
+                const mgr     = r.branches?.manager_name || '—';
+                const dessert = (r.desserts?.emoji || '') + ' ' + (r.desserts?.name || '?');
+                const dateStr = r.entry_date
+                    ? new Date(r.entry_date + 'T12:00:00').toLocaleDateString('tr-TR', { day:'numeric', month:'short' })
+                    : '—';
+                const reasonHtml = reason
+                    ? `<div style="font-size:12px;color:rgba(251,191,36,0.85);margin-top:3px;font-style:italic">"${reason}"</div>`
+                    : `<div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:2px;font-style:italic">Açıklama girilmedi</div>`;
+                return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <div style="min-width:52px;font-size:11px;color:rgba(255,255,255,0.35);padding-top:1px">${dateStr}</div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85)">${mgr} <span style="font-weight:400;color:rgba(255,255,255,0.35)">— ${branch}</span></div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">${dessert} · <span style="color:rgba(239,68,68,0.8);font-weight:600">${r.waste} adet zayiat</span></div>
+                        ${reasonHtml}
+                    </div>
+                </div>`;
+            }).join('');
+
             container.innerHTML = `
                 <div class="zw-layout">
                     <div class="zw-col-left">
@@ -2415,6 +2442,10 @@ _Mutlukent Tatlı Takip Sistemi_`;
                         <div class="zw-col-head">🍰 Tatlı Bazlı</div>
                         ${dessertRows}
                     </div>
+                </div>
+                <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.07);padding-top:4px">
+                    <div class="zw-col-head" style="padding:8px 16px">📋 Kayıt Detayları</div>
+                    <div style="border-radius:0 0 14px 14px;overflow:hidden">${detailRows}</div>
                 </div>
             `;
         }
@@ -2921,58 +2952,48 @@ _Mutlukent Tatlı Takip Sistemi_`;
             document.getElementById('wasteTrendBadge').textContent = `${totalWaste.toLocaleString('tr-TR')} adet`;
         }
 
-        // ── Zayiat Açıklamaları ───────────────────────────
-        async function loadWasteReasons() {
+        // ── Zayiat Kayıtları (loadData'dan çağrılır, zayiatData kullanır) ───
+        function updateWasteReasons() {
             const container = document.getElementById('wasteReasonsContent');
-            try {
-                // SW cache'i bypass etmek için doğrudan sorgu (getWasteWithReasons kullanma)
-                const d = new Date(); d.setDate(d.getDate() - 30);
-                const startStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                const { data: list, error } = await window.supabaseInstance
-                    .from('daily_entries')
-                    .select('entry_date, waste_amount, notes, entry_time, branches(name, manager_name), desserts(name, emoji)')
-                    .gt('waste_amount', 0)
-                    .gte('entry_date', startStr)
-                    .order('entry_date', { ascending: false })
-                    .limit(200);
-                if (error) throw error;
-                const badge = document.getElementById('wasteReasonsBadge');
+            const badge     = document.getElementById('wasteReasonsBadge');
+            const titleEl   = document.getElementById('wasteReasonsTitle');
 
-                if (!list || list.length === 0) {
-                    badge.textContent = '0 kayıt';
-                    container.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.25);font-size:13px">Son 30 günde zayiat girişi yok</div>';
-                    return;
-                }
+            if (titleEl) titleEl.textContent = `⚠️ Zayiat Kayıtları — ${getCurrentPeriodLabel()}`;
 
-                const withReason = list.filter(e => (e.notes || '').includes('[ZAY:'));
-                badge.textContent = list.length + ' kayıt' + (withReason.length > 0 ? ` · ${withReason.length} açıklamalı` : '');
+            const list = (zayiatData || [])
+                .filter(e => (e.waste_amount || 0) > 0)
+                .sort((a, b) => (b.entry_date > a.entry_date ? 1 : -1));
 
-                const rows = list.map(entry => {
-                    const reason  = (entry.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || null;
-                    const branch  = entry.branches?.name || '?';
-                    const mgr     = entry.branches?.manager_name || '—';
-                    const dessert = (entry.desserts?.emoji || '') + ' ' + (entry.desserts?.name || '?');
-                    const dateStr = entry.entry_date ? new Date(entry.entry_date + 'T12:00:00')
-                        .toLocaleDateString('tr-TR', { day:'numeric', month:'short' }) : '—';
-                    const reasonHtml = reason
-                        ? `<div style="font-size:12px;color:rgba(251,191,36,0.85);margin-top:4px;font-style:italic">"${reason}"</div>`
-                        : `<div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:3px;font-style:italic">Açıklama girilmedi</div>`;
+            const withReason = list.filter(e => (e.notes || '').includes('[ZAY:'));
+            badge.textContent = list.length + ' kayıt' + (withReason.length > 0 ? ` · ${withReason.length} açıklamalı` : '');
 
-                    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05)">
-                        <div style="min-width:52px;font-size:11px;color:rgba(255,255,255,0.35);padding-top:1px">${dateStr}</div>
-                        <div style="flex:1;min-width:0">
-                            <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85)">${mgr} <span style="font-weight:400;color:rgba(255,255,255,0.35)">— ${branch}</span></div>
-                            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">${dessert} · <span style="color:rgba(239,68,68,0.8);font-weight:600">${entry.waste_amount} adet zayiat</span></div>
-                            ${reasonHtml}
-                        </div>
-                    </div>`;
-                }).join('');
-
-                container.innerHTML = `<div style="border-radius:0 0 14px 14px;overflow:hidden">${rows}</div>`;
-            } catch(e) {
-                console.error(e);
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(239,68,68,0.6);font-size:13px">Yüklenemedi</div>';
+            if (list.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.25);font-size:13px">Bu dönemde zayiat girişi yok</div>';
+                return;
             }
+
+            const rows = list.map(entry => {
+                const reason  = (entry.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || null;
+                const branch  = entry.branches?.name         || '?';
+                const mgr     = entry.branches?.manager_name || '—';
+                const dessert = (entry.desserts?.emoji || '') + ' ' + (entry.desserts?.name || '?');
+                const dateStr = entry.entry_date
+                    ? new Date(entry.entry_date + 'T12:00:00').toLocaleDateString('tr-TR', { day:'numeric', month:'short' })
+                    : '—';
+                const reasonHtml = reason
+                    ? `<div style="font-size:12px;color:rgba(251,191,36,0.85);margin-top:4px;font-style:italic">"${reason}"</div>`
+                    : `<div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:3px;font-style:italic">Açıklama girilmedi</div>`;
+                return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <div style="min-width:52px;font-size:11px;color:rgba(255,255,255,0.35);padding-top:1px">${dateStr}</div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85)">${mgr} <span style="font-weight:400;color:rgba(255,255,255,0.35)">— ${branch}</span></div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">${dessert} · <span style="color:rgba(239,68,68,0.8);font-weight:600">${entry.waste_amount} adet zayiat</span></div>
+                        ${reasonHtml}
+                    </div>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = `<div style="border-radius:0 0 14px 14px;overflow:hidden">${rows}</div>`;
         }
 
         // ── Yıllık Satış Chart ────────────────────────────

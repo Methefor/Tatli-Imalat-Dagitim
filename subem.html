@@ -522,6 +522,23 @@
                 getBranchLatestStock(branchId)
             ]);
 
+            // Dönem öncesi devir stok (inline sorgu — SW cache bypass)
+            const osFrom = new Date(startDate); osFrom.setDate(osFrom.getDate() - 60);
+            const osFromStr = `${osFrom.getFullYear()}-${String(osFrom.getMonth()+1).padStart(2,'0')}-${String(osFrom.getDate()).padStart(2,'0')}`;
+            const { data: osEntries } = await window.supabaseInstance
+                .from('daily_entries')
+                .select('dessert_id, remaining_amount')
+                .eq('branch_id', branchId)
+                .lt('entry_date', startDate)
+                .gte('entry_date', osFromStr)
+                .not('remaining_amount', 'is', null)
+                .order('entry_date', { ascending: false })
+                .limit(200);
+            const openingByDessert = {};
+            (osEntries || []).forEach(e => {
+                if (!(e.dessert_id in openingByDessert)) openingByDessert[e.dessert_id] = e.remaining_amount;
+            });
+
             if (!activeDesserts || activeDesserts.length === 0) {
                 showEmpty('Tatlı bulunamadı.');
                 return;
@@ -546,8 +563,9 @@
                     (s, e) => s + (e.waste_amount || 0), 0
                 );
 
-                // Satılan = Gelen - Kalan - Zayiat
-                const monthlySatilan = Math.max(0, monthlyGelen - currentKalan - monthlyZayiat);
+                // Satılan = Devir + Gelen - Kalan - Zayiat
+                const openingKalan   = openingByDessert[dessert.id] ?? 0;
+                const monthlySatilan = Math.max(0, openingKalan + monthlyGelen - currentKalan - monthlyZayiat);
 
                 totalG += monthlyGelen;
                 totalK += currentKalan;
