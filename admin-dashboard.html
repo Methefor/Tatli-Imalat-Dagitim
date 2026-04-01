@@ -1563,6 +1563,7 @@
         let allData          = [];
         let prevMonthData    = [];
         let zayiatData       = [];
+        let openingStockMap  = {}; // "branchId|dessertId" → dönem öncesi son kalan
         let filterYear       = new Date().getFullYear();
         let filterMonth      = new Date().getMonth() + 1;
         let comparisonData   = [];
@@ -1772,6 +1773,25 @@
                 fetchPrev,
                 fetchComp
             ]);
+
+            // Dönem öncesi devir stok: period başından önceki son kalan değerleri
+            openingStockMap = {};
+            if (startDate > '2020-01-02') {
+                const osFrom = new Date(startDate); osFrom.setDate(osFrom.getDate() - 60);
+                const osFromStr = `${osFrom.getFullYear()}-${String(osFrom.getMonth()+1).padStart(2,'0')}-${String(osFrom.getDate()).padStart(2,'0')}`;
+                const { data: osData } = await window.supabaseInstance
+                    .from('daily_entries')
+                    .select('branch_id, dessert_id, remaining_amount')
+                    .lt('entry_date', startDate)
+                    .gte('entry_date', osFromStr)
+                    .not('remaining_amount', 'is', null)
+                    .order('entry_date', { ascending: false })
+                    .limit(1000);
+                (osData || []).forEach(e => {
+                    const key = `${e.branch_id}|${e.dessert_id}`;
+                    if (!(key in openingStockMap)) openingStockMap[key] = e.remaining_amount;
+                });
+            }
 
             if (!silent) toggleLoading(false);
 
@@ -2014,13 +2034,17 @@ _Mutlukent Tatlı Takip Sistemi_`;
         // ── Stats ────────────────────────────────────────
         function updateStats() {
             const dist = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
+            const waste = allData.reduce((s, e) => s + (e.waste_amount   || 0), 0);
 
             // Kalan: her (şube, tatlı) için EN SON remaining — toplam değil
             const latestMap = buildCurrentStockMap(allData);
             const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
 
-            // Satılan: dönem içi gelen - dönem sonu kalan
-            const sold = Math.max(0, dist - stock);
+            // Devir stok: dönem başı önceki son kalan (carry-over)
+            const openingTotal = Object.values(openingStockMap).reduce((s, v) => s + v, 0);
+
+            // Satılan: devir + gelen - kalan - zayiat
+            const sold = Math.max(0, openingTotal + dist - stock - waste);
 
             animateCounter('totalDistribution', dist);
             animateCounter('totalSales',        sold);
@@ -2029,7 +2053,8 @@ _Mutlukent Tatlı Takip Sistemi_`;
             const pct = Math.min((dist / DAILY_TARGET) * 100, 100);
             document.getElementById('distProgress').style.width = `${pct}%`;
 
-            const salesRatio = dist > 0 ? ((sold / dist) * 100).toFixed(1) : 0;
+            const base = openingTotal + dist;
+            const salesRatio = base > 0 ? ((sold / base) * 100).toFixed(1) : 0;
             document.getElementById('salesPercentage').textContent = `%${salesRatio} satış oranı`;
 
             // KPI kartları dinamik border rengi
@@ -2063,17 +2088,23 @@ _Mutlukent Tatlı Takip Sistemi_`;
             data.forEach(entry => {
                 if (!entry.branches) return;
                 const id = entry.branches.id;
-                if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0, waste: 0 };
+                if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0, waste: 0, opening: 0 };
                 bd[id].received += entry.received_amount || 0;
                 bd[id].waste    += entry.waste_amount    || 0;
+            });
+            // Dönem öncesi devir stok (per branch)
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const branchId = key.split('|')[0];
+                if (bd[branchId]) bd[branchId].opening += rem;
             });
             Object.entries(latestMap).forEach(([key, rem]) => {
                 const branchId = key.split('|')[0];
                 if (bd[branchId]) bd[branchId].remaining += rem;
             });
             Object.values(bd).forEach(b => {
-                b.sold = Math.max(0, b.received - b.remaining - b.waste);
-                b.pct  = b.received > 0 ? parseFloat(((b.sold / b.received) * 100).toFixed(1)) : 0;
+                b.sold = Math.max(0, b.opening + b.received - b.remaining - b.waste);
+                const base = b.opening + b.received;
+                b.pct  = base > 0 ? parseFloat(((b.sold / base) * 100).toFixed(1)) : 0;
             });
             return bd;
         }
