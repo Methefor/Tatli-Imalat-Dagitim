@@ -951,6 +951,11 @@
 
         // Sayfa yüklenince şubeleri arka planda çek
         document.addEventListener('DOMContentLoaded', async () => {
+            // Daha önce giriş yapılmışsa direkt branch-menu'ya git
+            if (localStorage.getItem('branchId')) {
+                window.location.href = 'branch-menu.html';
+                return;
+            }
             branchesCache = await getBranches();
         });
 
