@@ -494,16 +494,23 @@
 
             const entryAlerts = [];
 
-            // 1. Gelen tatlı düzeltmesi — kritik
+            // 1. Gelen tatlı azaltıldı — kritik
+            // Artış = muhtemelen 2. teslimat (normal). Azalış = gerçek değişiklik → şüpheli.
             allTags.forEach(tag => {
                 const m = tag.match(/gelen:(\d+)→(\d+)/);
                 if (m) {
-                    const delta = parseInt(m[2]) - parseInt(m[1]);
-                    entryAlerts.push({
-                        level: 'critical',
-                        label: 'Gelen tatlı miktarı değiştirildi',
-                        detail: `${m[1]} → ${m[2]} adet (${delta > 0 ? '+' : ''}${delta})`
-                    });
+                    const onceki = parseInt(m[1]);
+                    const sonraki = parseInt(m[2]);
+                    const delta = sonraki - onceki;
+                    if (delta < 0) {
+                        // Azaltma: kesinlikle şüpheli
+                        entryAlerts.push({
+                            level: 'critical',
+                            label: 'Gelen tatlı miktarı azaltıldı',
+                            detail: `${onceki} → ${sonraki} adet (${delta})`
+                        });
+                    }
+                    // Artış: 2. teslimat olabilir, flagleme
                 }
             });
 
