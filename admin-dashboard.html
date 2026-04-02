@@ -14,6 +14,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1916,20 +1917,23 @@
             return byDate;
         }
 
+        const _counterRAF = {};
         function animateCounter(id, target) {
-            const el  = document.getElementById(id);
-            const dur = 900;
-            const step = target / (dur / 16);
-            let cur = 0;
-            const t = setInterval(() => {
-                cur += step;
-                if (cur >= target) {
-                    el.textContent = Math.round(target).toLocaleString('tr-TR');
-                    clearInterval(t);
-                } else {
-                    el.textContent = Math.round(cur).toLocaleString('tr-TR');
-                }
-            }, 16);
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (target === 0) { el.textContent = '0'; return; }
+            if (_counterRAF[id]) cancelAnimationFrame(_counterRAF[id]);
+            const dur  = 700;
+            const from = parseFloat(el.textContent.replace(/\D/g,'')) || 0;
+            const start = performance.now();
+            function tick(now) {
+                const p = Math.min((now - start) / dur, 1);
+                const ease = 1 - Math.pow(1 - p, 3); // ease-out cubic
+                el.textContent = Math.round(from + (target - from) * ease).toLocaleString('tr-TR');
+                if (p < 1) _counterRAF[id] = requestAnimationFrame(tick);
+                else delete _counterRAF[id];
+            }
+            _counterRAF[id] = requestAnimationFrame(tick);
         }
 
         // ── Metrik hesapla (karşılaştırma için) ──────────

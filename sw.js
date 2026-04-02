@@ -1,5 +1,5 @@
 // Tatlı Takip — Service Worker
-const CACHE = 'tatli-takip-v22';
+const CACHE = 'tatli-takip-v23';
 
 const STATIC = [
     '/',

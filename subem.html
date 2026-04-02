@@ -13,6 +13,7 @@
     <title>Şubem</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -207,8 +208,12 @@
         .stat-card::before {
             content: '';
             position: absolute; top: 0; left: 0; right: 0;
-            height: 2px; border-radius: 16px 16px 0 0;
+            height: 3px; border-radius: 16px 16px 0 0;
         }
+        .card-amber { border-color: rgba(245,158,11,0.25); }
+        .card-green { border-color: rgba(16,185,129,0.25); }
+        .card-blue  { border-color: rgba(59,130,246,0.25); }
+        .card-red   { border-color: rgba(239,68,68,0.25);  }
 
         .stat-card:nth-child(1) { animation-delay: 0.1s; }
         .stat-card:nth-child(2) { animation-delay: 0.18s; }
@@ -241,6 +246,10 @@
         .stat-label {
             font-size: 10px; font-weight: 700; color: var(--muted);
             text-transform: uppercase; letter-spacing: 0.07em;
+        }
+        .stat-sub {
+            font-size: 10px; font-weight: 600; color: var(--muted);
+            margin-top: 6px; opacity: 0.7;
         }
 
         /* ── Özet tablosu ── */
@@ -409,21 +418,25 @@
                 <div class="stat-icon">📦</div>
                 <div class="stat-value" id="totalGelen">—</div>
                 <div class="stat-label">Bu Ay Gelen</div>
+                <div class="stat-sub" id="subGelen">—</div>
             </div>
             <div class="stat-card card-green">
                 <div class="stat-icon">✅</div>
                 <div class="stat-value" id="totalSatilan">—</div>
                 <div class="stat-label">Bu Ay Satılan</div>
+                <div class="stat-sub" id="subSatilan">—</div>
             </div>
             <div class="stat-card card-blue">
                 <div class="stat-icon">📊</div>
                 <div class="stat-value" id="totalKalan">—</div>
                 <div class="stat-label">Şu An Kalan</div>
+                <div class="stat-sub" id="subKalan">aktif stok</div>
             </div>
             <div class="stat-card card-red">
-                <div class="stat-icon">🗑️</div>
+                <div class="stat-icon">⚠️</div>
                 <div class="stat-value" id="totalZayiat">—</div>
                 <div class="stat-label">Bu Ay Zayiat</div>
+                <div class="stat-sub" id="subZayiat">—</div>
             </div>
         </div>
 
@@ -579,6 +592,18 @@
             animCount('totalKalan',   totalK);
             animCount('totalZayiat',  totalZ);
 
+            // Stat alt bilgileri
+            const openingTotal = Object.values(openingByDessert).reduce((s, v) => s + v, 0);
+            const base = openingTotal + totalG;
+            const satisOrani = base > 0 ? ((totalS / base) * 100).toFixed(0) : 0;
+            const fireOrani  = base > 0 ? ((totalZ / base) * 100).toFixed(1) : 0;
+            const subGelen   = document.getElementById('subGelen');
+            const subSatilan = document.getElementById('subSatilan');
+            const subZayiat  = document.getElementById('subZayiat');
+            if (subGelen)   subGelen.textContent   = openingTotal > 0 ? `+ ${openingTotal} devir stok` : 'bu dönem giriş';
+            if (subSatilan) subSatilan.textContent = `% ${satisOrani} satış oranı`;
+            if (subZayiat)  subZayiat.textContent  = totalZ > 0 ? `% ${fireOrani} fire oranı` : 'fire yok';
+
             const panel = document.getElementById('summaryPanel');
             panel.innerHTML = `
                 <div class="summary-head">
@@ -618,16 +643,23 @@
             });
         }
 
+        const _animRAF = {};
         function animCount(id, target) {
             const el = document.getElementById(id);
+            if (!el) return;
             if (target === 0) { el.textContent = '0'; return; }
-            const dur = 700, step = target / (dur / 16);
-            let cur = 0;
-            const t = setInterval(() => {
-                cur += step;
-                if (cur >= target) { el.textContent = Math.round(target); clearInterval(t); }
-                else el.textContent = Math.round(cur);
-            }, 16);
+            if (_animRAF[id]) cancelAnimationFrame(_animRAF[id]);
+            const dur  = 700;
+            const from = parseFloat(el.textContent) || 0;
+            const start = performance.now();
+            function tick(now) {
+                const p = Math.min((now - start) / dur, 1);
+                const ease = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(from + (target - from) * ease);
+                if (p < 1) _animRAF[id] = requestAnimationFrame(tick);
+                else delete _animRAF[id];
+            }
+            _animRAF[id] = requestAnimationFrame(tick);
         }
 
         function showEmpty(msg) {
@@ -647,6 +679,7 @@
             btn.classList.remove('spinning');
         }
 
+        initTheme();
         updateMonthUI();
         loadData();
         initPullToRefresh(() => loadData());

@@ -6,6 +6,7 @@
     <title>👨‍🍳 Tatlıcılar Paneli</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1027,6 +1028,8 @@
                 document.getElementById('sa1').focus();
             }
         }
+
+        initTheme();
 
         // Giriş yapılmışsa yükle
         if (sessionStorage.getItem('tatlicilarAuth') === '1') {

@@ -13,6 +13,7 @@
     <title>🍰 Tatlı Takip Sistemi</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -842,17 +843,16 @@
 
             <div class="cl-version">
                 <span class="cl-version-badge" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.4);color:#34d399">v2.5</span>
-                <span class="cl-date">Nisan 2026 — En son güncelleme</span>
+                <span class="cl-date">Nisan 2026 — Güncel sürüm</span>
             </div>
             <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Satılan hesabı artık devir stoku (önceki dönem kalanı) dahil ediyor — müdür ve yönetici panellerinde doğru sonuç</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat kayıtları: tarih rozeti, müdür, şube, tatlı ve açıklama ile profesyonel kart tasarımı</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat kayıtları seçili aylık filtreye göre güncelleniyor</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlıcılar paneline giriş selamı (Hanımlar Kolay Gelsin ☺️) eklendi</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Müdür girişinde zayiat açıklaması zorunlu olduğu bilgisi gösteriliyor</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici raporu (günlük özet) doğru satılan rakamını gösteriyor</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Rapor penceresi ekranın üstünden açılıyor</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Tatlıcılar haftalık takvim düzenleme ayrı şifre gerektirmiyor</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Satış hesaplamalarında önceki dönemden devreden stok artık doğru şekilde dikkate alınıyor. Müdür ve yönetici panellerindeki "Satılan" rakamı gerçek satış miktarını yansıtıyor.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat kayıtları, seçilen döneme göre otomatik filtreleniyor. Her kayıt; tarih, şube müdürü, tatlı adı, fire miktarı ve açıklama bilgileriyle kart düzeninde gösteriliyor.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlıcılar paneline giriş yapıldığında karşılama mesajı gösteriliyor.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Şube müdürleri sisteme giriş yaptığında, zayiat kaydı açıklama alanının doldurulması gerektiğine dair bilgilendirme ekrana geliyor.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici panelindeki günlük özet raporunda satış rakamları doğru hesaplanıyor.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Rapor penceresi, mobil ve masaüstü cihazlarda ekranın üst bölümünden açılıyor.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Tatlıcılar panelinde haftalık üretim takvimi düzenleme işlemi ek şifre gerektirmeden yapılabiliyor.</li>
             </ul>
 
             <div class="cl-version">
@@ -860,12 +860,11 @@
                 <span class="cl-date">Mart 2026</span>
             </div>
             <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Personel Yönetimi: müdür aktivitesi, düzeltme takibi ve fazla giriş tespiti</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat girişlerine neden/açıklama alanı eklendi</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici panelinde zayiat açıklamaları görüntülenebilir</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Şube arası transfer sayfasına +5 ve +10 hızlı butonlar eklendi</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Sistem yönetiminde şifre ve müdür adı güncellemeleri artık çalışıyor</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Veri girişi en fazla 1 gün geriye yapılabilir</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Personel Yönetimi sayfasına müdür bazlı aktivite takibi, düzeltme geçmişi ve tekrarlı giriş tespiti eklendi.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat girişlerinde açıklama (neden) alanı zorunlu hale getirildi. Kayıtlar yönetici panelinde açıklamalarıyla birlikte görüntülenebiliyor.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Şube arası transfer ekranına hızlı miktar seçimi (+5 / +10) butonları eklendi.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Sistem yönetimi ekranında şifre ve müdür adı güncellemeleri sorunsuz çalışıyor.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Veri girişi yalnızca güncel tarih ve bir önceki gün için yapılabilecek şekilde sınırlandırıldı.</li>
             </ul>
 
             <div class="cl-version">
@@ -873,10 +872,10 @@
                 <span class="cl-date">Mart 2026</span>
             </div>
             <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlılar paneline haftalık üretim takvimi eklendi</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici paneli aylık karşılaştırma iyileştirildi</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Ana sayfa açılış süresi büyük ölçüde iyileştirildi</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Şifre girişi sırasındaki kasma giderildi</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlıcılar paneline haftalık üretim planı takvimi eklendi.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici panelindeki aylık karşılaştırma bölümü daha doğru sonuçlar gösteriyor.</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Ana sayfa ilk açılış süresi önemli ölçüde kısaltıldı.</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Şifre girişi sırasında yaşanan performans sorunu giderildi.</li>
             </ul>
 
             <div class="cl-version">
@@ -884,9 +883,9 @@
                 <span class="cl-date">Mart 2026</span>
             </div>
             <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici paneline 5 yeni analitik bölüm eklendi</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Panel arası geçiş kasması giderildi</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>PWA mobil ekran kaydırma ve zoom kilitleme düzeltildi</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici paneline satış, stok ve zayiat analizlerini içeren 5 yeni bölüm eklendi.</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Paneller arası geçişte yaşanan takılma sorunu çözüldü.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Mobil cihazlarda ekran kaydırma ve yakınlaştırma davranışları düzeltildi.</li>
             </ul>
 
             <button class="modal-close" onclick="document.getElementById('changelogModal').classList.remove('active')">Kapat</button>
@@ -966,6 +965,7 @@
 
         // Sayfa yüklenince şubeleri arka planda çek
         document.addEventListener('DOMContentLoaded', async () => {
+            initTheme();
             // ⌂ butonuyla gelindiyse auto-redirect yapma (giriş bilgisi korunmuş)
             const noAuto = sessionStorage.getItem('noAutoRedirect');
             const savedBranchId   = localStorage.getItem('branchId');

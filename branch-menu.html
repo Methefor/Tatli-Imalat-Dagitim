@@ -18,6 +18,7 @@
     <link rel="prefetch" href="transfer.html">
     <link rel="prefetch" href="subem.html">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1073,6 +1074,7 @@
         });
 
         // Sayfa yüklenince ve geri gelince badge'i güncelle
+        initTheme();
         loadNotifications();
         window.addEventListener('pageshow', loadNotifications);
 

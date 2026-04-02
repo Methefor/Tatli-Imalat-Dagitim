@@ -1329,3 +1329,57 @@ async function getWasteWithReasons(days = 30) {
 }
 
 console.log('✅ Supabase Client yüklendi')
+
+// ====================================================================
+// TEMA YÖNETİMİ — tüm sayfalar bu fonksiyonları kullanır
+// ====================================================================
+
+/**
+ * Sayfa yüklenirken temayı uygular (FOUC önlemek için <head>'de çağrılır).
+ * Önce localStorage'a bakar, yoksa sistem temasını kullanır.
+ */
+function initTheme() {
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+    _applyThemeIcon(theme);
+}
+
+/**
+ * Temayı karanlık ↔ aydınlık arasında değiştirir ve kaydeder.
+ */
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    _applyThemeIcon(next);
+}
+
+function _applyThemeIcon(theme) {
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+        btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        btn.title = theme === 'dark' ? 'Aydınlık mod' : 'Karanlık mod';
+    });
+}
+
+// Sistem teması değişirse (kullanıcı OS ayarını değiştirirse) otomatik güncelle
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) {
+        const theme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        _applyThemeIcon(theme);
+    }
+});
+
+// Sayfa yüklenince ikon güncelle (butonlar DOM'da hazır olduğunda)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const t = document.documentElement.getAttribute('data-theme') || 'dark';
+        _applyThemeIcon(t);
+    });
+} else {
+    const t = document.documentElement.getAttribute('data-theme') || 'dark';
+    _applyThemeIcon(t);
+}
