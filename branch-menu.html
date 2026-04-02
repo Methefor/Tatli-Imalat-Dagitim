@@ -921,7 +921,7 @@
                     <div class="step-icon">⚠️</div>
                     <div class="step-text">
                         <div class="step-title">Gün İçi — Zayiat (Gerekirse)</div>
-                        <div class="step-desc">Bozulan veya fire veren ürünleri zayiat olarak kaydet. Gün sonunda veya ay sonunda toplu girebilirsin.</div>
+                        <div class="step-desc">Bozulan veya fire veren ürünleri zayiat olarak kaydet. Gün sonunda veya ay sonunda toplu girebilirsin. <strong style="color:rgba(252,165,165,0.85)">Zayiat açıklaması yazmak zorunludur</strong> — "son kullanma tarihi geçti", "kırık", "iade" gibi bir neden gir.</div>
                     </div>
                 </div>
                 <div class="tutorial-step step-green">
@@ -965,9 +965,8 @@
         document.getElementById('branchEmoji').textContent     = emojis[branchName] || '🏪';
         document.getElementById('todayDate').textContent       = '📅 ' + formatDateTurkish(getTodayDate());
 
-        // Şifre ile giriş yapıldıysa welcome modal göster
-        // (HTML fully parsed olduğunda çalışsın - modal DOM'dan sonra yükleniyor)
-        window.addEventListener('load', showWelcomeIfNeeded);
+        // Welcome modal devre dışı (nasıl kullanılır bölümü sayfada mevcut)
+        sessionStorage.removeItem('justLoggedIn');
 
         // Saat
         function tick() {

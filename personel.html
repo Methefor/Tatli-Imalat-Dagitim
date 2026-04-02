@@ -416,18 +416,15 @@
         corrections.forEach(c => {
             const key = c.branches?.name || '?';
             if (!corrByBranch[key]) corrByBranch[key] = { gelen: 0, kalan: 0, zayiat: 0 };
-            const tagMatch = (c.notes || '').match(/\[DÜZ [^\]]*\]/);
-            if (tagMatch) {
-                const tagStr = tagMatch[0];
-                if (tagStr.includes('gelen:'))  corrByBranch[key].gelen++;
-                if (tagStr.includes('kalan:'))  corrByBranch[key].kalan++;
-                if (tagStr.includes('zayiat:')) corrByBranch[key].zayiat++;
-            } else {
-                // Legacy fallback
-                if (c.received_amount  !== null && c.received_amount  !== undefined) corrByBranch[key].gelen++;
-                if (c.remaining_amount !== null && c.remaining_amount !== undefined) corrByBranch[key].kalan++;
-                if (c.waste_amount > 0) corrByBranch[key].zayiat++;
+            // Notta geçen TÜM [DÜZ ...] taglerini bul, birleştir
+            const allTags = (c.notes || '').match(/\[DÜZ [^\]]*\]/g) || [];
+            if (allTags.length > 0) {
+                const combined = allTags.join(' ');
+                if (combined.includes('gelen:'))  corrByBranch[key].gelen++;
+                if (combined.includes('kalan:'))  corrByBranch[key].kalan++;
+                if (combined.includes('zayiat:')) corrByBranch[key].zayiat++;
             }
+            // Legacy fallback yok — sadece [DÜZ tag] içeren kayıtlar sayılır
         });
 
         renderMgrSummary(activity, corrByBranch);
@@ -460,13 +457,13 @@
 
             // Düzeltme açıklama metni
             let corrParts = [];
-            if (corr.gelen  > 0) corrParts.push(corr.gelen  + ' gelen');
-            if (corr.kalan  > 0) corrParts.push(corr.kalan  + ' kalan');
+            if (corr.gelen  > 0) corrParts.push(corr.gelen  + ' gelen tatlı');
+            if (corr.kalan  > 0) corrParts.push(corr.kalan  + ' kalan tatlı');
             if (corr.zayiat > 0) corrParts.push(corr.zayiat + ' zayiat');
 
             const corrText = corrParts.length > 0
-                ? corrParts.join(' + ') + ' tatlı düzeltmesi yaptı'
-                : 'Bu ay düzeltme yapmadı';
+                ? corrParts.join(', ') + ' düzeltmesi yapıldı'
+                : 'Bu ay düzeltme yapılmadı';
 
             const pills = [];
             if (isToday) {
