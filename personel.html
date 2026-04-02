@@ -388,15 +388,15 @@
         </div>
     </div>
 
-    <!-- Düzeltme Geçmişi -->
-    <div class="section" id="secCorr">
-        <div class="section-header" onclick="toggleSection('secCorr')">
-            <span class="section-icon">✏️</span>
+    <!-- Hatalı Düzeltme Kayıtları -->
+    <div class="section collapsed" id="secCorr">
+        <div class="section-header" onclick="toggleSection('secCorr')" style="border-left: 3px solid rgba(245,158,11,0.5)">
+            <span class="section-icon">📋</span>
             <div class="section-title-wrap">
-                <div class="section-title">Düzeltme Geçmişi</div>
-                <div class="section-sub">Son 30 gün · fazla giriş tespiti</div>
+                <div class="section-title" style="color:rgba(251,191,36,0.85)">Hatalı Düzeltme Detayları</div>
+                <div class="section-sub">Son 30 gün · yalnızca şüpheli kayıtlar</div>
             </div>
-            <span class="section-badge" id="badgeCorr">—</span>
+            <span class="section-badge" id="badgeCorr" style="background:rgba(245,158,11,0.12);color:rgba(251,191,36,0.7)">—</span>
             <span class="section-chevron">▼</span>
         </div>
         <div class="section-body">
@@ -473,11 +473,12 @@
 
         // Şüpheli davranış analizi
         const suspects = analyzeAlerts(corrections);
+        const flaggedIds = new Set(suspects.map(s => s.id));
 
         renderMgrSummary(activity, corrByBranch, suspects);
         renderActivity(activity);
         renderSuspects(suspects);
-        renderCorrections(corrections);
+        renderCorrections(corrections, flaggedIds);
     }
 
     // ── Şüpheli Davranış Analizi ─────────────────────────
@@ -559,7 +560,7 @@
             });
 
             if (entryAlerts.length > 0) {
-                results.push({ branch, mgr, dessert, entryDate, alerts: entryAlerts });
+                results.push({ id: c.id, branch, mgr, dessert, entryDate, alerts: entryAlerts });
             }
         });
 
@@ -752,18 +753,22 @@
         missingEl.innerHTML = missingHtml || '<div class="empty-ok">✓ Tüm şubeler bugün giriş yaptı</div>';
     }
 
-    function renderCorrections(list) {
+    function renderCorrections(list, flaggedIds) {
         const el = document.getElementById('correctionList');
-        document.getElementById('badgeCorr').textContent = list.length + ' kayıt';
 
-        if (!list || list.length === 0) {
-            el.innerHTML = '<div class="empty-msg">Son 30 günde düzeltme girişi yok</div>';
+        // Yalnızca şüpheli / hatalı kayıtları göster
+        const filtered = (list || []).filter(c => flaggedIds && flaggedIds.has(c.id));
+
+        document.getElementById('badgeCorr').textContent = filtered.length > 0 ? filtered.length + ' hatalı kayıt' : 'Temiz';
+
+        if (filtered.length === 0) {
+            el.innerHTML = '<div class="empty-ok">✓ Son 30 günde hatalı düzeltme kaydı yok</div>';
             return;
         }
 
         // Şube + müdür bazında grupla
         const groups = {};
-        list.forEach(c => {
+        filtered.forEach(c => {
             const branch = c.branches?.name        || '?';
             const mgr    = c.branches?.manager_name || '—';
             const key    = branch + '||' + mgr;
