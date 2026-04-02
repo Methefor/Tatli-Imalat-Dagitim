@@ -263,6 +263,36 @@
         .corr-item   { font-size: 12px; color: rgba(255,255,255,0.5); }
         .corr-item span { color: var(--text); font-weight: 600; }
 
+        /* ── Şüpheli davranış kartları ── */
+        .suspect-card {
+            background: rgba(239,68,68,0.05);
+            border: 1px solid rgba(239,68,68,0.18);
+            border-radius: 12px; margin-bottom: 8px; overflow: hidden;
+        }
+        .suspect-card-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 14px;
+        }
+        .suspect-card-icon { font-size: 15px; flex-shrink: 0; }
+        .suspect-card-who { flex: 1; min-width: 0; }
+        .suspect-card-mgr { font-size: 13px; font-weight: 700; color: rgba(252,165,165,0.95); }
+        .suspect-card-branch { font-size: 11px; color: rgba(252,165,165,0.5); margin-top: 1px; }
+        .suspect-card-body { border-top: 1px solid rgba(239,68,68,0.12); padding: 8px 14px 10px; display: flex; flex-direction: column; gap: 5px; }
+        .suspect-item {
+            display: flex; align-items: flex-start; gap: 8px;
+            font-size: 11px;
+        }
+        .suspect-lvl {
+            font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+            padding: 2px 6px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+        }
+        .lvl-critical { background: rgba(239,68,68,0.2); color: rgba(252,165,165,0.95); }
+        .lvl-warning  { background: rgba(245,158,11,0.18); color: rgba(251,191,36,0.9); }
+        .suspect-text { flex: 1; color: rgba(255,255,255,0.6); line-height: 1.45; }
+        .suspect-text strong { color: rgba(255,255,255,0.85); font-weight: 600; }
+        .suspect-meta { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+        .pill-danger { background: rgba(239,68,68,0.15); color: rgba(252,165,165,0.9); border: 1px solid rgba(239,68,68,0.25); }
+
         /* ── Empty / loading ── */
         .empty-msg {
             text-align: center; padding: 22px 16px;
@@ -326,6 +356,22 @@
         </div>
     </div>
 
+    <!-- Şüpheli Davranışlar — varsayılan KAPALI -->
+    <div class="section collapsed" id="secSuspect">
+        <div class="section-header" onclick="toggleSection('secSuspect')" style="border-left: 3px solid rgba(239,68,68,0.6)">
+            <span class="section-icon">🚨</span>
+            <div class="section-title-wrap">
+                <div class="section-title" style="color:rgba(252,165,165,0.85)">Şüpheli Davranışlar</div>
+                <div class="section-sub">Gelen değişikliği · çoklu düzeltme · büyük fark</div>
+            </div>
+            <span class="section-badge" id="badgeSuspect" style="background:rgba(239,68,68,0.12);color:rgba(252,165,165,0.75)">—</span>
+            <span class="section-chevron">▼</span>
+        </div>
+        <div class="section-body">
+            <div id="suspectList"><div class="empty-msg">Yükleniyor…</div></div>
+        </div>
+    </div>
+
     <!-- Bugün Veri Girmeyen — varsayılan KAPALI -->
     <div class="section collapsed" id="secMissing">
         <div class="section-header" onclick="toggleSection('secMissing')" style="border-left: 3px solid rgba(239,68,68,0.5)">
@@ -382,7 +428,7 @@
 
     // sessionStorage'dan collapsed durumunu yükle
     function initSectionStates() {
-        ['secMgr','secMissing','secCorr'].forEach(id => {
+        ['secMgr','secSuspect','secMissing','secCorr'].forEach(id => {
             const saved = sessionStorage.getItem('personel_' + id);
             const sec = document.getElementById(id);
             if (!sec) return;
@@ -411,12 +457,11 @@
     }
 
     function renderAll(activity, corrections) {
-        // Düzeltmeleri şube bazında grupla (yeni [DÜZ tag formatına göre)
+        // Düzeltmeleri şube bazında grupla
         const corrByBranch = {};
         corrections.forEach(c => {
             const key = c.branches?.name || '?';
             if (!corrByBranch[key]) corrByBranch[key] = { gelen: 0, kalan: 0, zayiat: 0 };
-            // Notta geçen TÜM [DÜZ ...] taglerini bul, birleştir
             const allTags = (c.notes || '').match(/\[DÜZ [^\]]*\]/g) || [];
             if (allTags.length > 0) {
                 const combined = allTags.join(' ');
@@ -424,15 +469,153 @@
                 if (combined.includes('kalan:'))  corrByBranch[key].kalan++;
                 if (combined.includes('zayiat:')) corrByBranch[key].zayiat++;
             }
-            // Legacy fallback yok — sadece [DÜZ tag] içeren kayıtlar sayılır
         });
 
-        renderMgrSummary(activity, corrByBranch);
+        // Şüpheli davranış analizi
+        const suspects = analyzeAlerts(corrections);
+
+        renderMgrSummary(activity, corrByBranch, suspects);
         renderActivity(activity);
+        renderSuspects(suspects);
         renderCorrections(corrections);
     }
 
-    function renderMgrSummary(list, corrByBranch) {
+    // ── Şüpheli Davranış Analizi ─────────────────────────
+    function analyzeAlerts(corrections) {
+        const results = [];
+
+        corrections.forEach(c => {
+            const branch = c.branches?.name || '?';
+            const mgr    = c.branches?.manager_name || '—';
+            const dessert = (c.desserts?.emoji || '') + ' ' + (c.desserts?.name || '?');
+            const entryDate = c.entry_date;
+            const allTags = (c.notes || '').match(/\[DÜZ [^\]]*\]/g) || [];
+            if (allTags.length === 0) return;
+
+            const entryAlerts = [];
+
+            // 1. Gelen tatlı düzeltmesi — kritik
+            allTags.forEach(tag => {
+                const m = tag.match(/gelen:(\d+)→(\d+)/);
+                if (m) {
+                    const delta = parseInt(m[2]) - parseInt(m[1]);
+                    entryAlerts.push({
+                        level: 'critical',
+                        label: 'Gelen tatlı miktarı değiştirildi',
+                        detail: `${m[1]} → ${m[2]} adet (${delta > 0 ? '+' : ''}${delta})`
+                    });
+                }
+            });
+
+            // 2. Aynı kayıda çoklu düzeltme
+            if (allTags.length >= 2) {
+                entryAlerts.push({
+                    level: 'warning',
+                    label: `${allTags.length} kez düzeltme yapıldı`,
+                    detail: 'Aynı kayıt birden fazla kez değiştirildi'
+                });
+            }
+
+            // 3. Geçmişe yönelik düzeltme (2+ gün önce girilmiş kayıt)
+            const lastTag = allTags[allTags.length - 1];
+            const dateM = lastTag.match(/\[DÜZ (\d{2})\.(\d{2})\.(\d{4})/);
+            if (dateM) {
+                const corrDate = `${dateM[3]}-${dateM[2]}-${dateM[1]}`;
+                const diffDays = Math.round(
+                    (new Date(corrDate + 'T12:00:00') - new Date(entryDate + 'T12:00:00')) / 86400000
+                );
+                if (diffDays >= 2) {
+                    entryAlerts.push({
+                        level: 'warning',
+                        label: `Geçmiş tarihe düzeltme`,
+                        detail: `${diffDays} gün önceki kayıt (${formatTR(entryDate)}) değiştirildi`
+                    });
+                }
+            }
+
+            // 4. Büyük fark — kalan veya zayiat için ≥10 adet
+            allTags.forEach(tag => {
+                ['kalan','zayiat'].forEach(field => {
+                    const m = tag.match(new RegExp(field + ':(\\d+)→(\\d+)'));
+                    if (m) {
+                        const delta = Math.abs(parseInt(m[2]) - parseInt(m[1]));
+                        if (delta >= 10) {
+                            const lbl = field === 'kalan' ? 'Kalan' : 'Zayiat';
+                            entryAlerts.push({
+                                level: 'warning',
+                                label: `Büyük ${lbl.toLowerCase()} farkı (${delta} adet)`,
+                                detail: `${m[1]} → ${m[2]} adet`
+                            });
+                        }
+                    }
+                });
+            });
+
+            if (entryAlerts.length > 0) {
+                results.push({ branch, mgr, dessert, entryDate, alerts: entryAlerts });
+            }
+        });
+
+        return results;
+    }
+
+    function renderSuspects(suspects) {
+        const el    = document.getElementById('suspectList');
+        const badge = document.getElementById('badgeSuspect');
+        const sec   = document.getElementById('secSuspect');
+
+        if (!suspects || suspects.length === 0) {
+            el.innerHTML = '<div class="empty-ok">✓ Son 30 günde şüpheli davranış tespit edilmedi</div>';
+            badge.textContent = 'Temiz';
+            badge.style.background = 'rgba(16,185,129,0.12)';
+            badge.style.color = 'rgba(110,231,183,0.8)';
+            return;
+        }
+
+        const criticalCount = suspects.filter(s => s.alerts.some(a => a.level === 'critical')).length;
+        badge.textContent = suspects.length + ' uyarı' + (criticalCount > 0 ? ` · ${criticalCount} kritik` : '');
+
+        // Kritik olanlar önce
+        suspects.sort((a, b) => {
+            const ac = a.alerts.some(x => x.level === 'critical') ? 0 : 1;
+            const bc = b.alerts.some(x => x.level === 'critical') ? 0 : 1;
+            return ac - bc || b.entryDate.localeCompare(a.entryDate);
+        });
+
+        el.innerHTML = suspects.map((s, i) => {
+            const hasCritical = s.alerts.some(a => a.level === 'critical');
+            const headerColor = hasCritical
+                ? 'rgba(239,68,68,0.22)' : 'rgba(245,158,11,0.16)';
+            const rows = s.alerts.map(a => `
+                <div class="suspect-item">
+                    <span class="suspect-lvl ${a.level === 'critical' ? 'lvl-critical' : 'lvl-warning'}">${a.level === 'critical' ? 'KRİTİK' : 'UYARI'}</span>
+                    <div class="suspect-text">
+                        <strong>${a.label}</strong>
+                        <div class="suspect-meta">${a.detail}</div>
+                    </div>
+                </div>`).join('');
+            return `<div class="suspect-card fade-in" style="animation-delay:${i*0.04}s;border-color:${headerColor}">
+                <div class="suspect-card-header">
+                    <span class="suspect-card-icon">${hasCritical ? '🔴' : '🟡'}</span>
+                    <div class="suspect-card-who">
+                        <div class="suspect-card-mgr">${s.mgr}</div>
+                        <div class="suspect-card-branch">${s.branch} · ${formatTR(s.entryDate)} · ${s.dessert}</div>
+                    </div>
+                </div>
+                <div class="suspect-card-body">${rows}</div>
+            </div>`;
+        }).join('');
+
+        // Kritik varsa bölümü otomatik aç
+        if (criticalCount > 0 && !sessionStorage.getItem('personel_secSuspect')) {
+            sec.classList.remove('collapsed');
+        }
+    }
+
+    function renderMgrSummary(list, corrByBranch, suspects) {
+        // Şüpheli şube seti
+        const suspectBranches  = new Set((suspects || []).map(s => s.branch));
+        const criticalBranches = new Set((suspects || []).filter(s => s.alerts.some(a => a.level === 'critical')).map(s => s.branch));
         const el = document.getElementById('mgrSummaryList');
         if (!list || list.length === 0) {
             el.innerHTML = '<div class="empty-msg">Şube bulunamadı</div>';
@@ -479,6 +662,12 @@
                 pills.push(`<span class="stat-pill pill-amber">⚠ ${corrText}</span>`);
             } else {
                 pills.push(`<span class="stat-pill pill-gray">${corrText}</span>`);
+            }
+
+            if (criticalBranches.has(b.name)) {
+                pills.push(`<span class="stat-pill pill-danger">🔴 Kritik uyarı var</span>`);
+            } else if (suspectBranches.has(b.name)) {
+                pills.push(`<span class="stat-pill pill-danger">🟡 Şüpheli düzeltme</span>`);
             }
 
             return `<div class="mgr-card fade-in" style="animation-delay:${i*0.04}s">
