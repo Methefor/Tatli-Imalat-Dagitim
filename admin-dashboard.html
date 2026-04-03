@@ -2172,22 +2172,10 @@ _Mutlukent Tatlı Takip Sistemi_`;
             // Satılan: devir + gelen - kalan - zayiat
             const sold = Math.max(0, openingTotal + dist - stock - waste);
 
-            // Zayiat: dönem içi toplam
-            const waste = allData.reduce((s, e) => s + (e.waste_amount || 0), 0);
-
             animateCounter('totalDistribution', dist);
             animateCounter('totalSales',        sold);
             animateCounter('totalStock',        stock);
             animateCounter('totalWaste',        waste);
-
-            // 4. KPI (Zayiat) rengi: 0 = yeşil, az = sarı, fazla = kırmızı
-            const kpiCards = document.querySelectorAll('.kpi-card');
-            if (kpiCards[3]) {
-                const wRatio = dist > 0 ? waste / dist : 0;
-                const wColor = waste === 0 ? 'rgba(16,185,129,0.4)' : wRatio < 0.05 ? 'rgba(245,158,11,0.45)' : 'rgba(239,68,68,0.5)';
-                kpiCards[3].style.borderColor = wColor;
-                kpiCards[3].style.boxShadow   = `0 0 0 1px ${wColor}`;
-            }
 
             const pct = Math.min((dist / DAILY_TARGET) * 100, 100);
             document.getElementById('distProgress').style.width = `${pct}%`;
@@ -2217,6 +2205,13 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 const stockColor = stockRatio > 0.3 ? 'rgba(34,197,94,0.45)' : stockRatio > 0.1 ? 'rgba(245,158,11,0.45)' : 'rgba(239,68,68,0.4)';
                 kpiCards[2].style.borderColor = stockColor;
                 kpiCards[2].style.boxShadow   = `0 0 0 1px ${stockColor}`;
+            }
+            if (kpiCards[3]) {
+                // Zayiat kartı: 0 = yeşil, <%5 = sarı, >=%5 = kırmızı
+                const wRatio = dist > 0 ? waste / dist : 0;
+                const wColor = waste === 0 ? 'rgba(16,185,129,0.4)' : wRatio < 0.05 ? 'rgba(245,158,11,0.45)' : 'rgba(239,68,68,0.5)';
+                kpiCards[3].style.borderColor = wColor;
+                kpiCards[3].style.boxShadow   = `0 0 0 1px ${wColor}`;
             }
         }
 
@@ -3589,19 +3584,32 @@ _Mutlukent Tatlı Takip Sistemi_`;
         }
 
         // ── Aktivite Akışı ────────────────────────────────
+        // Türkiye saati (UTC+3) ile bugünün entry_date'ini hesaplar
+        function getTodayTR() {
+            const now = new Date();
+            // UTC+3 offseti uygula
+            const trOffset = 3 * 60; // dakika
+            const trTime = new Date(now.getTime() + (trOffset + now.getTimezoneOffset()) * 60000);
+            const y = trTime.getFullYear();
+            const m = String(trTime.getMonth() + 1).padStart(2, '0');
+            const d = String(trTime.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
         async function loadActivityFeed() {
             const feedEl = document.getElementById('activityFeed');
             if (!feedEl) return;
             try {
-                const entries = await getRecentActivity(15);
-                renderActivityFeed(entries);
+                const todayTR = getTodayTR();
+                const entries = await getRecentActivity(20, todayTR);
+                renderActivityFeed(entries, todayTR);
             } catch (err) {
                 console.error('Aktivite akışı hatası:', err);
                 feedEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Yüklenemedi</div>';
             }
         }
 
-        function renderActivityFeed(entries) {
+        function renderActivityFeed(entries, todayTR) {
             const feedEl = document.getElementById('activityFeed');
             const badgeEl = document.getElementById('activityBadge');
             if (!feedEl) return;
@@ -3611,12 +3619,10 @@ _Mutlukent Tatlı Takip Sistemi_`;
             if (entries.length === 0) {
                 feedEl.innerHTML = `<div class="empty-state" style="padding:32px">
                     <div class="empty-state-icon">📭</div>
-                    <div class="empty-state-title">Son 48 saatte işlem yok</div>
+                    <div class="empty-state-title">Bugün henüz işlem yok</div>
                 </div>`;
                 return;
             }
-
-            const todayStr = new Date().toISOString().split('T')[0];
 
             const items = entries.map(e => {
                 const branch  = e.branches?.name         || '?';
@@ -3624,37 +3630,32 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
                 const recv    = e.received_amount;
                 const rem     = e.remaining_amount;
-                const waste   = e.waste_amount;
+                const wst     = e.waste_amount;
 
-                // Zaman formatla
+                // Türkiye saatiyle saat göster
                 let timeStr = '—';
                 if (e.entry_time) {
                     const t = new Date(e.entry_time);
-                    timeStr = t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                    timeStr = t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
                 }
 
                 // Tür belirle
                 let type = 'mixed', typeLabel = 'Güncelleme';
-                if (recv > 0 && rem === null && !waste)      { type = 'gelen';  typeLabel = 'Gelen';  }
-                else if (rem !== null && !recv && !waste)     { type = 'kalan';  typeLabel = 'Kalan';  }
-                else if (waste > 0 && !recv && rem === null)  { type = 'zayiat'; typeLabel = 'Zayiat'; }
+                if (recv > 0 && rem === null && !wst)     { type = 'gelen';  typeLabel = 'Gelen';  }
+                else if (rem !== null && !recv && !wst)    { type = 'kalan';  typeLabel = 'Kalan';  }
+                else if (wst > 0 && !recv && rem === null) { type = 'zayiat'; typeLabel = 'Zayiat'; }
 
                 // Detay satırı
                 const parts = [];
-                if (recv  > 0)            parts.push(`<span style="color:var(--amber)">${recv} gelen</span>`);
-                if (rem   !== null)        parts.push(`<span style="color:var(--blue)">${rem} kalan</span>`);
-                if (waste > 0)            parts.push(`<span style="color:var(--red)">${waste} zayiat</span>`);
-
-                // Dün ise tarih etiketi
-                const dateTag = e.entry_date !== todayStr
-                    ? `<span style="font-size:10px;color:var(--text-3);margin-left:4px">${e.entry_date.slice(5).replace('-','/')}</span>`
-                    : '';
+                if (recv > 0)   parts.push(`<span style="color:var(--amber)">${recv} gelen</span>`);
+                if (rem !== null) parts.push(`<span style="color:var(--blue)">${rem} kalan</span>`);
+                if (wst > 0)    parts.push(`<span style="color:var(--red)">${wst} zayiat</span>`);
 
                 return `<div class="activity-item">
                     <span class="activity-dot ${type}"></span>
                     <span class="activity-time">${timeStr}</span>
                     <div class="activity-body">
-                        <div class="activity-who"><b>${manager}</b> · ${branch}${dateTag}</div>
+                        <div class="activity-who"><b>${manager}</b> · ${branch}</div>
                         <div class="activity-detail">${dessert} · ${parts.join(', ') || '—'}</div>
                     </div>
                     <span class="activity-tag ${type}">${typeLabel}</span>
