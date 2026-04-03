@@ -3586,14 +3586,8 @@ _Mutlukent Tatlı Takip Sistemi_`;
         // ── Aktivite Akışı ────────────────────────────────
         // Türkiye saati (UTC+3) ile bugünün entry_date'ini hesaplar
         function getTodayTR() {
-            const now = new Date();
-            // UTC+3 offseti uygula
-            const trOffset = 3 * 60; // dakika
-            const trTime = new Date(now.getTime() + (trOffset + now.getTimezoneOffset()) * 60000);
-            const y = trTime.getFullYear();
-            const m = String(trTime.getMonth() + 1).padStart(2, '0');
-            const d = String(trTime.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
+            // Intl API ile Europe/Istanbul timezone'unda bugünün tarihini al (YYYY-MM-DD)
+            return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date());
         }
 
         async function loadActivityFeed() {
