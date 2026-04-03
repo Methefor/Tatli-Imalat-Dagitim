@@ -14,6 +14,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -484,6 +485,44 @@
             .zw-col-left { border-right: none; border-bottom: 1px solid var(--border); }
         }
 
+        /* ── ZAYİAT KAYIT KARTLARI ──────────────────── */
+        .wrc-list { display: flex; flex-direction: column; }
+        .wrc-card {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.15s;
+        }
+        .wrc-card:last-child { border-bottom: none; }
+        .wrc-card:hover { background: rgba(239,68,68,0.04); }
+        .wrc-date {
+            min-width: 42px;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.18);
+            border-radius: 9px;
+            padding: 7px 4px 6px;
+            text-align: center; flex-shrink: 0;
+        }
+        .wrc-date-day { font-size: 17px; font-weight: 800; color: rgba(239,68,68,0.9); line-height: 1; }
+        .wrc-date-mon { font-size: 9px; font-weight: 700; color: rgba(239,68,68,0.5); text-transform: uppercase; margin-top: 3px; letter-spacing: 0.04em; }
+        .wrc-body { flex: 1; min-width: 0; }
+        .wrc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+        .wrc-dessert { font-size: 14px; font-weight: 700; color: var(--text); }
+        .wrc-amount {
+            font-size: 11px; font-weight: 800; color: rgba(239,68,68,0.9);
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0;
+        }
+        .wrc-who { font-size: 12px; color: var(--text-3); margin-bottom: 6px; }
+        .wrc-who strong { color: var(--text-2); font-weight: 600; }
+        .wrc-reason {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; color: rgba(251,191,36,0.85); font-style: italic;
+            background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 6px; padding: 4px 9px;
+        }
+        .wrc-no-reason { font-size: 11px; color: rgba(255,255,255,0.2); font-style: italic; }
+
         /* ── ŞUBE PERFORMANS KARTLARI (mobil) ────────── */
         .branch-cards {
             display: none;
@@ -935,12 +974,14 @@
         .report-overlay {
             display: none; position: fixed; inset: 0;
             background: rgba(6,12,24,0.88);
-            z-index: 300; align-items: center; justify-content: center; padding: 20px;
+            z-index: 300; align-items: flex-start; justify-content: center;
+            padding: 16px 20px; overflow-y: auto;
         }
         .report-overlay.active { display: flex; }
         .report-box {
             background: var(--panel); border: 1px solid var(--border-med);
             border-radius: 20px; width: 100%; max-width: 500px; overflow: hidden;
+            flex-shrink: 0;
         }
         .report-head {
             padding: 18px 22px; border-bottom: 1px solid var(--border);
@@ -1447,7 +1488,7 @@
             </div>
         </div>
 
-        <!-- Stock Status -->
+        <!-- Güncel Stok Durumu -->
         <div class="panel fade-up" style="animation-delay:0.3s">
             <div class="panel-header">
                 <h2 class="panel-title">Güncel Stok Durumu</h2>
@@ -1463,19 +1504,33 @@
             </div>
         </div>
 
-        <!-- Tatlı × Şube Satış Haritası -->
-        <div class="panel fade-up" style="animation-delay:0.32s">
+        <!-- Zayiat Raporu -->
+        <div class="panel fade-up" style="animation-delay:0.35s">
             <div class="panel-header">
-                <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
-                <span class="panel-badge" id="heatmapBadge">—</span>
+                <h2 class="panel-title">Zayiat Raporu</h2>
+                <span class="panel-badge panel-badge--red" id="zayiatTotal">—</span>
             </div>
-            <div class="heatmap-wrap">
-                <div id="heatmapContent"><div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div></div>
+            <div id="zayiatContent">
+                <div class="empty-state" style="padding:32px">
+                    <div class="empty-state-icon">⏳</div>
+                    <div class="empty-state-title">Yükleniyor</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zayiat Kayıtları — hangi şube, hangi tatlı, neden (detaylı) -->
+        <div class="panel fade-up" style="animation-delay:0.4s">
+            <div class="panel-header">
+                <h2 class="panel-title" id="wasteReasonsTitle">⚠️ Zayiat Kayıtları</h2>
+                <span class="panel-badge panel-badge--red" id="wasteReasonsBadge">—</span>
+            </div>
+            <div id="wasteReasonsContent" style="min-height:60px">
+                <div style="text-align:center;padding:28px;color:rgba(255,255,255,0.25);font-size:13px">Yükleniyor…</div>
             </div>
         </div>
 
         <!-- Satış Trendi -->
-        <div class="panel fade-up" style="animation-delay:0.35s">
+        <div class="panel fade-up" style="animation-delay:0.45s">
             <div class="panel-header">
                 <h2 class="panel-title">Satış Trendi</h2>
                 <span class="panel-badge" id="trendBadge">—</span>
@@ -1489,22 +1544,8 @@
             </div>
         </div>
 
-        <!-- Zayiat Raporu -->
-        <div class="panel fade-up" style="animation-delay:0.4s">
-            <div class="panel-header">
-                <h2 class="panel-title">Zayiat Raporu</h2>
-                <span class="panel-badge panel-badge--red" id="zayiatTotal">—</span>
-            </div>
-            <div id="zayiatContent">
-                <div class="empty-state" style="padding:32px">
-                    <div class="empty-state-icon">⏳</div>
-                    <div class="empty-state-title">Yükleniyor</div>
-                </div>
-            </div>
-        </div>
-
         <!-- Elde Edilen Gelir -->
-        <div class="panel fade-up" style="animation-delay:0.45s">
+        <div class="panel fade-up" style="animation-delay:0.5s">
             <div class="panel-header">
                 <h2 class="panel-title">💰 Elde Edilen Gelir</h2>
                 <span class="panel-badge panel-badge--green" id="ciroTotalBadge">—</span>
@@ -1517,21 +1558,8 @@
             </div>
         </div>
 
-        <!-- Maliyet & Karlılık -->
-        <div class="panel fade-up" style="animation-delay:0.5s">
-            <div class="panel-header">
-                <h2 class="panel-title">Maliyet & Karlılık</h2>
-                <span class="panel-badge panel-badge--green" id="maliyetKarBadge">—</span>
-            </div>
-            <div id="maliyetContent">
-                <div class="profit-no-cost">
-                    ⚙️ Maliyet hesabı için üretim maliyetlerini Süper Admin panelinden girin.
-                </div>
-            </div>
-        </div>
-
         <!-- Ortalama Satış Tahmini (Son 30 Gün) -->
-        <div class="panel fade-up" style="animation-delay:0.55s">
+        <div class="panel fade-up" style="animation-delay:0.53s">
             <div class="panel-header">
                 <h2 class="panel-title">Ort. Günlük Satış (Son 30 Gün)</h2>
                 <span class="panel-badge" id="forecastBadge">30 Gün</span>
@@ -1542,7 +1570,7 @@
         </div>
 
         <!-- Stok Devir Hızı -->
-        <div class="panel fade-up" style="animation-delay:0.57s">
+        <div class="panel fade-up" style="animation-delay:0.56s">
             <div class="panel-header">
                 <h2 class="panel-title">🔥 Stok Devir Hızı</h2>
                 <span class="panel-badge" id="turnoverBadge">Dönem</span>
@@ -1553,7 +1581,7 @@
         </div>
 
         <!-- Zayiat Trendi (Son 6 Ay) -->
-        <div class="panel fade-up" style="animation-delay:0.6s">
+        <div class="panel fade-up" style="animation-delay:0.59s">
             <div class="panel-header">
                 <h2 class="panel-title">Zayiat Trendi (Son 6 Ay)</h2>
                 <span class="panel-badge panel-badge--red" id="wasteTrendBadge">6 Ay</span>
@@ -1563,19 +1591,8 @@
             </div>
         </div>
 
-        <!-- Zayiat Açıklamaları -->
-        <div class="panel fade-up" style="animation-delay:0.63s">
-            <div class="panel-header">
-                <h2 class="panel-title">📋 Zayiat Açıklamaları (Son 30 Gün)</h2>
-                <span class="panel-badge panel-badge--red" id="wasteReasonsBadge">—</span>
-            </div>
-            <div id="wasteReasonsContent" style="min-height:60px">
-                <div style="text-align:center;padding:28px;color:rgba(255,255,255,0.25);font-size:13px">Yükleniyor…</div>
-            </div>
-        </div>
-
-        <!-- Yıllık Satış Trendi -->
-        <div class="panel fade-up" style="animation-delay:0.65s">
+        <!-- Yıllık Dağıtım Trendi -->
+        <div class="panel fade-up" style="animation-delay:0.62s">
             <div class="panel-header">
                 <h2 class="panel-title">Yıllık Dağıtım Trendi</h2>
                 <div class="year-nav">
@@ -1586,6 +1603,30 @@
             </div>
             <div class="chart-wrap-tall">
                 <canvas id="yearlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tatlı × Şube Satış Haritası -->
+        <div class="panel fade-up" style="animation-delay:0.65s">
+            <div class="panel-header">
+                <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
+                <span class="panel-badge" id="heatmapBadge">—</span>
+            </div>
+            <div class="heatmap-wrap">
+                <div id="heatmapContent"><div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div></div>
+            </div>
+        </div>
+
+        <!-- Maliyet & Karlılık -->
+        <div class="panel fade-up" style="animation-delay:0.68s">
+            <div class="panel-header">
+                <h2 class="panel-title">Maliyet & Karlılık</h2>
+                <span class="panel-badge panel-badge--green" id="maliyetKarBadge">—</span>
+            </div>
+            <div id="maliyetContent">
+                <div class="profit-no-cost">
+                    ⚙️ Maliyet hesabı için üretim maliyetlerini Süper Admin panelinden girin.
+                </div>
             </div>
         </div>
 
@@ -1624,6 +1665,7 @@
         let allData          = [];
         let prevMonthData    = [];
         let zayiatData       = [];
+        let openingStockMap  = {}; // "branchId|dessertId" → dönem öncesi son kalan
         let filterYear       = new Date().getFullYear();
         let filterMonth      = new Date().getMonth() + 1;
         let comparisonData   = [];
@@ -1672,7 +1714,6 @@
             initPullToRefresh(() => loadData());
             // Yan paneller — filtreden bağımsız
             loadWasteTrend();
-            loadWasteReasons();
             loadYearlyData(currentYear);
         });
 
@@ -1804,14 +1845,17 @@
         }
 
         function getZayiatDateRange() {
-            // month-specific seçiliyse o ayın tam aralığı, diğer filtreler için cari ay
-            if (currentFilter === 'month-specific') return getDateRange();
-            const today = new Date();
-            const y = today.getFullYear(), m = today.getMonth() + 1;
-            return {
-                startDate: `${y}-${String(m).padStart(2,'0')}-01`,
-                endDate:   today.toISOString().split('T')[0]
-            };
+            // Ana filtre ile aynı tarih aralığını kullan
+            return getDateRange();
+        }
+
+        function getCurrentPeriodLabel() {
+            const MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+            if (currentFilter === 'today')          return 'Bugün';
+            if (currentFilter === 'week')           return 'Son 7 Gün';
+            if (currentFilter === 'all')            return 'Tüm Dönem';
+            if (currentFilter === 'month-specific') return `${MONTHS_TR[filterMonth-1]} ${filterYear}`;
+            return `${MONTHS_TR[navMonth-1]} ${navYear}`;
         }
 
         // ── Load Data ────────────────────────────────────
@@ -1824,6 +1868,7 @@
                 getDailyEntriesDateRange(zr.startDate, zr.endDate)
             ]);
             updateZayiatTable();
+            updateWasteReasons();
             updateStockCards();   // ← bağımsız; getCurrentStock() kendi 60 günlük sorgusunu çeker
 
             const { startDate, endDate } = getDateRange();
@@ -1839,6 +1884,25 @@
                 fetchPrev,
                 fetchComp
             ]);
+
+            // Dönem öncesi devir stok: period başından önceki son kalan değerleri
+            openingStockMap = {};
+            if (startDate > '2020-01-02') {
+                const osFrom = new Date(startDate); osFrom.setDate(osFrom.getDate() - 60);
+                const osFromStr = `${osFrom.getFullYear()}-${String(osFrom.getMonth()+1).padStart(2,'0')}-${String(osFrom.getDate()).padStart(2,'0')}`;
+                const { data: osData } = await window.supabaseInstance
+                    .from('daily_entries')
+                    .select('branch_id, dessert_id, remaining_amount')
+                    .lt('entry_date', startDate)
+                    .gte('entry_date', osFromStr)
+                    .not('remaining_amount', 'is', null)
+                    .order('entry_date', { ascending: false })
+                    .limit(1000);
+                (osData || []).forEach(e => {
+                    const key = `${e.branch_id}|${e.dessert_id}`;
+                    if (!(key in openingStockMap)) openingStockMap[key] = e.remaining_amount;
+                });
+            }
 
             if (!silent) toggleLoading(false);
 
@@ -1921,20 +1985,23 @@
             return byDate;
         }
 
+        const _counterRAF = {};
         function animateCounter(id, target) {
-            const el  = document.getElementById(id);
-            const dur = 900;
-            const step = target / (dur / 16);
-            let cur = 0;
-            const t = setInterval(() => {
-                cur += step;
-                if (cur >= target) {
-                    el.textContent = Math.round(target).toLocaleString('tr-TR');
-                    clearInterval(t);
-                } else {
-                    el.textContent = Math.round(cur).toLocaleString('tr-TR');
-                }
-            }, 16);
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (target === 0) { el.textContent = '0'; return; }
+            if (_counterRAF[id]) cancelAnimationFrame(_counterRAF[id]);
+            const dur  = 700;
+            const from = parseFloat(el.textContent.replace(/\D/g,'')) || 0;
+            const start = performance.now();
+            function tick(now) {
+                const p = Math.min((now - start) / dur, 1);
+                const ease = 1 - Math.pow(1 - p, 3); // ease-out cubic
+                el.textContent = Math.round(from + (target - from) * ease).toLocaleString('tr-TR');
+                if (p < 1) _counterRAF[id] = requestAnimationFrame(tick);
+                else delete _counterRAF[id];
+            }
+            _counterRAF[id] = requestAnimationFrame(tick);
         }
 
         // ── Metrik hesapla (karşılaştırma için) ──────────
@@ -2009,27 +2076,37 @@
                               : currentFilter === 'month'     ? `${MONTHS_TR2[navMonth-1]} ${navYear}`
                               : 'Tüm Zamanlar';
 
-            const { dist, sold, waste } = buildMetrics(allData);
             const latestMap = buildCurrentStockMap(allData);
+            const dist  = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
+            const waste = allData.reduce((s, e) => s + (e.waste_amount    || 0), 0);
             const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
-            const soldRate = dist > 0 ? ((sold / dist) * 100).toFixed(1) : 0;
+            // Devir stok dahil (updateStats ile aynı formül)
+            const openingTotal = Object.values(openingStockMap).reduce((s, v) => s + v, 0);
+            const sold = Math.max(0, openingTotal + dist - stock - waste);
+            const base = openingTotal + dist;
+            const soldRate = base > 0 ? ((sold / base) * 100).toFixed(1) : 0;
 
-            // Şube detayları
+            // Şube detayları (devir stok per-branch)
             const bd = {};
             allData.forEach(e => {
                 const id = e.branches?.id;
                 if (!id) return;
-                if (!bd[id]) bd[id] = { name: e.branches.name, received: 0, remaining: 0, waste: 0 };
+                if (!bd[id]) bd[id] = { name: e.branches.name, received: 0, remaining: 0, waste: 0, opening: 0 };
                 bd[id].received += e.received_amount || 0;
                 bd[id].waste    += e.waste_amount    || 0;
             });
-            Object.entries(buildCurrentStockMap(allData)).forEach(([key, rem]) => {
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const bid = key.split('|')[0];
+                if (bd[bid]) bd[bid].opening += rem;
+            });
+            Object.entries(latestMap).forEach(([key, rem]) => {
                 const bid = key.split('|')[0];
                 if (bd[bid]) bd[bid].remaining += rem;
             });
             Object.values(bd).forEach(b => {
-                b.sold = Math.max(0, b.received - b.remaining - b.waste);
-                b.pct  = b.received > 0 ? ((b.sold / b.received) * 100).toFixed(1) : 0;
+                b.sold = Math.max(0, b.opening + b.received - b.remaining - b.waste);
+                const bbase = b.opening + b.received;
+                b.pct  = bbase > 0 ? ((b.sold / bbase) * 100).toFixed(1) : 0;
             });
             const sorted     = Object.values(bd).sort((a, b) => b.pct - a.pct);
             const bestBranch = sorted[0];
@@ -2083,13 +2160,17 @@ _Mutlukent Tatlı Takip Sistemi_`;
         // ── Stats ────────────────────────────────────────
         function updateStats() {
             const dist = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
+            const waste = allData.reduce((s, e) => s + (e.waste_amount   || 0), 0);
 
             // Kalan: her (şube, tatlı) için EN SON remaining — toplam değil
             const latestMap = buildCurrentStockMap(allData);
             const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
 
-            // Satılan: dönem içi gelen - dönem sonu kalan
-            const sold = Math.max(0, dist - stock);
+            // Devir stok: dönem başı önceki son kalan (carry-over)
+            const openingTotal = Object.values(openingStockMap).reduce((s, v) => s + v, 0);
+
+            // Satılan: devir + gelen - kalan - zayiat
+            const sold = Math.max(0, openingTotal + dist - stock - waste);
 
             // Zayiat: dönem içi toplam
             const waste = allData.reduce((s, e) => s + (e.waste_amount || 0), 0);
@@ -2111,7 +2192,8 @@ _Mutlukent Tatlı Takip Sistemi_`;
             const pct = Math.min((dist / DAILY_TARGET) * 100, 100);
             document.getElementById('distProgress').style.width = `${pct}%`;
 
-            const salesRatio = dist > 0 ? ((sold / dist) * 100).toFixed(1) : 0;
+            const base = openingTotal + dist;
+            const salesRatio = base > 0 ? ((sold / base) * 100).toFixed(1) : 0;
             document.getElementById('salesPercentage').textContent = `%${salesRatio} satış oranı`;
 
             // KPI kartları dinamik border rengi
@@ -2145,17 +2227,23 @@ _Mutlukent Tatlı Takip Sistemi_`;
             data.forEach(entry => {
                 if (!entry.branches) return;
                 const id = entry.branches.id;
-                if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0, waste: 0 };
+                if (!bd[id]) bd[id] = { name: entry.branches.name, received: 0, remaining: 0, waste: 0, opening: 0 };
                 bd[id].received += entry.received_amount || 0;
                 bd[id].waste    += entry.waste_amount    || 0;
+            });
+            // Dönem öncesi devir stok (per branch)
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const branchId = key.split('|')[0];
+                if (bd[branchId]) bd[branchId].opening += rem;
             });
             Object.entries(latestMap).forEach(([key, rem]) => {
                 const branchId = key.split('|')[0];
                 if (bd[branchId]) bd[branchId].remaining += rem;
             });
             Object.values(bd).forEach(b => {
-                b.sold = Math.max(0, b.received - b.remaining - b.waste);
-                b.pct  = b.received > 0 ? parseFloat(((b.sold / b.received) * 100).toFixed(1)) : 0;
+                b.sold = Math.max(0, b.opening + b.received - b.remaining - b.waste);
+                const base = b.opening + b.received;
+                b.pct  = base > 0 ? parseFloat(((b.sold / base) * 100).toFixed(1)) : 0;
             });
             return bd;
         }
@@ -2978,44 +3066,65 @@ _Mutlukent Tatlı Takip Sistemi_`;
             document.getElementById('wasteTrendBadge').textContent = `${totalWaste.toLocaleString('tr-TR')} adet`;
         }
 
-        // ── Zayiat Açıklamaları ───────────────────────────
-        async function loadWasteReasons() {
+        // ── Zayiat Kayıtları (loadData'dan çağrılır, zayiatData kullanır) ───
+        function updateWasteReasons() {
             const container = document.getElementById('wasteReasonsContent');
-            try {
-                const list = await getWasteWithReasons(30);
-                const badge = document.getElementById('wasteReasonsBadge');
+            const badge     = document.getElementById('wasteReasonsBadge');
+            const titleEl   = document.getElementById('wasteReasonsTitle');
 
-                if (!list || list.length === 0) {
-                    badge.textContent = '0 kayıt';
-                    container.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.25);font-size:13px">Son 30 günde açıklamalı zayiat girişi yok</div>';
-                    return;
+            if (titleEl) titleEl.textContent = `⚠️ Zayiat Kayıtları — ${getCurrentPeriodLabel()}`;
+
+            const list = (zayiatData || [])
+                .filter(e => (e.waste_amount || 0) > 0)
+                .sort((a, b) => (b.entry_date > a.entry_date ? 1 : -1));
+
+            const withReason = list.filter(e => (e.notes || '').includes('[ZAY:'));
+            badge.textContent = list.length + ' kayıt' + (withReason.length > 0 ? ` · ${withReason.length} açıklamalı` : '');
+
+            if (list.length === 0) {
+                container.innerHTML = `<div style="text-align:center;padding:36px 20px;color:rgba(255,255,255,0.2)">
+                    <div style="font-size:36px;margin-bottom:10px">✅</div>
+                    <div style="font-size:13px">Bu dönemde zayiat girişi yok</div>
+                </div>`;
+                return;
+            }
+
+            const MONTHS_TR_SHORT = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+
+            const cards = list.map(entry => {
+                const reason  = (entry.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || null;
+                const branch  = entry.branches?.name         || '?';
+                const mgr     = entry.branches?.manager_name || '—';
+                const dessert = (entry.desserts?.emoji || '🍰') + ' ' + (entry.desserts?.name || '?');
+
+                let dayStr = '—', monStr = '';
+                if (entry.entry_date) {
+                    const d = new Date(entry.entry_date + 'T12:00:00');
+                    dayStr = d.getDate();
+                    monStr = MONTHS_TR_SHORT[d.getMonth()];
                 }
 
-                badge.textContent = list.length + ' kayıt';
+                const reasonHtml = reason
+                    ? `<div class="wrc-reason">💬 "${reason}"</div>`
+                    : `<div class="wrc-no-reason">Açıklama girilmedi</div>`;
 
-                const rows = list.map(entry => {
-                    const reason = (entry.notes || '').match(/\[ZAY: ([^\]]+)\]/)?.[1] || '—';
-                    const branch = entry.branches?.name || '?';
-                    const mgr    = entry.branches?.manager_name || '—';
-                    const dessert= (entry.desserts?.emoji || '') + ' ' + (entry.desserts?.name || '?');
-                    const dateStr= entry.entry_date ? new Date(entry.entry_date + 'T12:00:00')
-                        .toLocaleDateString('tr-TR', { day:'numeric', month:'short' }) : '—';
-
-                    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05)">
-                        <div style="min-width:52px;font-size:11px;color:rgba(255,255,255,0.35);padding-top:1px">${dateStr}</div>
-                        <div style="flex:1;min-width:0">
-                            <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85)">${mgr} <span style="font-weight:400;color:rgba(255,255,255,0.35)">— ${branch}</span></div>
-                            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">${dessert} · <span style="color:rgba(239,68,68,0.8);font-weight:600">${entry.waste_amount} adet zayiat</span></div>
-                            <div style="font-size:12px;color:rgba(251,191,36,0.85);margin-top:4px;font-style:italic">"${reason}"</div>
+                return `<div class="wrc-card">
+                    <div class="wrc-date">
+                        <div class="wrc-date-day">${dayStr}</div>
+                        <div class="wrc-date-mon">${monStr}</div>
+                    </div>
+                    <div class="wrc-body">
+                        <div class="wrc-top">
+                            <span class="wrc-dessert">${dessert}</span>
+                            <span class="wrc-amount">${entry.waste_amount} adet</span>
                         </div>
-                    </div>`;
-                }).join('');
+                        <div class="wrc-who"><strong>${mgr}</strong> — ${branch}</div>
+                        ${reasonHtml}
+                    </div>
+                </div>`;
+            }).join('');
 
-                container.innerHTML = `<div style="border-radius:0 0 14px 14px;overflow:hidden">${rows}</div>`;
-            } catch(e) {
-                console.error(e);
-                container.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(239,68,68,0.6);font-size:13px">Yüklenemedi</div>';
-            }
+            container.innerHTML = `<div class="wrc-list">${cards}</div>`;
         }
 
         // ── Yıllık Satış Chart ────────────────────────────

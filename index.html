@@ -13,6 +13,7 @@
     <title>🍰 Tatlı Takip Sistemi</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -807,7 +808,7 @@
         <!-- Footer -->
         <div class="footer" style="display:flex;align-items:center;justify-content:center;gap:10px;">
             <span>© 2026 Mutlukent Esenlik Hizmetleri A.Ş</span>
-            <button class="changelog-btn" onclick="openChangelog()" title="Güncelleme notları">🆕 v2.4 — Yenilikler</button>
+            <button class="changelog-btn" onclick="openChangelog()" title="Güncelleme notları">🆕 v2.5 — Yenilikler</button>
         </div>
 
         <!-- VIP Yönetici Kartı -->
@@ -841,16 +842,29 @@
             <h3 class="modal-title" style="margin-bottom:20px;">📋 Güncelleme Notları</h3>
 
             <div class="cl-version">
-                <span class="cl-version-badge" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.4);color:#34d399">v2.4</span>
-                <span class="cl-date">Mart 2026 — En son güncelleme</span>
+                <span class="cl-version-badge" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.4);color:#34d399">v2.5</span>
+                <span class="cl-date">Nisan 2026 — Güncel sürüm</span>
             </div>
             <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Personel Yönetimi: müdür aktivitesi, düzeltme takibi ve fazla giriş tespiti</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat girişlerine neden/açıklama alanı eklendi</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici panelinde zayiat açıklamaları görüntülenebilir</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Şube arası transfer sayfasına +5 ve +10 hızlı butonlar eklendi</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Sistem yönetiminde şifre ve müdür adı güncellemeleri artık çalışıyor</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Veri girişi en fazla 1 gün geriye yapılabilir</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Satış hesaplamalarında önceki dönemden devreden stok artık doğru şekilde dikkate alınıyor. Müdür ve yönetici panellerindeki "Satılan" rakamı gerçek satış miktarını yansıtıyor.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat kayıtları, seçilen döneme göre otomatik filtreleniyor. Her kayıt; tarih, şube müdürü, tatlı adı, fire miktarı ve açıklama bilgileriyle kart düzeninde gösteriliyor.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlıcılar paneline giriş yapıldığında karşılama mesajı gösteriliyor.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Şube müdürleri sisteme giriş yaptığında, zayiat kaydı açıklama alanının doldurulması gerektiğine dair bilgilendirme ekrana geliyor.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici panelindeki günlük özet raporunda satış rakamları doğru hesaplanıyor.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Rapor penceresi, mobil ve masaüstü cihazlarda ekranın üst bölümünden açılıyor.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Tatlıcılar panelinde haftalık üretim takvimi düzenleme işlemi ek şifre gerektirmeden yapılabiliyor.</li>
+            </ul>
+
+            <div class="cl-version">
+                <span class="cl-version-badge" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:rgba(52,211,153,0.6)">v2.4</span>
+                <span class="cl-date">Mart 2026</span>
+            </div>
+            <ul class="cl-items">
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Personel Yönetimi sayfasına müdür bazlı aktivite takibi, düzeltme geçmişi ve tekrarlı giriş tespiti eklendi.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat girişlerinde açıklama (neden) alanı zorunlu hale getirildi. Kayıtlar yönetici panelinde açıklamalarıyla birlikte görüntülenebiliyor.</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Şube arası transfer ekranına hızlı miktar seçimi (+5 / +10) butonları eklendi.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Sistem yönetimi ekranında şifre ve müdür adı güncellemeleri sorunsuz çalışıyor.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Veri girişi yalnızca güncel tarih ve bir önceki gün için yapılabilecek şekilde sınırlandırıldı.</li>
             </ul>
 
             <div class="cl-version">
@@ -858,10 +872,10 @@
                 <span class="cl-date">Mart 2026</span>
             </div>
             <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlılar paneline haftalık üretim takvimi eklendi</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici paneli aylık karşılaştırma iyileştirildi</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Ana sayfa açılış süresi büyük ölçüde iyileştirildi</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Şifre girişi sırasındaki kasma giderildi</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlıcılar paneline haftalık üretim planı takvimi eklendi.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici panelindeki aylık karşılaştırma bölümü daha doğru sonuçlar gösteriyor.</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Ana sayfa ilk açılış süresi önemli ölçüde kısaltıldı.</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Şifre girişi sırasında yaşanan performans sorunu giderildi.</li>
             </ul>
 
             <div class="cl-version">
@@ -869,9 +883,9 @@
                 <span class="cl-date">Mart 2026</span>
             </div>
             <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici paneline 5 yeni analitik bölüm eklendi</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Panel arası geçiş kasması giderildi</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>PWA mobil ekran kaydırma ve zoom kilitleme düzeltildi</li>
+                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici paneline satış, stok ve zayiat analizlerini içeren 5 yeni bölüm eklendi.</li>
+                <li><span class="cl-tag cl-tag-perf">HIZ</span>Paneller arası geçişte yaşanan takılma sorunu çözüldü.</li>
+                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Mobil cihazlarda ekran kaydırma ve yakınlaştırma davranışları düzeltildi.</li>
             </ul>
 
             <button class="modal-close" onclick="document.getElementById('changelogModal').classList.remove('active')">Kapat</button>
@@ -951,8 +965,40 @@
 
         // Sayfa yüklenince şubeleri arka planda çek
         document.addEventListener('DOMContentLoaded', async () => {
+            initTheme();
+            // ⌂ butonuyla gelindiyse auto-redirect yapma (giriş bilgisi korunmuş)
+            const noAuto = sessionStorage.getItem('noAutoRedirect');
+            const savedBranchId   = localStorage.getItem('branchId');
+            const savedBranchName = localStorage.getItem('branchName');
+            if (noAuto) {
+                sessionStorage.removeItem('noAutoRedirect');
+                // ⌂ ile gelindi — şifreye gerek yok, hızlı dönüş göster
+                if (savedBranchId && savedBranchName) showQuickReturn(savedBranchName);
+            } else if (savedBranchId) {
+                // Daha önce giriş yapılmışsa direkt branch-menu'ya git
+                window.location.href = 'branch-menu.html';
+                return;
+            }
             branchesCache = await getBranches();
         });
+
+        function showQuickReturn(branchName) {
+            const banner = document.createElement('div');
+            banner.id = 'quickReturnBanner';
+            banner.style.cssText = 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:16px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+            banner.innerHTML = `
+                <div style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:22px">🏪</span>
+                    <div style="text-align:left">
+                        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85)">${branchName}</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.4)">Giriş bilgisi korunuyor</div>
+                    </div>
+                </div>
+                <button onclick="window.location.href='branch-menu.html'" style="background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);border-radius:10px;color:rgba(16,185,129,0.9);font-size:13px;font-weight:700;padding:8px 16px;cursor:pointer;white-space:nowrap;touch-action:manipulation;">← Geri Dön</button>
+            `;
+            const btnGroup = document.querySelector('.btn-group');
+            btnGroup.parentNode.insertBefore(banner, btnGroup);
+        }
 
         // ─── Şube seçimi ───
         function openBranchSelection() {
@@ -1024,6 +1070,7 @@
                 localStorage.setItem('branchId',   result.branchId);
                 localStorage.setItem('branchName', result.branchName);
                 if (result.managerName) localStorage.setItem('managerName', result.managerName);
+                sessionStorage.setItem('justLoggedIn', '1'); // welcome modal için
                 window.location.href = 'branch-menu.html';
             } else {
                 const group = document.querySelector('#pinModal .pin-input-group');

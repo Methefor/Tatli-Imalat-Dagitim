@@ -263,6 +263,36 @@
         .corr-item   { font-size: 12px; color: rgba(255,255,255,0.5); }
         .corr-item span { color: var(--text); font-weight: 600; }
 
+        /* ── Şüpheli davranış kartları ── */
+        .suspect-card {
+            background: rgba(239,68,68,0.05);
+            border: 1px solid rgba(239,68,68,0.18);
+            border-radius: 12px; margin-bottom: 8px; overflow: hidden;
+        }
+        .suspect-card-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 14px;
+        }
+        .suspect-card-icon { font-size: 15px; flex-shrink: 0; }
+        .suspect-card-who { flex: 1; min-width: 0; }
+        .suspect-card-mgr { font-size: 13px; font-weight: 700; color: rgba(252,165,165,0.95); }
+        .suspect-card-branch { font-size: 11px; color: rgba(252,165,165,0.5); margin-top: 1px; }
+        .suspect-card-body { border-top: 1px solid rgba(239,68,68,0.12); padding: 8px 14px 10px; display: flex; flex-direction: column; gap: 5px; }
+        .suspect-item {
+            display: flex; align-items: flex-start; gap: 8px;
+            font-size: 11px;
+        }
+        .suspect-lvl {
+            font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+            padding: 2px 6px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+        }
+        .lvl-critical { background: rgba(239,68,68,0.2); color: rgba(252,165,165,0.95); }
+        .lvl-warning  { background: rgba(245,158,11,0.18); color: rgba(251,191,36,0.9); }
+        .suspect-text { flex: 1; color: rgba(255,255,255,0.6); line-height: 1.45; }
+        .suspect-text strong { color: rgba(255,255,255,0.85); font-weight: 600; }
+        .suspect-meta { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+        .pill-danger { background: rgba(239,68,68,0.15); color: rgba(252,165,165,0.9); border: 1px solid rgba(239,68,68,0.25); }
+
         /* ── Empty / loading ── */
         .empty-msg {
             text-align: center; padding: 22px 16px;
@@ -326,6 +356,22 @@
         </div>
     </div>
 
+    <!-- Şüpheli Davranışlar — varsayılan KAPALI -->
+    <div class="section collapsed" id="secSuspect">
+        <div class="section-header" onclick="toggleSection('secSuspect')" style="border-left: 3px solid rgba(239,68,68,0.6)">
+            <span class="section-icon">🚨</span>
+            <div class="section-title-wrap">
+                <div class="section-title" style="color:rgba(252,165,165,0.85)">Şüpheli Davranışlar</div>
+                <div class="section-sub">Gelen değişikliği · çoklu düzeltme · büyük fark</div>
+            </div>
+            <span class="section-badge" id="badgeSuspect" style="background:rgba(239,68,68,0.12);color:rgba(252,165,165,0.75)">—</span>
+            <span class="section-chevron">▼</span>
+        </div>
+        <div class="section-body">
+            <div id="suspectList"><div class="empty-msg">Yükleniyor…</div></div>
+        </div>
+    </div>
+
     <!-- Bugün Veri Girmeyen — varsayılan KAPALI -->
     <div class="section collapsed" id="secMissing">
         <div class="section-header" onclick="toggleSection('secMissing')" style="border-left: 3px solid rgba(239,68,68,0.5)">
@@ -342,31 +388,15 @@
         </div>
     </div>
 
-    <!-- Şube Aktivite Durumu -->
-    <div class="section" id="secActivity">
-        <div class="section-header" onclick="toggleSection('secActivity')">
-            <span class="section-icon">📊</span>
+    <!-- Hatalı Düzeltme Kayıtları -->
+    <div class="section collapsed" id="secCorr">
+        <div class="section-header" onclick="toggleSection('secCorr')" style="border-left: 3px solid rgba(245,158,11,0.5)">
+            <span class="section-icon">📋</span>
             <div class="section-title-wrap">
-                <div class="section-title">Şube Aktivite Durumu</div>
-                <div class="section-sub">Son giriş tarihleri</div>
+                <div class="section-title" style="color:rgba(251,191,36,0.85)">Hatalı Düzeltme Detayları</div>
+                <div class="section-sub">Son 30 gün · yalnızca şüpheli kayıtlar</div>
             </div>
-            <span class="section-badge" id="badgeBranch">—</span>
-            <span class="section-chevron">▼</span>
-        </div>
-        <div class="section-body">
-            <div id="branchActivityList"><div class="empty-msg">Yükleniyor…</div></div>
-        </div>
-    </div>
-
-    <!-- Düzeltme Geçmişi -->
-    <div class="section" id="secCorr">
-        <div class="section-header" onclick="toggleSection('secCorr')">
-            <span class="section-icon">✏️</span>
-            <div class="section-title-wrap">
-                <div class="section-title">Düzeltme Geçmişi</div>
-                <div class="section-sub">Son 30 gün · fazla giriş tespiti</div>
-            </div>
-            <span class="section-badge" id="badgeCorr">—</span>
+            <span class="section-badge" id="badgeCorr" style="background:rgba(245,158,11,0.12);color:rgba(251,191,36,0.7)">—</span>
             <span class="section-chevron">▼</span>
         </div>
         <div class="section-body">
@@ -398,9 +428,10 @@
 
     // sessionStorage'dan collapsed durumunu yükle
     function initSectionStates() {
-        ['secMgr','secMissing','secActivity','secCorr'].forEach(id => {
+        ['secMgr','secSuspect','secMissing','secCorr'].forEach(id => {
             const saved = sessionStorage.getItem('personel_' + id);
             const sec = document.getElementById(id);
+            if (!sec) return;
             if (saved === '1') sec.classList.add('collapsed');
             else if (saved === '0') sec.classList.remove('collapsed');
             // Default: secMissing collapsed (zaten HTML'de collapsed var)
@@ -431,17 +462,168 @@
         corrections.forEach(c => {
             const key = c.branches?.name || '?';
             if (!corrByBranch[key]) corrByBranch[key] = { gelen: 0, kalan: 0, zayiat: 0 };
-            if (c.received_amount  !== null && c.received_amount  !== undefined) corrByBranch[key].gelen++;
-            if (c.remaining_amount !== null && c.remaining_amount !== undefined) corrByBranch[key].kalan++;
-            if (c.waste_amount > 0) corrByBranch[key].zayiat++;
+            const allTags = (c.notes || '').match(/\[DÜZ [^\]]*\]/g) || [];
+            if (allTags.length > 0) {
+                const combined = allTags.join(' ');
+                if (combined.includes('gelen:'))  corrByBranch[key].gelen++;
+                if (combined.includes('kalan:'))  corrByBranch[key].kalan++;
+                if (combined.includes('zayiat:')) corrByBranch[key].zayiat++;
+            }
         });
 
-        renderMgrSummary(activity, corrByBranch);
+        // Şüpheli davranış analizi
+        const suspects = analyzeAlerts(corrections);
+        const flaggedIds = new Set(suspects.map(s => s.id));
+
+        renderMgrSummary(activity, corrByBranch, suspects);
         renderActivity(activity);
-        renderCorrections(corrections);
+        renderSuspects(suspects);
+        renderCorrections(corrections, flaggedIds);
     }
 
-    function renderMgrSummary(list, corrByBranch) {
+    // ── Şüpheli Davranış Analizi ─────────────────────────
+    function analyzeAlerts(corrections) {
+        const results = [];
+
+        corrections.forEach(c => {
+            const branch = c.branches?.name || '?';
+            const mgr    = c.branches?.manager_name || '—';
+            const dessert = (c.desserts?.emoji || '') + ' ' + (c.desserts?.name || '?');
+            const entryDate = c.entry_date;
+            const allTags = (c.notes || '').match(/\[DÜZ [^\]]*\]/g) || [];
+            if (allTags.length === 0) return;
+
+            const entryAlerts = [];
+
+            // 1. Gelen tatlı azaltıldı — kritik
+            // Artış = muhtemelen 2. teslimat (normal). Azalış = gerçek değişiklik → şüpheli.
+            allTags.forEach(tag => {
+                const m = tag.match(/gelen:(\d+)→(\d+)/);
+                if (m) {
+                    const onceki = parseInt(m[1]);
+                    const sonraki = parseInt(m[2]);
+                    const delta = sonraki - onceki;
+                    if (delta < 0) {
+                        // Azaltma: kesinlikle şüpheli
+                        entryAlerts.push({
+                            level: 'critical',
+                            label: 'Gelen tatlı miktarı azaltıldı',
+                            detail: `${onceki} → ${sonraki} adet (${delta})`
+                        });
+                    }
+                    // Artış: 2. teslimat olabilir, flagleme
+                }
+            });
+
+            // 2. Aynı kayıda çoklu düzeltme
+            if (allTags.length >= 2) {
+                entryAlerts.push({
+                    level: 'warning',
+                    label: `${allTags.length} kez düzeltme yapıldı`,
+                    detail: 'Aynı kayıt birden fazla kez değiştirildi'
+                });
+            }
+
+            // 3. Geçmişe yönelik düzeltme (2+ gün önce girilmiş kayıt)
+            const lastTag = allTags[allTags.length - 1];
+            const dateM = lastTag.match(/\[DÜZ (\d{2})\.(\d{2})\.(\d{4})/);
+            if (dateM) {
+                const corrDate = `${dateM[3]}-${dateM[2]}-${dateM[1]}`;
+                const diffDays = Math.round(
+                    (new Date(corrDate + 'T12:00:00') - new Date(entryDate + 'T12:00:00')) / 86400000
+                );
+                if (diffDays >= 2) {
+                    entryAlerts.push({
+                        level: 'warning',
+                        label: `Geçmiş tarihe düzeltme`,
+                        detail: `${diffDays} gün önceki kayıt (${formatTR(entryDate)}) değiştirildi`
+                    });
+                }
+            }
+
+            // 4. Büyük fark — kalan veya zayiat için ≥10 adet
+            allTags.forEach(tag => {
+                ['kalan','zayiat'].forEach(field => {
+                    const m = tag.match(new RegExp(field + ':(\\d+)→(\\d+)'));
+                    if (m) {
+                        const delta = Math.abs(parseInt(m[2]) - parseInt(m[1]));
+                        if (delta >= 10) {
+                            const lbl = field === 'kalan' ? 'Kalan' : 'Zayiat';
+                            entryAlerts.push({
+                                level: 'warning',
+                                label: `Büyük ${lbl.toLowerCase()} farkı (${delta} adet)`,
+                                detail: `${m[1]} → ${m[2]} adet`
+                            });
+                        }
+                    }
+                });
+            });
+
+            if (entryAlerts.length > 0) {
+                results.push({ id: c.id, branch, mgr, dessert, entryDate, alerts: entryAlerts });
+            }
+        });
+
+        return results;
+    }
+
+    function renderSuspects(suspects) {
+        const el    = document.getElementById('suspectList');
+        const badge = document.getElementById('badgeSuspect');
+        const sec   = document.getElementById('secSuspect');
+
+        if (!suspects || suspects.length === 0) {
+            el.innerHTML = '<div class="empty-ok">✓ Son 30 günde şüpheli davranış tespit edilmedi</div>';
+            badge.textContent = 'Temiz';
+            badge.style.background = 'rgba(16,185,129,0.12)';
+            badge.style.color = 'rgba(110,231,183,0.8)';
+            return;
+        }
+
+        const criticalCount = suspects.filter(s => s.alerts.some(a => a.level === 'critical')).length;
+        badge.textContent = suspects.length + ' uyarı' + (criticalCount > 0 ? ` · ${criticalCount} kritik` : '');
+
+        // Kritik olanlar önce
+        suspects.sort((a, b) => {
+            const ac = a.alerts.some(x => x.level === 'critical') ? 0 : 1;
+            const bc = b.alerts.some(x => x.level === 'critical') ? 0 : 1;
+            return ac - bc || b.entryDate.localeCompare(a.entryDate);
+        });
+
+        el.innerHTML = suspects.map((s, i) => {
+            const hasCritical = s.alerts.some(a => a.level === 'critical');
+            const headerColor = hasCritical
+                ? 'rgba(239,68,68,0.22)' : 'rgba(245,158,11,0.16)';
+            const rows = s.alerts.map(a => `
+                <div class="suspect-item">
+                    <span class="suspect-lvl ${a.level === 'critical' ? 'lvl-critical' : 'lvl-warning'}">${a.level === 'critical' ? 'KRİTİK' : 'UYARI'}</span>
+                    <div class="suspect-text">
+                        <strong>${a.label}</strong>
+                        <div class="suspect-meta">${a.detail}</div>
+                    </div>
+                </div>`).join('');
+            return `<div class="suspect-card fade-in" style="animation-delay:${i*0.04}s;border-color:${headerColor}">
+                <div class="suspect-card-header">
+                    <span class="suspect-card-icon">${hasCritical ? '🔴' : '🟡'}</span>
+                    <div class="suspect-card-who">
+                        <div class="suspect-card-mgr">${s.mgr}</div>
+                        <div class="suspect-card-branch">${s.branch} · ${formatTR(s.entryDate)} · ${s.dessert}</div>
+                    </div>
+                </div>
+                <div class="suspect-card-body">${rows}</div>
+            </div>`;
+        }).join('');
+
+        // Kritik varsa bölümü otomatik aç
+        if (criticalCount > 0 && !sessionStorage.getItem('personel_secSuspect')) {
+            sec.classList.remove('collapsed');
+        }
+    }
+
+    function renderMgrSummary(list, corrByBranch, suspects) {
+        // Şüpheli şube seti
+        const suspectBranches  = new Set((suspects || []).map(s => s.branch));
+        const criticalBranches = new Set((suspects || []).filter(s => s.alerts.some(a => a.level === 'critical')).map(s => s.branch));
         const el = document.getElementById('mgrSummaryList');
         if (!list || list.length === 0) {
             el.innerHTML = '<div class="empty-msg">Şube bulunamadı</div>';
@@ -466,13 +648,13 @@
 
             // Düzeltme açıklama metni
             let corrParts = [];
-            if (corr.gelen  > 0) corrParts.push(corr.gelen  + ' gelen');
-            if (corr.kalan  > 0) corrParts.push(corr.kalan  + ' kalan');
+            if (corr.gelen  > 0) corrParts.push(corr.gelen  + ' gelen tatlı');
+            if (corr.kalan  > 0) corrParts.push(corr.kalan  + ' kalan tatlı');
             if (corr.zayiat > 0) corrParts.push(corr.zayiat + ' zayiat');
 
             const corrText = corrParts.length > 0
-                ? corrParts.join(' + ') + ' tatlı düzeltmesi yaptı'
-                : 'Bu ay düzeltme yapmadı';
+                ? corrParts.join(', ') + ' düzeltmesi yapıldı'
+                : 'Bu ay düzeltme yapılmadı';
 
             const pills = [];
             if (isToday) {
@@ -490,6 +672,12 @@
                 pills.push(`<span class="stat-pill pill-gray">${corrText}</span>`);
             }
 
+            if (criticalBranches.has(b.name)) {
+                pills.push(`<span class="stat-pill pill-danger">🔴 Kritik uyarı var</span>`);
+            } else if (suspectBranches.has(b.name)) {
+                pills.push(`<span class="stat-pill pill-danger">🟡 Şüpheli düzeltme</span>`);
+            }
+
             return `<div class="mgr-card fade-in" style="animation-delay:${i*0.04}s">
                 <div class="mgr-dot ${dotCls}"></div>
                 <div class="mgr-info">
@@ -505,56 +693,44 @@
     }
 
     function renderActivity(list) {
-        const el = document.getElementById('branchActivityList');
         const missingEl = document.getElementById('missingList');
 
         if (!list || list.length === 0) {
-            el.innerHTML = '<div class="empty-msg">Şube bulunamadı</div>';
-            missingEl.innerHTML = '<div class="empty-msg">—</div>';
+            missingEl.innerHTML = '<div class="empty-msg">Şube bulunamadı</div>';
             return;
         }
 
         list.sort((a, b) => (b.lastDate || '').localeCompare(a.lastDate || ''));
 
         let green = 0, yellow = 0, red = 0;
-        let actHtml = '';
         let missingHtml = '';
 
         list.forEach((b, i) => {
             const last = b.lastDate;
-            let dotCls, statusCls, statusTxt;
 
             if (!last) {
-                dotCls = 'dot-gray'; statusCls = 'status-gray';
-                statusTxt = 'Hiç giriş yok'; red++;
+                red++;
             } else if (last === TODAY) {
-                dotCls = 'dot-green'; statusCls = 'status-green';
-                statusTxt = 'Bugün ✓'; green++;
+                green++;
             } else if (last === YESTERDAY) {
-                dotCls = 'dot-yellow'; statusCls = 'status-yellow';
-                statusTxt = 'Dün'; yellow++;
+                yellow++;
             } else {
-                dotCls = 'dot-red'; statusCls = 'status-red';
-                const days = Math.round((new Date(TODAY) - new Date(last)) / 86400000);
-                statusTxt = days + ' gün önce'; red++;
+                red++;
             }
-
-            actHtml += `<div class="branch-row fade-in" style="animation-delay:${i*0.03}s">
-                <div class="branch-dot ${dotCls}"></div>
-                <div class="branch-info">
-                    <div class="branch-name-text">${b.name}</div>
-                    <div class="branch-manager">${b.manager_name || 'Müdür atanmamış'}</div>
-                </div>
-                <div class="branch-status ${statusCls}">${statusTxt}</div>
-            </div>`;
 
             if (last !== TODAY) {
                 const mgr = b.manager_name || '—';
+                const lastTxt = last ? formatTR(last) : 'Hiçbir zaman';
+                const daysAgo = last
+                    ? Math.round((new Date(TODAY) - new Date(last)) / 86400000)
+                    : null;
+                const subTxt = daysAgo === 1 ? 'Dün girdi' :
+                               daysAgo > 1  ? `${daysAgo} gün önce girdi` : 'Hiç girmedi';
                 missingHtml += `<div class="alert-row fade-in" style="animation-delay:${i*0.03}s">
                     <span class="alert-icon">⚠️</span>
                     <div>
                         <div class="alert-name">${mgr} — ${b.name}</div>
-                        <div class="alert-mgr">Son giriş: ${last ? formatTR(last) : 'Hiçbir zaman'}</div>
+                        <div class="alert-mgr">${subTxt} · Son: ${lastTxt}</div>
                     </div>
                 </div>`;
             }
@@ -563,35 +739,36 @@
         document.getElementById('cntGreen').textContent  = green;
         document.getElementById('cntYellow').textContent = yellow;
         document.getElementById('cntRed').textContent    = red;
-        document.getElementById('badgeBranch').textContent = list.length + ' şube';
 
         const missingCount = list.length - green;
-        document.getElementById('badgeMissing').textContent = missingCount + ' şube';
-        // Kaç şube eksik olduğunu section alt başlığına da yansıt
+        document.getElementById('badgeMissing').textContent = missingCount > 0 ? missingCount + ' şube' : '✓ Hepsi aktif';
         const missingSection = document.getElementById('secMissing');
         const missingHeaderSub = missingSection.querySelector('.section-sub');
         if (missingHeaderSub) {
             missingHeaderSub.textContent = missingCount > 0
                 ? missingCount + ' şube bugün veri girmedi'
-                : 'Tüm şubeler bugün aktif';
+                : 'Tüm şubeler bugün aktif ✓';
         }
 
-        el.innerHTML      = actHtml      || '<div class="empty-msg">—</div>';
         missingEl.innerHTML = missingHtml || '<div class="empty-ok">✓ Tüm şubeler bugün giriş yaptı</div>';
     }
 
-    function renderCorrections(list) {
+    function renderCorrections(list, flaggedIds) {
         const el = document.getElementById('correctionList');
-        document.getElementById('badgeCorr').textContent = list.length + ' kayıt';
 
-        if (!list || list.length === 0) {
-            el.innerHTML = '<div class="empty-msg">Son 30 günde düzeltme girişi yok</div>';
+        // Yalnızca şüpheli / hatalı kayıtları göster
+        const filtered = (list || []).filter(c => flaggedIds && flaggedIds.has(c.id));
+
+        document.getElementById('badgeCorr').textContent = filtered.length > 0 ? filtered.length + ' hatalı kayıt' : 'Temiz';
+
+        if (filtered.length === 0) {
+            el.innerHTML = '<div class="empty-ok">✓ Son 30 günde hatalı düzeltme kaydı yok</div>';
             return;
         }
 
         // Şube + müdür bazında grupla
         const groups = {};
-        list.forEach(c => {
+        filtered.forEach(c => {
             const branch = c.branches?.name        || '?';
             const mgr    = c.branches?.manager_name || '—';
             const key    = branch + '||' + mgr;
@@ -604,26 +781,46 @@
             const gId = 'cgrp-' + (gIdx++);
 
             const rows = g.items.map(c => {
-                const match    = (c.notes || '').match(/\[DÜZ ([^\]]+)\]/);
-                const corrTime = match ? match[1] : '—';
-                const dessert  = (c.desserts?.emoji || '') + ' ' + (c.desserts?.name || '?');
+                const match = (c.notes || '').match(/\[DÜZ ([^\]]+)\]/);
+                const rawTag = match ? match[1] : '';
+                const dessert = (c.desserts?.emoji || '') + ' ' + (c.desserts?.name || '?');
 
-                let typeLabel = '', typeCls = '';
-                if (c.received_amount  !== null && c.received_amount  !== undefined) {
-                    typeLabel = 'Gelen'; typeCls = 'corr-type-gelen';
-                } else if (c.remaining_amount !== null && c.remaining_amount !== undefined) {
-                    typeLabel = 'Kalan'; typeCls = 'corr-type-kalan';
-                } else if (c.waste_amount > 0) {
-                    typeLabel = 'Zayiat'; typeCls = 'corr-type-zayiat';
-                } else {
-                    typeLabel = 'Düzeltme'; typeCls = 'corr-type-kalan';
+                // Parse: "30.03.2026 10:00 gelen:15→20,kalan:5→3"
+                const tagMatch = rawTag.match(/^(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2})(?:\s+(.+))?$/);
+                const timeStr = tagMatch ? tagMatch[1] : rawTag;
+                const changesRaw = tagMatch ? (tagMatch[2] || '') : '';
+
+                // Build change pills
+                let typeLabel = 'Düzeltme', typeCls = 'corr-type-kalan';
+                let changeHtml = '';
+                if (changesRaw) {
+                    const parts = changesRaw.split(',').map(p => p.trim()).filter(Boolean);
+                    const types = parts.map(p => p.startsWith('gelen:') ? 'Gelen' : p.startsWith('kalan:') ? 'Kalan' : p.startsWith('zayiat:') ? 'Zayiat' : '').filter(Boolean);
+                    if (types.length === 1) {
+                        typeLabel = types[0];
+                        typeCls = types[0] === 'Gelen' ? 'corr-type-gelen' : types[0] === 'Zayiat' ? 'corr-type-zayiat' : 'corr-type-kalan';
+                    } else if (types.length > 1) {
+                        typeLabel = 'Çoklu';
+                    }
+                    changeHtml = parts.map(p => {
+                        const m = p.match(/^(\w+):(.+)→(.+)$/);
+                        if (!m) return '';
+                        const lbl = m[1] === 'gelen' ? 'Gelen' : m[1] === 'kalan' ? 'Kalan' : 'Zayiat';
+                        return `<span style="font-size:11px;color:rgba(255,255,255,0.45)">${lbl}: <b style="color:rgba(255,255,255,0.65)">${m[2]}</b> <span style="color:#86efac">→ ${m[3]}</span></span>`;
+                    }).filter(Boolean).join('<span style="color:var(--muted);margin:0 3px">·</span>');
+                } else if (!rawTag) {
+                    // Legacy entry without tag info — fallback
+                    if (c.received_amount !== null && c.received_amount !== undefined) { typeLabel = 'Gelen'; typeCls = 'corr-type-gelen'; }
+                    else if (c.remaining_amount !== null && c.remaining_amount !== undefined) { typeLabel = 'Kalan'; typeCls = 'corr-type-kalan'; }
+                    else if (c.waste_amount > 0) { typeLabel = 'Zayiat'; typeCls = 'corr-type-zayiat'; }
                 }
 
                 return `<div class="corr-row">
                     <span class="corr-date">${formatTR(c.entry_date)}</span>
                     <div style="flex:1;min-width:0">
                         <div style="font-size:12px;color:var(--text)">${dessert}</div>
-                        <div style="font-size:11px;color:var(--muted);margin-top:2px">Düzeltildi: ${corrTime}</div>
+                        ${changeHtml ? `<div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap">${changeHtml}</div>` : ''}
+                        <div style="font-size:11px;color:var(--muted);margin-top:3px">Düzeltildi: ${timeStr || '—'}</div>
                     </div>
                     <span class="corr-type ${typeCls}">${typeLabel}</span>
                 </div>`;

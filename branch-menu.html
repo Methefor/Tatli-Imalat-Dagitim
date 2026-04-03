@@ -18,6 +18,7 @@
     <link rel="prefetch" href="transfer.html">
     <link rel="prefetch" href="subem.html">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -146,6 +147,70 @@
             color: rgba(255,255,255,0.45);
         }
 
+        /* ── Welcome Modal ── */
+        .welcome-overlay {
+            position: fixed; inset: 0; z-index: 300;
+            background: rgba(0,0,0,0.78);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.35s ease;
+        }
+        .welcome-overlay.hidden { display: none; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+        .welcome-card {
+            background: linear-gradient(145deg, rgba(12,18,32,0.99), rgba(7,11,22,0.99));
+            border: 1px solid rgba(245,158,11,0.22);
+            border-radius: 24px;
+            padding: 32px 26px 26px;
+            max-width: 370px; width: 100%;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(245,158,11,0.06);
+            animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        @keyframes slideUp { from { opacity:0; transform:translateY(28px) scale(0.96); } to { opacity:1; transform:none; } }
+        @keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+
+        .wc-avatar {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(245,158,11,0.06));
+            border: 2px solid rgba(245,158,11,0.35);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; margin: 0 auto 14px;
+            box-shadow: 0 0 24px rgba(245,158,11,0.15);
+        }
+        .wc-name { font-size: 20px; font-weight: 800; color: #f0f4ff; text-align: center; margin-bottom: 3px; }
+        .wc-branch { font-size: 13px; color: rgba(245,158,11,0.85); font-weight: 600; text-align: center; margin-bottom: 26px; letter-spacing: 0.04em; }
+
+        .wc-divider { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 18px; }
+
+        .wc-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+        .wc-row {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+        }
+        .wc-row-icon { font-size: 22px; flex-shrink: 0; line-height: 1.2; }
+        .wc-row-title { font-size: 13px; font-weight: 700; color: #e8eaf6; margin-bottom: 4px; }
+        .wc-row-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.5; }
+        .wc-row.row-home { border-color: rgba(16,185,129,0.15); background: rgba(16,185,129,0.04); }
+        .wc-row.row-home .wc-row-title { color: rgba(110,231,183,0.9); }
+        .wc-row.row-logout { border-color: rgba(239,68,68,0.12); background: rgba(239,68,68,0.03); }
+        .wc-row.row-logout .wc-row-title { color: rgba(252,165,165,0.85); }
+
+        .wc-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.95), rgba(245,158,11,0.75));
+            border: none; border-radius: 14px;
+            color: rgba(0,0,0,0.88); font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: all 0.18s;
+            letter-spacing: 0.04em; touch-action: manipulation;
+        }
+        .wc-btn:hover { filter: brightness(1.1); }
+        .wc-btn:active { transform: scale(0.98); }
+
         .logout-btn {
             padding: 6px 14px;
             background: transparent;
@@ -163,6 +228,23 @@
             border-color: rgba(239,68,68,0.4);
             color: #f87171;
             background: rgba(239,68,68,0.07);
+        }
+
+        .home-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .home-btn:hover {
+            border-color: rgba(255,255,255,0.2);
+            color: var(--text);
+            background: rgba(255,255,255,0.05);
         }
 
         /* ── Hero bölümü ── */
@@ -749,7 +831,8 @@
                     </div>
                 </div>
                 <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
-                <button class="logout-btn" onclick="logout()">Çıkış</button>
+                <button class="home-btn" onclick="goHome()" title="Ana sayfaya dön (giriş bilgin korunur)">⌂</button>
+                <button class="logout-btn" onclick="logout()" title="Çıkış yap (şube değiştirmek için)">Çıkış</button>
             </div>
         </nav>
 
@@ -838,7 +921,7 @@
                     <div class="step-icon">⚠️</div>
                     <div class="step-text">
                         <div class="step-title">Gün İçi — Zayiat (Gerekirse)</div>
-                        <div class="step-desc">Bozulan veya fire veren ürünleri zayiat olarak kaydet. Gün sonunda veya ay sonunda toplu girebilirsin.</div>
+                        <div class="step-desc">Bozulan veya fire veren ürünleri zayiat olarak kaydet. Gün sonunda veya ay sonunda toplu girebilirsin. <strong style="color:rgba(252,165,165,0.85)">Zayiat açıklaması yazmak zorunludur</strong> — "son kullanma tarihi geçti", "kırık", "iade" gibi bir neden gir.</div>
                     </div>
                 </div>
                 <div class="tutorial-step step-green">
@@ -881,6 +964,9 @@
         document.getElementById('branchNameText').textContent  = branchName + ' Müdürü';
         document.getElementById('branchEmoji').textContent     = emojis[branchName] || '🏪';
         document.getElementById('todayDate').textContent       = '📅 ' + formatDateTurkish(getTodayDate());
+
+        // Welcome modal devre dışı (nasıl kullanılır bölümü sayfada mevcut)
+        sessionStorage.removeItem('justLoggedIn');
 
         // Saat
         function tick() {
@@ -987,11 +1073,37 @@
         });
 
         // Sayfa yüklenince ve geri gelince badge'i güncelle
+        initTheme();
         loadNotifications();
         window.addEventListener('pageshow', loadNotifications);
 
         function toggleTutorial() {
             document.getElementById('tutorialWrap').classList.toggle('open');
+        }
+
+        // ── Welcome Modal ──────────────────────────────────
+        function showWelcomeIfNeeded() {
+            if (!sessionStorage.getItem('justLoggedIn')) return;
+            sessionStorage.removeItem('justLoggedIn');
+            const overlay = document.getElementById('welcomeOverlay');
+            if (!overlay) return;
+            const mgr    = localStorage.getItem('managerName') || 'Hoş Geldiniz';
+            const branch = localStorage.getItem('branchName') || '';
+            document.getElementById('wcName').textContent   = mgr;
+            document.getElementById('wcBranch').textContent = branch;
+            overlay.classList.remove('hidden');
+        }
+
+        function dismissWelcome() {
+            const overlay = document.getElementById('welcomeOverlay');
+            overlay.style.animation = 'fadeOut 0.2s ease forwards';
+            setTimeout(() => overlay.classList.add('hidden'), 200);
+        }
+
+        function goHome() {
+            // Giriş bilgisi korunur, sadece ana sayfaya döner
+            sessionStorage.setItem('noAutoRedirect', '1');
+            window.location.href = 'index.html';
         }
 
         function logout() {
@@ -1004,5 +1116,39 @@
         }
     </script>
     <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
+
+    <!-- Welcome Modal -->
+    <div class="welcome-overlay hidden" id="welcomeOverlay">
+        <div class="welcome-card">
+            <div class="wc-avatar">🏪</div>
+            <div class="wc-name" id="wcName">Hoş Geldiniz</div>
+            <div class="wc-branch" id="wcBranch"></div>
+            <div class="wc-divider"></div>
+            <div class="wc-rows">
+                <div class="wc-row row-home">
+                    <span class="wc-row-icon">⌂</span>
+                    <div>
+                        <div class="wc-row-title">Ana Sayfaya Dön</div>
+                        <div class="wc-row-desc">Şifreniz bu cihazda hatırlanır. Uygulamayı kapatsanız bile bir sonraki açılışta doğrudan şubenize girersiniz.</div>
+                    </div>
+                </div>
+                <div class="wc-row" style="border-color:rgba(245,158,11,0.15);background:rgba(245,158,11,0.04);">
+                    <span class="wc-row-icon">⚠️</span>
+                    <div>
+                        <div class="wc-row-title" style="color:rgba(251,191,36,0.9);">Zayiat Girişi Zorunludur</div>
+                        <div class="wc-row-desc">Zayiat kaydı girerken <strong style="color:rgba(255,255,255,0.6)">açıklama alanını doldurun</strong> — "son kullanma", "kırık", "iade" gibi bir neden yazın. Açıklamasız zayiat kabul edilmeyebilir.</div>
+                    </div>
+                </div>
+                <div class="wc-row row-logout">
+                    <span class="wc-row-icon">⏻</span>
+                    <div>
+                        <div class="wc-row-title">Çıkış Yap</div>
+                        <div class="wc-row-desc">Oturumunuz tamamen kapanır, hafıza sıfırlanır. Farklı bir şubeye geçmek için kullanın.</div>
+                    </div>
+                </div>
+            </div>
+            <button class="wc-btn" onclick="dismissWelcome()">✓ Anladım, Devam Et</button>
+        </div>
+    </div>
 </body>
 </html>

@@ -145,7 +145,7 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
     try {
         const { data: existing, error: checkError } = await supabaseClient
             .from('daily_entries')
-            .select('id')
+            .select('id, received_amount, remaining_amount, waste_amount, notes')
             .eq('branch_id', branchId)
             .eq('dessert_id', dessertId)
             .eq('entry_date', date)
@@ -156,11 +156,30 @@ async function saveDailyEntry(branchId, dessertId, date, received, remaining, wa
         }
 
         if (existing) {
-            // Güncelleme: düzeltme zaman damgası ekle
+            // Hangi değerler değişti?
+            const changes = []
+            if (received  !== null && received  !== undefined && received  !== existing.received_amount)
+                changes.push(`gelen:${existing.received_amount ?? '—'}→${received}`)
+            if (remaining !== null && remaining !== undefined && remaining !== existing.remaining_amount)
+                changes.push(`kalan:${existing.remaining_amount ?? '—'}→${remaining}`)
+            if (waste     !== null && waste     !== undefined && waste     !== existing.waste_amount)
+                changes.push(`zayiat:${existing.waste_amount ?? '—'}→${waste}`)
+
             const now = new Date()
-            const corrTag = `[DÜZ ${now.toLocaleDateString('tr-TR')} ${now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}]`
-            const corrNotes = corrTag + (notes ? ' ' + notes : '')
-            const updateData = { notes: corrNotes, entry_time: now.toISOString() }
+            // Mevcut notes'tan başla; [ZAY: ...] tag'ini yenisiyle değiştir
+            let baseNotes = existing.notes || ''
+            if (notes && notes.includes('[ZAY:')) {
+                baseNotes = baseNotes.replace(/\[ZAY:[^\]]*\]/g, '').trim()
+                baseNotes = (baseNotes ? baseNotes + ' ' : '') + notes.trim()
+            }
+
+            // Sadece değer değiştiyse [DÜZ] etiketi ekle
+            if (changes.length > 0) {
+                const corrTag = `[DÜZ ${now.toLocaleDateString('tr-TR')} ${now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} ${changes.join(',')}]`
+                baseNotes = (baseNotes ? baseNotes + ' ' : '') + corrTag
+            }
+
+            const updateData = { notes: baseNotes.trim(), entry_time: now.toISOString() }
             if (received  !== null && received  !== undefined) updateData.received_amount  = received
             if (remaining !== null && remaining !== undefined) updateData.remaining_amount = remaining
             if (waste     !== null && waste     !== undefined) updateData.waste_amount     = waste
@@ -327,7 +346,7 @@ async function getBranchLatestStock(branchId) {
     try {
         const past = new Date()
         past.setDate(past.getDate() - 60)
-        const pastDate = past.toISOString().split('T')[0]
+        const pastDate = _localDate(past)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
@@ -378,7 +397,7 @@ async function getAllLatestStock() {
     try {
         const past = new Date()
         past.setDate(past.getDate() - 60)
-        const pastDate = past.toISOString().split('T')[0]
+        const pastDate = _localDate(past)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
@@ -432,7 +451,7 @@ async function getCurrentStock() {
     try {
         const past = new Date()
         past.setDate(past.getDate() - 60)
-        const pastDate = past.toISOString().split('T')[0]
+        const pastDate = _localDate(past)
 
         const { data, error } = await supabaseClient
             .from('daily_entries')
@@ -1211,22 +1230,39 @@ async function getBranchLastActivity() {
         past.setDate(past.getDate() - 60)
         const pastDate = _localDate(past)
 
-        const { data, error } = await supabaseClient
-            .from('daily_entries')
-            .select('branch_id, entry_date')
-            .gte('entry_date', pastDate)
-            .lte('entry_date', today)
+        // İki sorgu: bugün aktif mi? + son 30 günde son tarih
+        const [todayRes, recentRes] = await Promise.all([
+            supabaseClient
+                .from('daily_entries')
+                .select('branch_id')
+                .eq('entry_date', today)
+                .limit(500),
+            supabaseClient
+                .from('daily_entries')
+                .select('branch_id, entry_date')
+                .gte('entry_date', pastDate)
+                .lte('entry_date', today)
+                .order('entry_date', { ascending: false })
+                .limit(3000)
+        ])
 
-        if (error) throw error
+        if (todayRes.error) throw todayRes.error
+        if (recentRes.error) throw recentRes.error
 
-        // Son tarihi şube bazında hesapla
+        // Bugün aktif olan şubeler
+        const todayActive = new Set((todayRes.data || []).map(e => String(e.branch_id)))
+
+        // Son tarihi şube bazında hesapla (son 30 gün)
         const lastByBranch = {}
-        ;(data || []).forEach(e => {
+        ;(recentRes.data || []).forEach(e => {
             const bid = String(e.branch_id)
             if (!lastByBranch[bid] || e.entry_date > lastByBranch[bid]) {
                 lastByBranch[bid] = e.entry_date
             }
         })
+
+        // Bugün aktif olanların son tarihini bugün yap (sorgu kesintisi olursa diye güvence)
+        todayActive.forEach(bid => { lastByBranch[bid] = today })
 
         return branches.map(b => ({
             ...b,
@@ -1268,7 +1304,7 @@ async function getCorrectionEntries(days = 30) {
     }
 }
 
-/** Sebep girilmiş zayiat girişlerini çek ([ZAY: ...] tag içerenler) */
+/** Zayiat girişlerini çek (açıklama varsa göster, yoksa da listele) */
 async function getWasteWithReasons(days = 30) {
     try {
         const startDate = new Date()
@@ -1279,15 +1315,15 @@ async function getWasteWithReasons(days = 30) {
             .from('daily_entries')
             .select('entry_date, waste_amount, notes, entry_time, branches(name, manager_name), desserts(name, emoji)')
             .gt('waste_amount', 0)
-            .like('notes', '%[ZAY:%')
             .gte('entry_date', startStr)
             .order('entry_date', { ascending: false })
             .order('entry_time', { ascending: false })
+            .limit(200)
 
         if (error) throw error
         return data || []
     } catch (err) {
-        console.error('Zayiat sebep sorgu hatası:', err)
+        console.error('Zayiat sorgu hatası:', err)
         return []
     }
 }
@@ -1323,3 +1359,57 @@ async function getRecentActivity(limit = 15) {
 }
 
 console.log('✅ Supabase Client yüklendi')
+
+// ====================================================================
+// TEMA YÖNETİMİ — tüm sayfalar bu fonksiyonları kullanır
+// ====================================================================
+
+/**
+ * Sayfa yüklenirken temayı uygular (FOUC önlemek için <head>'de çağrılır).
+ * Önce localStorage'a bakar, yoksa sistem temasını kullanır.
+ */
+function initTheme() {
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+    _applyThemeIcon(theme);
+}
+
+/**
+ * Temayı karanlık ↔ aydınlık arasında değiştirir ve kaydeder.
+ */
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    _applyThemeIcon(next);
+}
+
+function _applyThemeIcon(theme) {
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+        btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        btn.title = theme === 'dark' ? 'Aydınlık mod' : 'Karanlık mod';
+    });
+}
+
+// Sistem teması değişirse (kullanıcı OS ayarını değiştirirse) otomatik güncelle
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) {
+        const theme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        _applyThemeIcon(theme);
+    }
+});
+
+// Sayfa yüklenince ikon güncelle (butonlar DOM'da hazır olduğunda)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const t = document.documentElement.getAttribute('data-theme') || 'dark';
+        _applyThemeIcon(t);
+    });
+} else {
+    const t = document.documentElement.getAttribute('data-theme') || 'dark';
+    _applyThemeIcon(t);
+}
