@@ -1796,20 +1796,24 @@
             startAutoRefresh();
         }
 
+        function getTRDateStr(date) {
+            // Verilen Date nesnesinin Europe/Istanbul timezone'undaki YYYY-MM-DD değerini döndür
+            return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(date);
+        }
+
         function getDateRange() {
-            const today    = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            const todayStr = getTRDateStr(new Date());
 
             if (currentFilter === 'yesterday') {
-                const y = new Date(today);
-                y.setDate(today.getDate() - 1);
-                const yStr = y.toISOString().split('T')[0];
+                const y = new Date();
+                y.setDate(y.getDate() - 1);
+                const yStr = getTRDateStr(y);
                 return { startDate: yStr, endDate: yStr };
             }
             if (currentFilter === 'week') {
-                const d = new Date(today);
-                d.setDate(today.getDate() - 7);
-                return { startDate: d.toISOString().split('T')[0], endDate: todayStr };
+                const d = new Date();
+                d.setDate(d.getDate() - 7);
+                return { startDate: getTRDateStr(d), endDate: todayStr };
             }
             if (currentFilter === 'month-specific') {
                 const lastDay = new Date(filterYear, filterMonth, 0).getDate();
