@@ -783,6 +783,7 @@
         }
 
         @media (max-width: 768px) {
+            .detail-grid-wrap { grid-template-columns: 1fr !important; }
             .topbar { padding: 0 12px; }
             .topbar-clock { display: none; }
             .report-btn { display: none; }
@@ -1298,6 +1299,57 @@
 
         /* ── DURUM BADGE ───────────────────────────── */
         .durum-cell { display: flex; align-items: center; gap: 6px; }
+
+        /* ── BUGÜNKÜ GİRİŞ DETAYLARI ───────────────── */
+        .detail-branch-group { margin-bottom: 4px; }
+        .detail-branch-group:last-child { margin-bottom: 0; }
+        .detail-branch-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 20px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.025);
+        }
+        .detail-branch-name {
+            font-size: 13px; font-weight: 700; color: var(--text);
+        }
+        .detail-branch-manager {
+            font-size: 12px; color: var(--text-3); margin-left: auto;
+        }
+        .detail-entry-row {
+            display: grid;
+            grid-template-columns: 1fr 60px 60px 60px 52px;
+            gap: 0;
+            padding: 9px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            align-items: center;
+            transition: background 0.12s;
+        }
+        .detail-entry-row:last-child { border-bottom: none; }
+        .detail-entry-row:hover { background: rgba(255,255,255,0.025); }
+        .detail-entry-header {
+            display: grid;
+            grid-template-columns: 1fr 60px 60px 60px 52px;
+            padding: 7px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .detail-entry-header span {
+            font-size: 11px; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.05em; text-align: center;
+        }
+        .detail-entry-header span:first-child { text-align: left; }
+        .detail-dessert-name { font-size: 13px; color: var(--text-2); }
+        .detail-val {
+            font-size: 13px; font-weight: 600; text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .detail-val.gelen  { color: var(--amber); }
+        .detail-val.kalan  { color: var(--blue); }
+        .detail-val.zayiat { color: var(--red); }
+        .detail-val.empty  { color: rgba(255,255,255,0.18); }
+        .detail-time { font-size: 11px; color: var(--text-3); text-align: right; font-variant-numeric: tabular-nums; }
+        .detail-separator {
+            height: 1px; background: rgba(255,255,255,0.06); margin: 0 20px;
+        }
     </style>
 </head>
 <body>
@@ -1477,15 +1529,29 @@
 
         </div>
 
-        <!-- Aktivite Akışı -->
-        <div class="panel fade-up" style="animation-delay:0.28s">
-            <div class="panel-header">
-                <h2 class="panel-title">⚡ Son İşlemler</h2>
-                <span class="panel-badge" id="activityBadge">Canlı</span>
+        <!-- Aktivite Akışı + Bugünkü Detaylar -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="detail-grid-wrap">
+
+            <div class="panel fade-up" style="animation-delay:0.28s">
+                <div class="panel-header">
+                    <h2 class="panel-title">⚡ Son İşlemler</h2>
+                    <span class="panel-badge" id="activityBadge">Canlı</span>
+                </div>
+                <div id="activityFeed">
+                    <div style="padding:32px;text-align:center;color:var(--text-3);font-size:13px">⏳ Yükleniyor...</div>
+                </div>
             </div>
-            <div id="activityFeed">
-                <div style="padding:32px;text-align:center;color:var(--text-3);font-size:13px">⏳ Yükleniyor...</div>
+
+            <div class="panel fade-up" style="animation-delay:0.3s">
+                <div class="panel-header">
+                    <h2 class="panel-title">📋 Bugünkü Giriş Detayları</h2>
+                    <span class="panel-badge" id="detailBadge">—</span>
+                </div>
+                <div id="todayDetail">
+                    <div style="padding:32px;text-align:center;color:var(--text-3);font-size:13px">⏳ Yükleniyor...</div>
+                </div>
             </div>
+
         </div>
 
         <!-- Güncel Stok Durumu -->
@@ -3595,15 +3661,19 @@ _Mutlukent Tatlı Takip Sistemi_`;
         }
 
         async function loadActivityFeed() {
-            const feedEl = document.getElementById('activityFeed');
+            const feedEl   = document.getElementById('activityFeed');
+            const detailEl = document.getElementById('todayDetail');
             if (!feedEl) return;
             try {
                 const todayTR = getTodayTR();
-                const entries = await getRecentActivity(20, todayTR);
+                const entries = await getRecentActivity(500, todayTR);
                 renderActivityFeed(entries, todayTR);
+                renderTodayDetails(entries);
             } catch (err) {
                 console.error('Aktivite akışı hatası:', err);
-                feedEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Yüklenemedi</div>';
+                const errMsg = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Yüklenemedi</div>';
+                feedEl.innerHTML = errMsg;
+                if (detailEl) detailEl.innerHTML = errMsg;
             }
         }
 
@@ -3661,6 +3731,91 @@ _Mutlukent Tatlı Takip Sistemi_`;
             }).join('');
 
             feedEl.innerHTML = `<div class="activity-list">${items}</div>`;
+        }
+
+        function renderTodayDetails(entries) {
+            const el      = document.getElementById('todayDetail');
+            const badgeEl = document.getElementById('detailBadge');
+            if (!el) return;
+
+            if (badgeEl) badgeEl.textContent = `${entries.length} kayıt`;
+
+            if (entries.length === 0) {
+                el.innerHTML = `<div class="empty-state" style="padding:32px">
+                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-title">Bugün henüz giriş yok</div>
+                </div>`;
+                return;
+            }
+
+            // Şubeye göre grupla
+            const groups = {};
+            entries.forEach(e => {
+                const bid = e.branches?.id || 'unknown';
+                if (!groups[bid]) groups[bid] = { branch: e.branches, rows: [] };
+                groups[bid].rows.push(e);
+            });
+
+            // Şube adına göre sırala
+            const sorted = Object.values(groups).sort((a, b) =>
+                (a.branch?.name || '').localeCompare(b.branch?.name || '', 'tr')
+            );
+
+            const html = sorted.map((g, gi) => {
+                const branchName = g.branch?.name || '?';
+                const manager    = g.branch?.manager_name || '—';
+
+                // Satırları zamana göre sırala (yeniden eskiye)
+                const rows = [...g.rows].sort((a, b) => {
+                    const ta = a.entry_time || '';
+                    const tb = b.entry_time || '';
+                    return tb.localeCompare(ta);
+                });
+
+                const rowsHtml = rows.map(e => {
+                    const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
+                    const recv    = e.received_amount;
+                    const rem     = e.remaining_amount;
+                    const wst     = e.waste_amount;
+
+                    let timeStr = '—';
+                    if (e.entry_time) {
+                        const t = new Date(e.entry_time);
+                        timeStr = t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
+                    }
+
+                    const fmtVal = (val, cls) =>
+                        val !== null && val !== undefined && val !== 0
+                            ? `<span class="detail-val ${cls}">${val}</span>`
+                            : `<span class="detail-val empty">—</span>`;
+
+                    return `<div class="detail-entry-row">
+                        <span class="detail-dessert-name">${dessert}</span>
+                        ${fmtVal(recv, 'gelen')}
+                        ${fmtVal(rem,  'kalan')}
+                        ${fmtVal(wst,  'zayiat')}
+                        <span class="detail-time">${timeStr}</span>
+                    </div>`;
+                }).join('');
+
+                const sep = gi > 0 ? '<div class="detail-separator"></div>' : '';
+                return `${sep}<div class="detail-branch-group">
+                    <div class="detail-branch-header">
+                        <span class="detail-branch-name">🏪 ${branchName}</span>
+                        <span class="detail-branch-manager">${manager}</span>
+                    </div>
+                    <div class="detail-entry-header">
+                        <span>Tatlı</span>
+                        <span>Gelen</span>
+                        <span>Kalan</span>
+                        <span>Zayiat</span>
+                        <span>Saat</span>
+                    </div>
+                    ${rowsHtml}
+                </div>`;
+            }).join('');
+
+            el.innerHTML = html;
         }
 
         // ── Logout ────────────────────────────────────────
