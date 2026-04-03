@@ -246,7 +246,7 @@
         /* ── KPI CARDS ───────────────────────────────── */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 18px;
             margin-bottom: 24px;
         }
@@ -275,9 +275,10 @@
             opacity: 0.6;
         }
 
-        .kpi-card:nth-child(1)::after { background: var(--blue); }
+        .kpi-card:nth-child(1)::after { background: var(--amber); }
         .kpi-card:nth-child(2)::after { background: var(--green); }
-        .kpi-card:nth-child(3)::after { background: var(--amber); }
+        .kpi-card:nth-child(3)::after { background: var(--blue); }
+        .kpi-card:nth-child(4)::after { background: var(--red); }
 
         .kpi-header {
             display: flex;
@@ -307,6 +308,8 @@
         .kpi-icon--blue  { background: var(--blue-dim);  border: 1px solid rgba(59,130,246,0.2); }
         .kpi-icon--green { background: var(--green-dim); border: 1px solid rgba(16,185,129,0.2); }
         .kpi-icon--amber { background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2); }
+        .kpi-icon--red   { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.2); }
+        .kpi-value--red  { color: var(--red); }
 
         .kpi-value {
             font-size: 38px;
@@ -1219,6 +1222,41 @@
             color: var(--amber); font-weight: 700;
         }
         .mpick-btn.cur-month { border-color: var(--border-med); color: var(--text); }
+
+        /* ── AKTİVİTE AKIŞI ─────────────────────────── */
+        .activity-list { display: flex; flex-direction: column; }
+        .activity-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.15s;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-item:hover { background: rgba(255,255,255,0.03); }
+        .activity-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+        }
+        .activity-dot.gelen  { background: var(--amber); box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+        .activity-dot.kalan  { background: var(--blue);  box-shadow: 0 0 6px rgba(59,130,246,0.5); }
+        .activity-dot.zayiat { background: var(--red);   box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+        .activity-dot.mixed  { background: var(--text-3); }
+        .activity-time {
+            font-size: 12px; color: var(--text-3); font-weight: 600;
+            min-width: 42px; flex-shrink: 0; font-variant-numeric: tabular-nums;
+        }
+        .activity-body { flex: 1; min-width: 0; }
+        .activity-who { font-size: 13px; font-weight: 600; color: var(--text); }
+        .activity-who b { color: var(--amber); }
+        .activity-detail { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+        .activity-tag {
+            font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
+        }
+        .activity-tag.gelen  { background: var(--amber-dim); color: var(--amber); }
+        .activity-tag.kalan  { background: var(--blue-dim);  color: var(--blue); }
+        .activity-tag.zayiat { background: rgba(239,68,68,0.15); color: var(--red); }
+        .activity-tag.mixed  { background: rgba(255,255,255,0.07); color: var(--text-2); }
+
+        /* ── DURUM BADGE ───────────────────────────── */
+        .durum-cell { display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
@@ -1264,8 +1302,9 @@
             <div class="header-actions">
                 <div>
                 <div class="filter-tabs">
-                    <button class="tab-btn active" id="fBugün"  onclick="setFilter('today', this)">Bugün</button>
-                    <button class="tab-btn"         id="fHafta" onclick="setFilter('week',  this)">Bu Hafta</button>
+                    <button class="tab-btn active" id="fBugün"  onclick="setFilter('today',     this)">Bugün</button>
+                    <button class="tab-btn"         id="fDün"   onclick="setFilter('yesterday', this)">Dün</button>
+                    <button class="tab-btn"         id="fHafta" onclick="setFilter('week',      this)">Bu Hafta</button>
                     <div class="month-nav">
                         <button class="month-arrow" onclick="shiftMonth(-1)">‹</button>
                         <button class="tab-btn month-label" id="fAy" onclick="setFilter('month', this)">Bu Ay</button>
@@ -1297,8 +1336,8 @@
         <div class="kpi-grid">
             <div class="kpi-card fade-up" style="animation-delay:0.05s">
                 <div class="kpi-header">
-                    <span class="kpi-label">Toplam Dağıtım</span>
-                    <div class="kpi-icon kpi-icon--blue">📦</div>
+                    <span class="kpi-label">Bugün Gelen</span>
+                    <div class="kpi-icon kpi-icon--amber">📦</div>
                 </div>
                 <div class="kpi-value" id="totalDistribution">—</div>
                 <div class="kpi-comp" id="compDist"></div>
@@ -1312,7 +1351,7 @@
 
             <div class="kpi-card fade-up" style="animation-delay:0.1s">
                 <div class="kpi-header">
-                    <span class="kpi-label">Toplam Satış</span>
+                    <span class="kpi-label">Bugün Satılan</span>
                     <div class="kpi-icon kpi-icon--green">📈</div>
                 </div>
                 <div class="kpi-value kpi-value--green" id="totalSales">—</div>
@@ -1324,11 +1363,22 @@
 
             <div class="kpi-card fade-up" style="animation-delay:0.15s">
                 <div class="kpi-header">
-                    <span class="kpi-label">Mevcut Stok</span>
-                    <div class="kpi-icon kpi-icon--amber">📊</div>
+                    <span class="kpi-label">Şu An Kalan</span>
+                    <div class="kpi-icon kpi-icon--blue">📊</div>
                 </div>
                 <div class="kpi-value" id="totalStock">—</div>
                 <div class="kpi-comp" id="compWaste"></div>
+                <div class="kpi-footer">
+                    <span class="kpi-sub">Tüm şubeler toplamı</span>
+                </div>
+            </div>
+
+            <div class="kpi-card fade-up" style="animation-delay:0.2s">
+                <div class="kpi-header">
+                    <span class="kpi-label">Bugün Zayiat</span>
+                    <div class="kpi-icon kpi-icon--red">🗑️</div>
+                </div>
+                <div class="kpi-value kpi-value--red" id="totalWaste">—</div>
                 <div class="kpi-footer">
                     <span class="kpi-sub">Tüm şubeler toplamı</span>
                 </div>
@@ -1354,7 +1404,7 @@
                                 <th onclick="sortTable(2)">Satılan ↕</th>
                                 <th onclick="sortTable(3)">Kalan ↕</th>
                                 <th onclick="sortTable(4)">Zayiat ↕</th>
-                                <th onclick="sortTable(5)">Oran ↕</th>
+                                <th>Durum</th>
                             </tr>
                         </thead>
                         <tbody id="branchTableBody">
@@ -1384,6 +1434,17 @@
                 </div>
             </div>
 
+        </div>
+
+        <!-- Aktivite Akışı -->
+        <div class="panel fade-up" style="animation-delay:0.28s">
+            <div class="panel-header">
+                <h2 class="panel-title">⚡ Son İşlemler</h2>
+                <span class="panel-badge" id="activityBadge">Canlı</span>
+            </div>
+            <div id="activityFeed">
+                <div style="padding:32px;text-align:center;color:var(--text-3);font-size:13px">⏳ Yükleniyor...</div>
+            </div>
         </div>
 
         <!-- Stock Status -->
@@ -1698,6 +1759,12 @@
             const today    = new Date();
             const todayStr = today.toISOString().split('T')[0];
 
+            if (currentFilter === 'yesterday') {
+                const y = new Date(today);
+                y.setDate(today.getDate() - 1);
+                const yStr = y.toISOString().split('T')[0];
+                return { startDate: yStr, endDate: yStr };
+            }
             if (currentFilter === 'week') {
                 const d = new Date(today);
                 d.setDate(today.getDate() - 7);
@@ -1797,6 +1864,7 @@
             updateHeatmap();
             updatePrintHeader();
             updateLiveStatus();
+            loadActivityFeed();
         }
 
         // ── Helpers ──────────────────────────────────────
@@ -1935,9 +2003,10 @@
             const MONTHS_TR2 = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
                                  'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
             const now = new Date();
-            const filterLabel = currentFilter === 'today'  ? now.toLocaleDateString('tr-TR', {day:'numeric',month:'long',year:'numeric'})
-                              : currentFilter === 'week'   ? 'Son 7 Gün'
-                              : currentFilter === 'month'  ? `${MONTHS_TR2[navMonth-1]} ${navYear}`
+            const filterLabel = currentFilter === 'today'     ? now.toLocaleDateString('tr-TR', {day:'numeric',month:'long',year:'numeric'})
+                              : currentFilter === 'yesterday' ? 'Dün'
+                              : currentFilter === 'week'      ? 'Son 7 Gün'
+                              : currentFilter === 'month'     ? `${MONTHS_TR2[navMonth-1]} ${navYear}`
                               : 'Tüm Zamanlar';
 
             const { dist, sold, waste } = buildMetrics(allData);
@@ -2022,9 +2091,22 @@ _Mutlukent Tatlı Takip Sistemi_`;
             // Satılan: dönem içi gelen - dönem sonu kalan
             const sold = Math.max(0, dist - stock);
 
+            // Zayiat: dönem içi toplam
+            const waste = allData.reduce((s, e) => s + (e.waste_amount || 0), 0);
+
             animateCounter('totalDistribution', dist);
             animateCounter('totalSales',        sold);
             animateCounter('totalStock',        stock);
+            animateCounter('totalWaste',        waste);
+
+            // 4. KPI (Zayiat) rengi: 0 = yeşil, az = sarı, fazla = kırmızı
+            const kpiCards = document.querySelectorAll('.kpi-card');
+            if (kpiCards[3]) {
+                const wRatio = dist > 0 ? waste / dist : 0;
+                const wColor = waste === 0 ? 'rgba(16,185,129,0.4)' : wRatio < 0.05 ? 'rgba(245,158,11,0.45)' : 'rgba(239,68,68,0.5)';
+                kpiCards[3].style.borderColor = wColor;
+                kpiCards[3].style.boxShadow   = `0 0 0 1px ${wColor}`;
+            }
 
             const pct = Math.min((dist / DAILY_TARGET) * 100, 100);
             document.getElementById('distProgress').style.width = `${pct}%`;
@@ -2148,7 +2230,12 @@ _Mutlukent Tatlı Takip Sistemi_`;
                     <td class="num-green">${b.sold.toLocaleString('tr-TR')}${delta(b.sold, prevB?.sold)}</td>
                     <td class="num-amber">${b.remaining.toLocaleString('tr-TR')}</td>
                     <td class="num-red">${b.waste.toLocaleString('tr-TR')}${delta(b.waste, prevB?.waste)}</td>
-                    <td><span class="pct-badge ${pctClass}">%${pct}</span></td>
+                    <td>
+                        <div class="durum-cell">
+                            <span>${b.remaining > 15 ? '🟢' : b.remaining > 7 ? '🟡' : '🔴'}</span>
+                            <span class="pct-badge ${pctClass}">%${pct}</span>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(row);
 
@@ -2159,6 +2246,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 card.innerHTML = `
                     <div class="bc-header">
                         <span class="bc-name">${i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : ''}${b.name}</span>
+                        <span style="font-size:14px">${b.remaining > 15 ? '🟢' : b.remaining > 7 ? '🟡' : '🔴'}</span>
                         <span class="pct-badge ${pctClass}">%${pct}</span>
                     </div>
                     <div class="bc-stats">
@@ -3349,7 +3437,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
         // ── No Data ──────────────────────────────────────
         function showNoData() {
-            ['totalDistribution','totalSales','totalStock'].forEach(id => {
+            ['totalDistribution','totalSales','totalStock','totalWaste'].forEach(id => {
                 document.getElementById(id).textContent = '0';
             });
             document.getElementById('distProgress').style.width = '0%';
@@ -3389,6 +3477,82 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return bv - av;
             });
             rows.forEach(r => tbody.appendChild(r));
+        }
+
+        // ── Aktivite Akışı ────────────────────────────────
+        async function loadActivityFeed() {
+            const feedEl = document.getElementById('activityFeed');
+            if (!feedEl) return;
+            try {
+                const entries = await getRecentActivity(15);
+                renderActivityFeed(entries);
+            } catch (err) {
+                console.error('Aktivite akışı hatası:', err);
+                feedEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Yüklenemedi</div>';
+            }
+        }
+
+        function renderActivityFeed(entries) {
+            const feedEl = document.getElementById('activityFeed');
+            const badgeEl = document.getElementById('activityBadge');
+            if (!feedEl) return;
+
+            if (badgeEl) badgeEl.textContent = `${entries.length} işlem`;
+
+            if (entries.length === 0) {
+                feedEl.innerHTML = `<div class="empty-state" style="padding:32px">
+                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-title">Son 48 saatte işlem yok</div>
+                </div>`;
+                return;
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            const items = entries.map(e => {
+                const branch  = e.branches?.name         || '?';
+                const manager = e.branches?.manager_name || branch;
+                const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
+                const recv    = e.received_amount;
+                const rem     = e.remaining_amount;
+                const waste   = e.waste_amount;
+
+                // Zaman formatla
+                let timeStr = '—';
+                if (e.entry_time) {
+                    const t = new Date(e.entry_time);
+                    timeStr = t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                }
+
+                // Tür belirle
+                let type = 'mixed', typeLabel = 'Güncelleme';
+                if (recv > 0 && rem === null && !waste)      { type = 'gelen';  typeLabel = 'Gelen';  }
+                else if (rem !== null && !recv && !waste)     { type = 'kalan';  typeLabel = 'Kalan';  }
+                else if (waste > 0 && !recv && rem === null)  { type = 'zayiat'; typeLabel = 'Zayiat'; }
+
+                // Detay satırı
+                const parts = [];
+                if (recv  > 0)            parts.push(`<span style="color:var(--amber)">${recv} gelen</span>`);
+                if (rem   !== null)        parts.push(`<span style="color:var(--blue)">${rem} kalan</span>`);
+                if (waste > 0)            parts.push(`<span style="color:var(--red)">${waste} zayiat</span>`);
+
+                // Dün ise tarih etiketi
+                const dateTag = e.entry_date !== todayStr
+                    ? `<span style="font-size:10px;color:var(--text-3);margin-left:4px">${e.entry_date.slice(5).replace('-','/')}</span>`
+                    : '';
+
+                return `<div class="activity-item">
+                    <span class="activity-dot ${type}"></span>
+                    <span class="activity-time">${timeStr}</span>
+                    <div class="activity-body">
+                        <div class="activity-who"><b>${manager}</b> · ${branch}${dateTag}</div>
+                        <div class="activity-detail">${dessert} · ${parts.join(', ') || '—'}</div>
+                    </div>
+                    <span class="activity-tag ${type}">${typeLabel}</span>
+                </div>`;
+            }).join('');
+
+            feedEl.innerHTML = `<div class="activity-list">${items}</div>`;
         }
 
         // ── Logout ────────────────────────────────────────

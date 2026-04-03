@@ -1292,4 +1292,34 @@ async function getWasteWithReasons(days = 30) {
     }
 }
 
+/**
+ * Son aktiviteleri çek (admin aktivite akışı için)
+ * @param {number} limit
+ * @returns entry_time DESC sıralı entries
+ */
+async function getRecentActivity(limit = 15) {
+    try {
+        const past = new Date()
+        past.setDate(past.getDate() - 2)
+        const pastDate = past.toISOString().split('T')[0]
+
+        const { data, error } = await supabaseClient
+            .from('daily_entries')
+            .select(`
+                id, entry_date, entry_time, received_amount, remaining_amount, waste_amount, notes,
+                branches (id, name, manager_name),
+                desserts (id, name, emoji)
+            `)
+            .gte('entry_date', pastDate)
+            .order('entry_time', { ascending: false })
+            .limit(limit)
+
+        if (error) throw error
+        return data || []
+    } catch (err) {
+        console.error('Aktivite çekme hatası:', err)
+        return []
+    }
+}
+
 console.log('✅ Supabase Client yüklendi')
