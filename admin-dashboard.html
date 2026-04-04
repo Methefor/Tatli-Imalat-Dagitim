@@ -2735,10 +2735,11 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
         // ── Stock Cards ───────────────────────────────────
         async function updateStockCards() {
-            const [stockData, thresholds] = await Promise.all([
+            const [stockData, thresholdsRaw] = await Promise.all([
                 getCurrentStock(),
-                getSetting('dessertThresholds') || {}
+                getSetting('dessertThresholds')
             ]);
+            const thresholds = thresholdsRaw || {};
             const grid = document.getElementById('stockGrid');
             grid.innerHTML = '';
 
@@ -2851,10 +2852,12 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
         // ── Maliyet & Karlılık Section ─────────────────────
         async function updateMaliyetSection() {
-            const [prices, costs] = await Promise.all([
-                getSetting('dessertPrices') || {},
-                getSetting('dessertCosts')  || {}
+            const [pricesRaw, costsRaw] = await Promise.all([
+                getSetting('dessertPrices'),
+                getSetting('dessertCosts')
             ]);
+            const prices = pricesRaw || {};
+            const costs  = costsRaw  || {};
             const container = document.getElementById('maliyetContent');
             const badge     = document.getElementById('maliyetKarBadge');
 
