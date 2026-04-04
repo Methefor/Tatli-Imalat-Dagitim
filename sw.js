@@ -1,44 +1,69 @@
 // Tatlı Takip — Service Worker
-const CACHE = 'tatli-takip-v27';
+const CACHE = 'tatli-takip-v28';
 
-const STATIC = [
-    '/',
-    '/index.html',
-    '/branch-menu.html',
-    '/gelen-tatlilar.html',
-    '/kalan-tatlilar.html',
-    '/uretim.html',
-    '/subem.html',
-    '/admin-dashboard.html',
-    '/personel.html',
-    '/superadmin.html',
-    '/tatlilar-panel.html',
-    '/transfer.html',
-    '/zayiat.html',
-    '/dagitim.html',
-    '/supabase-client.js',
-    '/manifest.json',
+// Sadece resimler/ikonlar cache-first; HTML ve JS her zaman ağdan gelir
+const CACHE_ONLY_ASSETS = [
     '/icon-192.png',
     '/icon-512.png',
     '/maskable-192.png',
     '/maskable-512.png',
     '/favicon.svg',
     '/apple-touch-icon.png',
+    '/manifest.json',
 ];
 
 self.addEventListener('install', e => {
     e.waitUntil(
         caches.open(CACHE)
-            .then(c => c.addAll(STATIC).catch(() => {})) // ağ hatası install'ı durdurmasın
+            .then(c => c.addAll(CACHE_ONLY_ASSETS).catch(() => {}))
             .then(() => self.skipWaiting())
     );
 });
 
 self.addEventListener('activate', e => {
     e.waitUntil(
-        caches.keys().then(keys =>
-            Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-        ).then(() => self.clients.claim())
+        caches.keys()
+            .then(keys => Promise.all(
+                keys.filter(k => k !== CACHE).map(k => caches.delete(k))
+            ))
+            .then(() => self.clients.claim())
+            .then(() => self.clients.matchAll({ type: 'window' }))
+            .then(clients => {
+                // Yeni SW aktif olunca tüm açık sekmelere güncelleme bildirimi gönder
+                clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }));
+            })
+    );
+});
+
+self.addEventListener('fetch', e => {
+    const url = e.request.url;
+
+    // Supabase API → her zaman ağdan
+    if (url.includes('supabase.co')) {
+        e.respondWith(fetch(e.request));
+        return;
+    }
+
+    // Resimler ve ikonlar → cache-first (nadiren değişir)
+    if (CACHE_ONLY_ASSETS.some(a => url.endsWith(a))) {
+        e.respondWith(
+            caches.match(e.request).then(cached => cached || fetch(e.request))
+        );
+        return;
+    }
+
+    // HTML, JS, her şey → network-first
+    // Ağ varsa her zaman taze versiyon gelir; ağ yoksa cache'den sun
+    e.respondWith(
+        fetch(e.request)
+            .then(res => {
+                if (res && res.status === 200 && res.type === 'basic') {
+                    const clone = res.clone();
+                    caches.open(CACHE).then(c => c.put(e.request, clone));
+                }
+                return res;
+            })
+            .catch(() => caches.match(e.request))
     );
 });
 
@@ -71,25 +96,4 @@ self.addEventListener('notificationclick', event => {
 
 self.addEventListener('message', e => {
     if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
-});
-
-self.addEventListener('fetch', e => {
-    // Supabase API isteklerini her zaman ağdan çek
-    if (e.request.url.includes('supabase.co')) {
-        e.respondWith(fetch(e.request));
-        return;
-    }
-    // Diğerleri: cache-first, arka planda güncelle
-    e.respondWith(
-        caches.match(e.request).then(cached => {
-            const fresh = fetch(e.request).then(res => {
-                if (res && res.status === 200 && res.type === 'basic') {
-                    const resClone = res.clone();
-                    caches.open(CACHE).then(c => c.put(e.request, resClone));
-                }
-                return res;
-            }).catch(() => cached);
-            return cached || fresh;
-        })
-    );
 });

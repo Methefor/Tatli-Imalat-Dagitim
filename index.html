@@ -1184,6 +1184,10 @@
                 reg.update();
             });
 
+            navigator.serviceWorker.addEventListener('message', e => {
+                if (e.data?.type === 'SW_UPDATED') window.location.reload();
+            });
+
             // Controller değişince (update uygulandıysa) sayfayı yenile
             let refreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {

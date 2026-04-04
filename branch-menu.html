@@ -1115,7 +1115,7 @@
             window.location.href = 'index.html';
         }
     </script>
-    <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
+    <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js");navigator.serviceWorker.addEventListener("message",e=>{if(e.data?.type==="SW_UPDATED")window.location.reload();});}</script>
 
     <!-- Welcome Modal -->
     <div class="welcome-overlay hidden" id="welcomeOverlay">
