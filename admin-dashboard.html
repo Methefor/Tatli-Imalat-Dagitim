@@ -2004,7 +2004,7 @@
                 showNoData();
                 updateComparison([]);
                 updateLiveStatus();
-                loadActivityFeed();
+                await loadActivityFeed();
                 return;
             }
 
@@ -2023,7 +2023,7 @@
             updateHeatmap();
             updatePrintHeader();
             updateLiveStatus();
-            loadActivityFeed();
+            await loadActivityFeed();
         }
 
         // ── Helpers ──────────────────────────────────────
@@ -3695,13 +3695,20 @@ _Mutlukent Tatlı Takip Sistemi_`;
         }
 
         async function loadActivityFeed() {
+            // currentFilter anlık görüntüsü — async işlem sırasında değişmemesi için
+            const filterSnap = currentFilter;
+
             const feedEl      = document.getElementById('activityFeed');
             const detailEl    = document.getElementById('todayDetail');
             const titleEl     = document.getElementById('detailPanelTitle');
             const actTitleEl  = document.getElementById('activityPanelTitle');
             const badgeEl     = document.getElementById('activityBadge');
 
-            const label = getActivityPeriodLabel();
+            const label = filterSnap === 'today'     ? 'Bugün'
+                        : filterSnap === 'yesterday' ? 'Dün'
+                        : filterSnap === 'week'      ? 'Bu Hafta'
+                        : filterSnap === 'all'       ? 'Tüm Dönem'
+                        : getCurrentPeriodLabel();
 
             // Başlıkları güncelle
             if (actTitleEl) actTitleEl.textContent = `⚡ ${label} İşlemleri`;
@@ -3715,7 +3722,11 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 // Tek gün → 500 kayıt; hafta/ay/tümü → 100 (en yeni)
                 const limit = (startDate === endDate) ? 500 : 100;
                 const entries = await getRecentActivity(limit, startDate, endDate);
-                renderActivityFeed(entries);
+
+                // Sonuçlar gelene kadar filtre değiştiyse yoksay
+                if (currentFilter !== filterSnap) return;
+
+                renderActivityFeed(entries, label);
                 renderTodayDetails(entries, label);
             } catch (err) {
                 console.error('Aktivite akışı hatası:', err);
@@ -3725,14 +3736,14 @@ _Mutlukent Tatlı Takip Sistemi_`;
             }
         }
 
-        function renderActivityFeed(entries) {
+        function renderActivityFeed(entries, label) {
             const feedEl  = document.getElementById('activityFeed');
             const badgeEl = document.getElementById('activityBadge');
             if (!feedEl) return;
 
             if (badgeEl) badgeEl.textContent = `${entries.length} işlem`;
 
-            const emptyLabel = `${getActivityPeriodLabel()} döneminde işlem kaydı yok`;
+            const emptyLabel = `${label || getActivityPeriodLabel()} döneminde işlem kaydı yok`;
             if (entries.length === 0) {
                 feedEl.innerHTML = `<div class="empty-state" style="padding:32px">
                     <div class="empty-state-icon">📭</div>
