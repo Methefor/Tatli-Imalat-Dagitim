@@ -1333,7 +1333,7 @@ async function getWasteWithReasons(days = 30) {
  * @param {number} limit
  * @returns entry_time DESC sıralı entries
  */
-async function getRecentActivity(limit = 15, sinceDate = null) {
+async function getRecentActivity(limit = 15, startDate = null, endDate = null) {
     try {
         let query = supabaseClient
             .from('daily_entries')
@@ -1345,8 +1345,10 @@ async function getRecentActivity(limit = 15, sinceDate = null) {
             .order('entry_time', { ascending: false })
             .limit(limit)
 
-        if (sinceDate) {
-            query = query.eq('entry_date', sinceDate)
+        if (startDate && endDate) {
+            query = query.gte('entry_date', startDate).lte('entry_date', endDate)
+        } else if (startDate) {
+            query = query.eq('entry_date', startDate)
         } else {
             const past = new Date()
             past.setDate(past.getDate() - 2)

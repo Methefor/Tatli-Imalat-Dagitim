@@ -1489,7 +1489,7 @@
 
             <div class="panel fade-up" style="animation-delay:0.22s">
                 <div class="panel-header">
-                    <h2 class="panel-title">⚡ Son İşlemler</h2>
+                    <h2 class="panel-title" id="activityPanelTitle">⚡ Son İşlemler</h2>
                     <span class="panel-badge" id="activityBadge">—</span>
                 </div>
                 <div id="activityFeed">
@@ -3685,39 +3685,36 @@ _Mutlukent Tatlı Takip Sistemi_`;
             return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date());
         }
 
-        function getActivityDate() {
-            if (currentFilter === 'today') return getTodayTR();
-            if (currentFilter === 'yesterday') {
-                const d = new Date();
-                d.setDate(d.getDate() - 1);
-                return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(d);
-            }
-            return null; // hafta/ay/tümü için gizle
+        function getActivityPeriodLabel() {
+            const f = currentFilter;
+            if (f === 'today')     return 'Bugün';
+            if (f === 'yesterday') return 'Dün';
+            if (f === 'week')      return 'Bu Hafta';
+            if (f === 'all')       return 'Tüm Dönem';
+            return getCurrentPeriodLabel(); // ay adı
         }
 
         async function loadActivityFeed() {
-            const wrapEl   = document.querySelector('.detail-grid-wrap');
-            const feedEl   = document.getElementById('activityFeed');
-            const detailEl = document.getElementById('todayDetail');
-            const titleEl  = document.getElementById('detailPanelTitle');
-            const badgeEl  = document.getElementById('activityBadge');
+            const feedEl      = document.getElementById('activityFeed');
+            const detailEl    = document.getElementById('todayDetail');
+            const titleEl     = document.getElementById('detailPanelTitle');
+            const actTitleEl  = document.getElementById('activityPanelTitle');
+            const badgeEl     = document.getElementById('activityBadge');
 
-            const dateStr = getActivityDate();
+            const label = getActivityPeriodLabel();
 
-            // Haftalık/aylık filtrede panelleri gizle
-            if (!dateStr) {
-                if (wrapEl) wrapEl.style.display = 'none';
-                return;
-            }
-            if (wrapEl) wrapEl.style.display = '';
-
-            const label = currentFilter === 'yesterday' ? 'Dünkü' : 'Bugünkü';
-            if (titleEl) titleEl.textContent = `📋 ${label} Giriş Detayları`;
-            if (badgeEl) badgeEl.textContent = '⏳';
+            // Başlıkları güncelle
+            if (actTitleEl) actTitleEl.textContent = `⚡ ${label} İşlemleri`;
+            if (titleEl)    titleEl.textContent    = `📋 ${label} Giriş Detayları`;
+            if (badgeEl)    badgeEl.textContent    = '⏳';
 
             if (!feedEl) return;
+
             try {
-                const entries = await getRecentActivity(500, dateStr);
+                const { startDate, endDate } = getDateRange();
+                // Tek gün → 500 kayıt; hafta/ay/tümü → 100 (en yeni)
+                const limit = (startDate === endDate) ? 500 : 100;
+                const entries = await getRecentActivity(limit, startDate, endDate);
                 renderActivityFeed(entries);
                 renderTodayDetails(entries, label);
             } catch (err) {
@@ -3735,7 +3732,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
             if (badgeEl) badgeEl.textContent = `${entries.length} işlem`;
 
-            const emptyLabel = currentFilter === 'yesterday' ? 'Dün işlem kaydı yok' : 'Bugün henüz işlem yok';
+            const emptyLabel = `${getActivityPeriodLabel()} döneminde işlem kaydı yok`;
             if (entries.length === 0) {
                 feedEl.innerHTML = `<div class="empty-state" style="padding:32px">
                     <div class="empty-state-icon">📭</div>
@@ -3792,7 +3789,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
             if (badgeEl) badgeEl.textContent = `${entries.length} kayıt`;
 
-            const emptyLabel = (label || 'Bugünkü').replace('kü','') + ' giriş kaydı yok';
+            const emptyLabel = `${label || getActivityPeriodLabel()} giriş kaydı yok`;
             if (entries.length === 0) {
                 el.innerHTML = `<div class="empty-state" style="padding:32px">
                     <div class="empty-state-icon">📭</div>
