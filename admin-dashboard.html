@@ -1750,6 +1750,7 @@
         let currentYear      = new Date().getFullYear();
         const DAILY_TARGET   = 5000;
         let autoRefreshTimer = null;
+        let loadGeneration   = 0; // her loadData çağrısında artar; eskiler sonucu yoksayar
 
         // Ay seçici
         const MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
@@ -1953,6 +1954,7 @@
 
         // ── Load Data ────────────────────────────────────
         async function loadData(silent = false) {
+            const gen = ++loadGeneration; // bu çağrıya ait nesil
             if (!silent) toggleLoading(true);
             updateKpiLabels();
 
@@ -2004,7 +2006,7 @@
                 showNoData();
                 updateComparison([]);
                 updateLiveStatus();
-                loadActivityFeed([]);
+                if (gen === loadGeneration) loadActivityFeed([]);
                 return;
             }
 
@@ -2023,7 +2025,7 @@
             updateHeatmap();
             updatePrintHeader();
             updateLiveStatus();
-            loadActivityFeed(allData);
+            if (gen === loadGeneration) loadActivityFeed(allData);
         }
 
         // ── Helpers ──────────────────────────────────────
