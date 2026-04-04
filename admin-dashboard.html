@@ -1355,7 +1355,7 @@
         .detail-time { font-size: 11px; color: var(--text-3); text-align: right; font-variant-numeric: tabular-nums; }
         .detail-separator { height: 1px; background: rgba(255,255,255,0.06); margin: 0 16px; }
 
-        /* Accordion */
+        /* Accordion — Giriş Detayları */
         .detail-branch-header { cursor: pointer; user-select: none; }
         .detail-branch-header:active { background: rgba(255,255,255,0.05); }
         .detail-branch-chevron {
@@ -1365,9 +1365,37 @@
         .detail-branch-group.collapsed .detail-branch-chevron { transform: rotate(-90deg); }
         .detail-branch-content { overflow: hidden; }
         .detail-branch-group.collapsed .detail-branch-content { display: none; }
-        .detail-branch-count {
-            font-size: 11px; color: var(--text-3); margin-left: 6px; font-weight: 400;
+        .detail-branch-count { font-size: 11px; color: var(--text-3); margin-left: 6px; font-weight: 400; }
+
+        /* Accordion — Son İşlemler panel toggle */
+        .feed-panel-header { cursor: pointer; user-select: none; }
+        .feed-panel-header:active { background: rgba(255,255,255,0.03); }
+        .feed-panel-chevron {
+            font-size: 11px; color: var(--text-3); transition: transform 0.2s; display: inline-block; margin-left: 8px;
         }
+        .feed-panel.collapsed .feed-panel-chevron { transform: rotate(-90deg); }
+        .feed-panel-body { }
+        .feed-panel.collapsed .feed-panel-body { display: none; }
+
+        /* İşlemler şube grubu */
+        .feed-branch-group { }
+        .feed-branch-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 16px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.025);
+            cursor: pointer; user-select: none;
+        }
+        .feed-branch-header:active { background: rgba(255,255,255,0.05); }
+        .feed-branch-name { font-size: 13px; font-weight: 700; color: var(--text); }
+        .feed-branch-count { font-size: 11px; color: var(--text-3); }
+        .feed-branch-manager { font-size: 12px; color: var(--text-3); margin-left: auto; }
+        .feed-branch-chev {
+            font-size: 11px; color: var(--text-3); transition: transform 0.2s; display: inline-block;
+        }
+        .feed-branch-group.collapsed .feed-branch-chev { transform: rotate(-90deg); }
+        .feed-branch-items { }
+        .feed-branch-group.collapsed .feed-branch-items { display: none; }
     </style>
 </head>
 <body>
@@ -1509,12 +1537,13 @@
                 </div>
             </div>
 
-            <div class="panel fade-up" style="animation-delay:0.25s">
-                <div class="panel-header">
+            <div class="panel fade-up feed-panel" id="feedPanel" style="animation-delay:0.25s">
+                <div class="panel-header feed-panel-header" onclick="document.getElementById('feedPanel').classList.toggle('collapsed')">
                     <h2 class="panel-title" id="activityPanelTitle">⚡ Son İşlemler</h2>
                     <span class="panel-badge" id="activityBadge">—</span>
+                    <span class="feed-panel-chevron">▼</span>
                 </div>
-                <div id="activityFeed">
+                <div class="feed-panel-body" id="activityFeed">
                     <div style="padding:32px;text-align:center;color:var(--text-3);font-size:13px">⏳ Yükleniyor...</div>
                 </div>
             </div>
@@ -1560,31 +1589,31 @@
                 <div class="score-grid" id="branchScoresGrid"></div>
             </div>
 
-            <!-- Chart -->
+            <!-- Güncel Stok (content-grid içine alındı) -->
             <div class="panel fade-up" style="animation-delay:0.32s">
                 <div class="panel-header">
-                    <h2 class="panel-title">Tatlı Satış Dağılımı</h2>
+                    <h2 class="panel-title">Güncel Stok Durumu</h2>
+                    <span class="panel-badge">Anlık</span>
                 </div>
-                <div class="chart-wrap">
-                    <canvas id="dessertChart"></canvas>
+                <div class="stock-grid" id="stockGrid">
+                    <div class="stock-item" style="grid-column:1/-1">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⏳</div>
+                            <div class="empty-state-title">Yükleniyor</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- Güncel Stok Durumu -->
+        <!-- Tatlı Satış Dağılımı (tam genişlik) -->
         <div class="panel fade-up" style="animation-delay:0.3s">
             <div class="panel-header">
-                <h2 class="panel-title">Güncel Stok Durumu</h2>
-                <span class="panel-badge">Bugün</span>
+                <h2 class="panel-title">Tatlı Satış Dağılımı</h2>
             </div>
-            <div class="stock-grid" id="stockGrid">
-                <div class="stock-item" style="grid-column:1/-1">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⏳</div>
-                        <div class="empty-state-title">Yükleniyor</div>
-                    </div>
-                </div>
+            <div class="chart-wrap">
+                <canvas id="dessertChart"></canvas>
             </div>
         </div>
 
@@ -2206,11 +2235,9 @@
                               : currentFilter === 'month'     ? `${MONTHS_TR2[navMonth-1]} ${navYear}`
                               : 'Tüm Zamanlar';
 
-            const latestMap = buildCurrentStockMap(allData);
             const dist  = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
             const waste = allData.reduce((s, e) => s + (e.waste_amount    || 0), 0);
-            const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
-            // Devir stok dahil (updateStats ile aynı formül)
+            const { stock, latestMap } = calcStock(allData);
             const openingTotal = Object.values(openingStockMap).reduce((s, v) => s + v, 0);
             const sold = Math.max(0, openingTotal + dist - stock - waste);
             const base = openingTotal + dist;
@@ -2288,18 +2315,41 @@ _Mutlukent Tatlı Takip Sistemi_`;
         });
 
         // ── Stats ────────────────────────────────────────
+        function calcStock(data) {
+            // Dönem içinde hangi (şube,tatlı) çiftlerinin kalanı girilmiş?
+            const keysWithKalan = new Set();
+            data.forEach(e => {
+                if (e.remaining_amount !== null && e.remaining_amount !== undefined)
+                    keysWithKalan.add(`${e.branches?.id}|${e.dessert_id}`);
+            });
+
+            const latestMap = buildCurrentStockMap(data);
+
+            // Kalan girilmiş → latestMap (kesin değer)
+            // Kalan girilmemiş → openingStock + received (satış henüz bilinmiyor, stokta say)
+            let stock = 0;
+            const allKeys = new Set([...Object.keys(latestMap), ...Object.keys(openingStockMap)]);
+            allKeys.forEach(key => {
+                if (keysWithKalan.has(key)) {
+                    stock += latestMap[key] || 0;
+                } else {
+                    stock += (openingStockMap[key] || 0) + (latestMap[key] || 0);
+                }
+            });
+            return { stock, latestMap };
+        }
+
         function updateStats() {
-            const dist = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
+            const dist  = allData.reduce((s, e) => s + (e.received_amount || 0), 0);
             const waste = allData.reduce((s, e) => s + (e.waste_amount   || 0), 0);
 
-            // Kalan: her (şube, tatlı) için EN SON remaining — toplam değil
-            const latestMap = buildCurrentStockMap(allData);
-            const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
+            const { stock } = calcStock(allData);
 
             // Devir stok: dönem başı önceki son kalan (carry-over)
             const openingTotal = Object.values(openingStockMap).reduce((s, v) => s + v, 0);
 
             // Satılan: devir + gelen - kalan - zayiat
+            // (Kalan girilmemiş çiftler stokta sayıldığından satılan sadece onaylanmış verileri yansıtır)
             const sold = Math.max(0, openingTotal + dist - stock - waste);
 
             animateCounter('totalDistribution', dist);
@@ -3765,9 +3815,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
             const badgeEl = document.getElementById('activityBadge');
             if (!feedEl) return;
 
-            // Sıfır değerli kayıtları filtrele
             const meaningful = entries.filter(hasActivityData);
-
             if (badgeEl) badgeEl.textContent = `${meaningful.length} işlem`;
 
             const emptyLabel = `${label || 'Bu dönemde'} işlem kaydı yok`;
@@ -3779,42 +3827,73 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return;
             }
 
-            const items = meaningful.map(e => {
-                const branch  = e.branches?.name         || '?';
-                const manager = e.branches?.manager_name || branch;
-                const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
-                const recv    = e.received_amount;
-                const rem     = e.remaining_amount;
-                const wst     = e.waste_amount;
+            // Şubeye göre grupla
+            const groups = {};
+            meaningful.forEach(e => {
+                const bid = e.branches?.id || 'unknown';
+                if (!groups[bid]) groups[bid] = { branch: e.branches, rows: [] };
+                groups[bid].rows.push(e);
+            });
 
-                let timeStr = '—';
-                if (e.entry_time) {
-                    const t = new Date(e.entry_time);
-                    timeStr = t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
-                }
+            const sortedGroups = Object.values(groups).sort((a, b) =>
+                (a.branch?.name || '').localeCompare(b.branch?.name || '', 'tr')
+            );
 
-                let type = 'mixed', typeLabel = 'Güncelleme';
-                if (recv > 0 && !wst && rem === null)  { type = 'gelen';  typeLabel = 'Gelen'; }
-                else if (rem > 0 && !recv && !wst)     { type = 'kalan';  typeLabel = 'Kalan'; }
-                else if (wst > 0 && !recv)             { type = 'zayiat'; typeLabel = 'Zayiat'; }
+            const html = sortedGroups.map((g, gi) => {
+                const branchName = g.branch?.name || '?';
+                const manager    = g.branch?.manager_name || '—';
 
-                const parts = [];
-                if (recv > 0) parts.push(`<span style="color:var(--amber)">${recv} gelen</span>`);
-                if (rem > 0)  parts.push(`<span style="color:var(--blue)">${rem} kalan</span>`);
-                if (wst > 0)  parts.push(`<span style="color:var(--red)">${wst} zayiat</span>`);
+                const rows = [...g.rows].sort((a, b) =>
+                    (b.entry_time || '').localeCompare(a.entry_time || '')
+                );
 
-                return `<div class="activity-item">
-                    <span class="activity-dot ${type}"></span>
-                    <span class="activity-time">${timeStr}</span>
-                    <div class="activity-body">
-                        <div class="activity-who"><b>${manager}</b> · ${branch}</div>
-                        <div class="activity-detail">${dessert} · ${parts.join(', ')}</div>
+                const items = rows.map(e => {
+                    const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
+                    const recv = e.received_amount, rem = e.remaining_amount, wst = e.waste_amount;
+
+                    let timeStr = '—';
+                    if (e.entry_time) {
+                        timeStr = new Date(e.entry_time).toLocaleTimeString('tr-TR',
+                            { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
+                    }
+
+                    let type = 'mixed', typeLabel = 'Güncelleme';
+                    if (recv > 0 && !wst && rem === null) { type = 'gelen';  typeLabel = 'Gelen'; }
+                    else if (rem > 0 && !recv && !wst)    { type = 'kalan';  typeLabel = 'Kalan'; }
+                    else if (wst > 0 && !recv)            { type = 'zayiat'; typeLabel = 'Zayiat'; }
+
+                    const parts = [];
+                    if (recv > 0) parts.push(`<span style="color:var(--amber)">${recv} gelen</span>`);
+                    if (rem > 0)  parts.push(`<span style="color:var(--blue)">${rem} kalan</span>`);
+                    if (wst > 0)  parts.push(`<span style="color:var(--red)">${wst} zayiat</span>`);
+
+                    return `<div class="activity-item">
+                        <span class="activity-dot ${type}"></span>
+                        <span class="activity-time">${timeStr}</span>
+                        <div class="activity-body">
+                            <div class="activity-detail">${dessert} · ${parts.join(', ')}</div>
+                        </div>
+                        <span class="activity-tag ${type}">${typeLabel}</span>
+                    </div>`;
+                }).join('');
+
+                // İlk şube açık, diğerleri kapalı
+                const collapsed = gi > 0 ? ' collapsed' : '';
+                const sep = gi > 0 ? '<div class="detail-separator"></div>' : '';
+                return `${sep}<div class="feed-branch-group${collapsed}">
+                    <div class="feed-branch-header" onclick="this.closest('.feed-branch-group').classList.toggle('collapsed')">
+                        <span class="feed-branch-name">🏪 ${branchName}</span>
+                        <span class="feed-branch-count">${rows.length} işlem</span>
+                        <span class="feed-branch-manager">${manager}</span>
+                        <span class="feed-branch-chev">▼</span>
                     </div>
-                    <span class="activity-tag ${type}">${typeLabel}</span>
+                    <div class="feed-branch-items">
+                        <div class="activity-list">${items}</div>
+                    </div>
                 </div>`;
             }).join('');
 
-            feedEl.innerHTML = `<div class="activity-list">${items}</div>`;
+            feedEl.innerHTML = html;
         }
 
         function toggleBranchDetail(header) {
