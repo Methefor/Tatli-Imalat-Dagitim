@@ -362,7 +362,7 @@
             <span class="section-icon">🚨</span>
             <div class="section-title-wrap">
                 <div class="section-title" style="color:rgba(252,165,165,0.85)">Şüpheli Davranışlar</div>
-                <div class="section-sub">Gelen değişikliği · çoklu düzeltme · büyük fark</div>
+                <div class="section-sub">Gelen tatlı azaltma tespiti</div>
             </div>
             <span class="section-badge" id="badgeSuspect" style="background:rgba(239,68,68,0.12);color:rgba(252,165,165,0.75)">—</span>
             <span class="section-chevron">▼</span>
@@ -515,50 +515,6 @@
                 }
             });
 
-            // 2. Aynı kayıda çoklu düzeltme
-            if (allTags.length >= 2) {
-                entryAlerts.push({
-                    level: 'warning',
-                    label: `${allTags.length} kez düzeltme yapıldı`,
-                    detail: 'Aynı kayıt birden fazla kez değiştirildi'
-                });
-            }
-
-            // 3. Geçmişe yönelik düzeltme (2+ gün önce girilmiş kayıt)
-            const lastTag = allTags[allTags.length - 1];
-            const dateM = lastTag.match(/\[DÜZ (\d{2})\.(\d{2})\.(\d{4})/);
-            if (dateM) {
-                const corrDate = `${dateM[3]}-${dateM[2]}-${dateM[1]}`;
-                const diffDays = Math.round(
-                    (new Date(corrDate + 'T12:00:00') - new Date(entryDate + 'T12:00:00')) / 86400000
-                );
-                if (diffDays >= 2) {
-                    entryAlerts.push({
-                        level: 'warning',
-                        label: `Geçmiş tarihe düzeltme`,
-                        detail: `${diffDays} gün önceki kayıt (${formatTR(entryDate)}) değiştirildi`
-                    });
-                }
-            }
-
-            // 4. Büyük fark — kalan veya zayiat için ≥10 adet
-            allTags.forEach(tag => {
-                ['kalan','zayiat'].forEach(field => {
-                    const m = tag.match(new RegExp(field + ':(\\d+)→(\\d+)'));
-                    if (m) {
-                        const delta = Math.abs(parseInt(m[2]) - parseInt(m[1]));
-                        if (delta >= 10) {
-                            const lbl = field === 'kalan' ? 'Kalan' : 'Zayiat';
-                            entryAlerts.push({
-                                level: 'warning',
-                                label: `Büyük ${lbl.toLowerCase()} farkı (${delta} adet)`,
-                                detail: `${m[1]} → ${m[2]} adet`
-                            });
-                        }
-                    }
-                });
-            });
-
             if (entryAlerts.length > 0) {
                 results.push({ id: c.id, branch, mgr, dessert, entryDate, alerts: entryAlerts });
             }
@@ -580,8 +536,7 @@
             return;
         }
 
-        const criticalCount = suspects.filter(s => s.alerts.some(a => a.level === 'critical')).length;
-        badge.textContent = suspects.length + ' uyarı' + (criticalCount > 0 ? ` · ${criticalCount} kritik` : '');
+        badge.textContent = suspects.length + ' kritik';
 
         // Kritik olanlar önce
         suspects.sort((a, b) => {
@@ -615,7 +570,7 @@
         }).join('');
 
         // Kritik varsa bölümü otomatik aç
-        if (criticalCount > 0 && !sessionStorage.getItem('personel_secSuspect')) {
+        if (suspects.length > 0 && !sessionStorage.getItem('personel_secSuspect')) {
             sec.classList.remove('collapsed');
         }
     }

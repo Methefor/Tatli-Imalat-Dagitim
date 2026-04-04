@@ -1589,19 +1589,14 @@
                 <div class="score-grid" id="branchScoresGrid"></div>
             </div>
 
-            <!-- Güncel Stok (content-grid içine alındı) -->
+            <!-- Tatlı × Şube Satış Haritası (content-grid içinde) -->
             <div class="panel fade-up" style="animation-delay:0.32s">
                 <div class="panel-header">
-                    <h2 class="panel-title">Güncel Stok Durumu</h2>
-                    <span class="panel-badge">Anlık</span>
+                    <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
+                    <span class="panel-badge" id="heatmapBadge">—</span>
                 </div>
-                <div class="stock-grid" id="stockGrid">
-                    <div class="stock-item" style="grid-column:1/-1">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">⏳</div>
-                            <div class="empty-state-title">Yükleniyor</div>
-                        </div>
-                    </div>
+                <div class="heatmap-wrap">
+                    <div id="heatmapContent"><div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div></div>
                 </div>
             </div>
 
@@ -1719,14 +1714,16 @@
             </div>
         </div>
 
-        <!-- Tatlı × Şube Satış Haritası -->
+        <!-- Güncel Stok Durumu -->
         <div class="panel fade-up" style="animation-delay:0.65s">
             <div class="panel-header">
-                <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
-                <span class="panel-badge" id="heatmapBadge">—</span>
+                <h2 class="panel-title">📦 Güncel Stok Durumu</h2>
+                <span class="panel-badge" id="stockBadge">—</span>
             </div>
-            <div class="heatmap-wrap">
-                <div id="heatmapContent"><div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div></div>
+            <div id="stockContent">
+                <div class="stock-grid" id="stockGrid">
+                    <div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div>
+                </div>
             </div>
         </div>
 
@@ -2823,10 +2820,12 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 getSetting('dessertThresholds')
             ]);
             const thresholds = thresholdsRaw || {};
-            const grid = document.getElementById('stockGrid');
+            const grid  = document.getElementById('stockGrid');
+            const badge = document.getElementById('stockBadge');
             grid.innerHTML = '';
 
             if (!stockData || stockData.length === 0) {
+                if (badge) badge.textContent = '0';
                 grid.innerHTML = `<div class="stock-item" style="grid-column:1/-1">
                     <div class="empty-state">
                         <div class="empty-state-icon">📭</div>
@@ -2835,6 +2834,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 </div>`;
                 return;
             }
+            if (badge) badge.textContent = stockData.length + ' çeşit';
 
             stockData.forEach((s, i) => {
                 const threshold = thresholds ? Number(thresholds[String(s.dessertId)] || 0) : 0;
