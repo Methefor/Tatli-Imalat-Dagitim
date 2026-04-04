@@ -1796,6 +1796,7 @@
             updateMonthLabel();
             await loadData();
             startAutoRefresh();
+            startRealtimeSync();
             initPullToRefresh(() => loadData());
             // Yan paneller — filtreden bağımsız
             loadWasteTrend();
@@ -1818,6 +1819,26 @@
         function startAutoRefresh() {
             if (autoRefreshTimer) clearInterval(autoRefreshTimer);
             autoRefreshTimer = setInterval(() => loadData(true), 30000);
+        }
+
+        // ── Realtime Sync ─────────────────────────────────
+        // Herhangi bir şube veri girdiğinde tüm açık paneller anında güncellenir
+        let realtimeDebounce = null;
+        function startRealtimeSync() {
+            const client = window.supabaseInstance;
+            if (!client) return;
+            client
+                .channel('admin-realtime')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'daily_entries'
+                }, () => {
+                    // Arka arkaya gelen değişiklikleri birleştir (2sn bekle)
+                    clearTimeout(realtimeDebounce);
+                    realtimeDebounce = setTimeout(() => loadData(true), 2000);
+                })
+                .subscribe();
         }
 
         function updateLiveStatus() {
