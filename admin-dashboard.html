@@ -1435,7 +1435,7 @@
         <div class="kpi-grid">
             <div class="kpi-card fade-up" style="animation-delay:0.05s">
                 <div class="kpi-header">
-                    <span class="kpi-label">Bugün Gelen</span>
+                    <span class="kpi-label" id="labelGelen">Gelen</span>
                     <div class="kpi-icon kpi-icon--amber">📦</div>
                 </div>
                 <div class="kpi-value" id="totalDistribution">—</div>
@@ -1450,7 +1450,7 @@
 
             <div class="kpi-card fade-up" style="animation-delay:0.1s">
                 <div class="kpi-header">
-                    <span class="kpi-label">Bugün Satılan</span>
+                    <span class="kpi-label" id="labelSatilan">Satılan</span>
                     <div class="kpi-icon kpi-icon--green">📈</div>
                 </div>
                 <div class="kpi-value kpi-value--green" id="totalSales">—</div>
@@ -1462,7 +1462,7 @@
 
             <div class="kpi-card fade-up" style="animation-delay:0.15s">
                 <div class="kpi-header">
-                    <span class="kpi-label">Şu An Kalan</span>
+                    <span class="kpi-label" id="labelKalan">Kalan</span>
                     <div class="kpi-icon kpi-icon--blue">📊</div>
                 </div>
                 <div class="kpi-value" id="totalStock">—</div>
@@ -1474,7 +1474,7 @@
 
             <div class="kpi-card fade-up" style="animation-delay:0.2s">
                 <div class="kpi-header">
-                    <span class="kpi-label">Bugün Zayiat</span>
+                    <span class="kpi-label" id="labelZayiat">Zayiat</span>
                     <div class="kpi-icon kpi-icon--red">🗑️</div>
                 </div>
                 <div class="kpi-value kpi-value--red" id="totalWaste">—</div>
@@ -1934,9 +1934,27 @@
             return `${MONTHS_TR[navMonth-1]} ${navYear}`;
         }
 
+        function updateKpiLabels() {
+            const f = currentFilter;
+            const prefix = f === 'today'     ? 'Bugün'
+                         : f === 'yesterday' ? 'Dün'
+                         : f === 'week'      ? 'Bu Hafta'
+                         : f === 'all'       ? 'Toplam'
+                         : getCurrentPeriodLabel(); // ay adı
+
+            document.getElementById('labelGelen').textContent   = `${prefix} Gelen`;
+            document.getElementById('labelSatilan').textContent = `${prefix} Satılan`;
+            document.getElementById('labelZayiat').textContent  = `${prefix} Zayiat`;
+
+            // Kalan: bugün/dün → "Şu An Kalan", diğerleri → dönem sonu kalan
+            const kalanLabel = (f === 'today' || f === 'yesterday') ? 'Şu An Kalan' : `${prefix} Kalan`;
+            document.getElementById('labelKalan').textContent = kalanLabel;
+        }
+
         // ── Load Data ────────────────────────────────────
         async function loadData(silent = false) {
             if (!silent) toggleLoading(true);
+            updateKpiLabels();
 
             // Zayiat + Stok herzaman bağımsız olarak çekilir (allData'dan etkilenmez)
             const zr = getZayiatDateRange();
