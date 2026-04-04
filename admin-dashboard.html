@@ -1356,6 +1356,20 @@
         .detail-val.empty  { color: rgba(255,255,255,0.18); }
         .detail-time { font-size: 11px; color: var(--text-3); text-align: right; font-variant-numeric: tabular-nums; }
         .detail-separator { height: 1px; background: rgba(255,255,255,0.06); margin: 0 16px; }
+
+        /* Accordion */
+        .detail-branch-header { cursor: pointer; user-select: none; }
+        .detail-branch-header:active { background: rgba(255,255,255,0.05); }
+        .detail-branch-chevron {
+            margin-left: 8px; font-size: 11px; color: var(--text-3);
+            transition: transform 0.2s; display: inline-block;
+        }
+        .detail-branch-group.collapsed .detail-branch-chevron { transform: rotate(-90deg); }
+        .detail-branch-content { overflow: hidden; }
+        .detail-branch-group.collapsed .detail-branch-content { display: none; }
+        .detail-branch-count {
+            font-size: 11px; color: var(--text-3); margin-left: 6px; font-weight: 400;
+        }
     </style>
 </head>
 <body>
@@ -3723,15 +3737,22 @@ _Mutlukent Tatlı Takip Sistemi_`;
             renderTodayDetails(sorted, label);
         }
 
+        function hasActivityData(e) {
+            return (e.received_amount > 0) || (e.remaining_amount > 0) || (e.waste_amount > 0);
+        }
+
         function renderActivityFeed(entries, label) {
             const feedEl  = document.getElementById('activityFeed');
             const badgeEl = document.getElementById('activityBadge');
             if (!feedEl) return;
 
-            if (badgeEl) badgeEl.textContent = `${entries.length} işlem`;
+            // Sıfır değerli kayıtları filtrele
+            const meaningful = entries.filter(hasActivityData);
+
+            if (badgeEl) badgeEl.textContent = `${meaningful.length} işlem`;
 
             const emptyLabel = `${label || 'Bu dönemde'} işlem kaydı yok`;
-            if (entries.length === 0) {
+            if (meaningful.length === 0) {
                 feedEl.innerHTML = `<div class="empty-state" style="padding:32px">
                     <div class="empty-state-icon">📭</div>
                     <div class="empty-state-title">${emptyLabel}</div>
@@ -3739,7 +3760,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return;
             }
 
-            const items = entries.map(e => {
+            const items = meaningful.map(e => {
                 const branch  = e.branches?.name         || '?';
                 const manager = e.branches?.manager_name || branch;
                 const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
@@ -3747,31 +3768,28 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 const rem     = e.remaining_amount;
                 const wst     = e.waste_amount;
 
-                // Türkiye saatiyle saat göster
                 let timeStr = '—';
                 if (e.entry_time) {
                     const t = new Date(e.entry_time);
                     timeStr = t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
                 }
 
-                // Tür belirle
                 let type = 'mixed', typeLabel = 'Güncelleme';
-                if (recv > 0 && rem === null && !wst)     { type = 'gelen';  typeLabel = 'Gelen';  }
-                else if (rem !== null && !recv && !wst)    { type = 'kalan';  typeLabel = 'Kalan';  }
-                else if (wst > 0 && !recv && rem === null) { type = 'zayiat'; typeLabel = 'Zayiat'; }
+                if (recv > 0 && !wst && rem === null)  { type = 'gelen';  typeLabel = 'Gelen'; }
+                else if (rem > 0 && !recv && !wst)     { type = 'kalan';  typeLabel = 'Kalan'; }
+                else if (wst > 0 && !recv)             { type = 'zayiat'; typeLabel = 'Zayiat'; }
 
-                // Detay satırı
                 const parts = [];
-                if (recv > 0)   parts.push(`<span style="color:var(--amber)">${recv} gelen</span>`);
-                if (rem !== null) parts.push(`<span style="color:var(--blue)">${rem} kalan</span>`);
-                if (wst > 0)    parts.push(`<span style="color:var(--red)">${wst} zayiat</span>`);
+                if (recv > 0) parts.push(`<span style="color:var(--amber)">${recv} gelen</span>`);
+                if (rem > 0)  parts.push(`<span style="color:var(--blue)">${rem} kalan</span>`);
+                if (wst > 0)  parts.push(`<span style="color:var(--red)">${wst} zayiat</span>`);
 
                 return `<div class="activity-item">
                     <span class="activity-dot ${type}"></span>
                     <span class="activity-time">${timeStr}</span>
                     <div class="activity-body">
                         <div class="activity-who"><b>${manager}</b> · ${branch}</div>
-                        <div class="activity-detail">${dessert} · ${parts.join(', ') || '—'}</div>
+                        <div class="activity-detail">${dessert} · ${parts.join(', ')}</div>
                     </div>
                     <span class="activity-tag ${type}">${typeLabel}</span>
                 </div>`;
@@ -3780,15 +3798,18 @@ _Mutlukent Tatlı Takip Sistemi_`;
             feedEl.innerHTML = `<div class="activity-list">${items}</div>`;
         }
 
+        function toggleBranchDetail(header) {
+            header.closest('.detail-branch-group').classList.toggle('collapsed');
+        }
+
         function renderTodayDetails(entries, label) {
             const el      = document.getElementById('todayDetail');
             const badgeEl = document.getElementById('detailBadge');
             if (!el) return;
 
-            if (badgeEl) badgeEl.textContent = `${entries.length} kayıt`;
-
             const emptyLabel = `${label || 'Bu dönemde'} giriş kaydı yok`;
             if (entries.length === 0) {
+                if (badgeEl) badgeEl.textContent = '0 kayıt';
                 el.innerHTML = `<div class="empty-state" style="padding:32px">
                     <div class="empty-state-icon">📭</div>
                     <div class="empty-state-title">${emptyLabel}</div>
@@ -3809,16 +3830,19 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 (a.branch?.name || '').localeCompare(b.branch?.name || '', 'tr')
             );
 
+            let totalMeaningful = 0;
+
             const html = sorted.map((g, gi) => {
                 const branchName = g.branch?.name || '?';
                 const manager    = g.branch?.manager_name || '—';
 
-                // Satırları zamana göre sırala (yeniden eskiye)
-                const rows = [...g.rows].sort((a, b) => {
-                    const ta = a.entry_time || '';
-                    const tb = b.entry_time || '';
-                    return tb.localeCompare(ta);
-                });
+                // Sıfır kayıtları filtrele, zamana göre sırala
+                const rows = [...g.rows]
+                    .filter(hasActivityData)
+                    .sort((a, b) => (b.entry_time || '').localeCompare(a.entry_time || ''));
+
+                if (rows.length === 0) return ''; // bu şubede anlamlı veri yok
+                totalMeaningful += rows.length;
 
                 const rowsHtml = rows.map(e => {
                     const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
@@ -3833,9 +3857,8 @@ _Mutlukent Tatlı Takip Sistemi_`;
                     }
 
                     const fmtVal = (val, cls) =>
-                        val !== null && val !== undefined && val !== 0
-                            ? `<span class="detail-val ${cls}">${val}</span>`
-                            : `<span class="detail-val empty">—</span>`;
+                        val > 0 ? `<span class="detail-val ${cls}">${val}</span>`
+                                : `<span class="detail-val empty">—</span>`;
 
                     return `<div class="detail-entry-row">
                         <span class="detail-dessert-name">${dessert}</span>
@@ -3846,24 +3869,34 @@ _Mutlukent Tatlı Takip Sistemi_`;
                     </div>`;
                 }).join('');
 
+                // İlk şube açık, diğerleri kapalı
+                const collapsed = gi > 0 ? ' collapsed' : '';
                 const sep = gi > 0 ? '<div class="detail-separator"></div>' : '';
-                return `${sep}<div class="detail-branch-group">
-                    <div class="detail-branch-header">
+                return `${sep}<div class="detail-branch-group${collapsed}">
+                    <div class="detail-branch-header" onclick="toggleBranchDetail(this)">
                         <span class="detail-branch-name">🏪 ${branchName}</span>
+                        <span class="detail-branch-count">${rows.length} kayıt</span>
                         <span class="detail-branch-manager">${manager}</span>
+                        <span class="detail-branch-chevron">▼</span>
                     </div>
-                    <div class="detail-entry-header">
-                        <span>Tatlı</span>
-                        <span>Gelen</span>
-                        <span>Kalan</span>
-                        <span>Zayiat</span>
-                        <span>Saat</span>
+                    <div class="detail-branch-content">
+                        <div class="detail-entry-header">
+                            <span>Tatlı</span>
+                            <span>Gelen</span>
+                            <span>Kalan</span>
+                            <span>Zayiat</span>
+                            <span>Saat</span>
+                        </div>
+                        ${rowsHtml}
                     </div>
-                    ${rowsHtml}
                 </div>`;
             }).join('');
 
-            el.innerHTML = html;
+            if (badgeEl) badgeEl.textContent = `${totalMeaningful} kayıt`;
+            el.innerHTML = html || `<div class="empty-state" style="padding:32px">
+                <div class="empty-state-icon">📭</div>
+                <div class="empty-state-title">${emptyLabel}</div>
+            </div>`;
         }
 
         // ── Logout ────────────────────────────────────────
