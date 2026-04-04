@@ -2004,7 +2004,7 @@
                 showNoData();
                 updateComparison([]);
                 updateLiveStatus();
-                await loadActivityFeed();
+                loadActivityFeed([]);
                 return;
             }
 
@@ -2023,7 +2023,7 @@
             updateHeatmap();
             updatePrintHeader();
             updateLiveStatus();
-            await loadActivityFeed();
+            loadActivityFeed(allData);
         }
 
         // ── Helpers ──────────────────────────────────────
@@ -3694,46 +3694,28 @@ _Mutlukent Tatlı Takip Sistemi_`;
             return getCurrentPeriodLabel(); // ay adı
         }
 
-        async function loadActivityFeed() {
-            // currentFilter anlık görüntüsü — async işlem sırasında değişmemesi için
-            const filterSnap = currentFilter;
+        function loadActivityFeed(data) {
+            const titleEl    = document.getElementById('detailPanelTitle');
+            const actTitleEl = document.getElementById('activityPanelTitle');
 
-            const feedEl      = document.getElementById('activityFeed');
-            const detailEl    = document.getElementById('todayDetail');
-            const titleEl     = document.getElementById('detailPanelTitle');
-            const actTitleEl  = document.getElementById('activityPanelTitle');
-            const badgeEl     = document.getElementById('activityBadge');
-
-            const label = filterSnap === 'today'     ? 'Bugün'
-                        : filterSnap === 'yesterday' ? 'Dün'
-                        : filterSnap === 'week'      ? 'Bu Hafta'
-                        : filterSnap === 'all'       ? 'Tüm Dönem'
+            const label = currentFilter === 'today'     ? 'Bugün'
+                        : currentFilter === 'yesterday' ? 'Dün'
+                        : currentFilter === 'week'      ? 'Bu Hafta'
+                        : currentFilter === 'all'       ? 'Tüm Dönem'
                         : getCurrentPeriodLabel();
 
-            // Başlıkları güncelle
             if (actTitleEl) actTitleEl.textContent = `⚡ ${label} İşlemleri`;
             if (titleEl)    titleEl.textContent    = `📋 ${label} Giriş Detayları`;
-            if (badgeEl)    badgeEl.textContent    = '⏳';
 
-            if (!feedEl) return;
+            // allData'yı entry_time'a göre sırala (yeniden eskiye), max 100
+            const sorted = [...(data || [])].sort((a, b) => {
+                const ta = a.entry_time || '';
+                const tb = b.entry_time || '';
+                return tb.localeCompare(ta);
+            }).slice(0, 100);
 
-            try {
-                const { startDate, endDate } = getDateRange();
-                // Tek gün → 500 kayıt; hafta/ay/tümü → 100 (en yeni)
-                const limit = (startDate === endDate) ? 500 : 100;
-                const entries = await getRecentActivity(limit, startDate, endDate);
-
-                // Sonuçlar gelene kadar filtre değiştiyse yoksay
-                if (currentFilter !== filterSnap) return;
-
-                renderActivityFeed(entries, label);
-                renderTodayDetails(entries, label);
-            } catch (err) {
-                console.error('Aktivite akışı hatası:', err);
-                const errMsg = '<div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px">Yüklenemedi</div>';
-                feedEl.innerHTML = errMsg;
-                if (detailEl) detailEl.innerHTML = errMsg;
-            }
+            renderActivityFeed(sorted, label);
+            renderTodayDetails(sorted, label);
         }
 
         function renderActivityFeed(entries, label) {
@@ -3743,7 +3725,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
             if (badgeEl) badgeEl.textContent = `${entries.length} işlem`;
 
-            const emptyLabel = `${label || getActivityPeriodLabel()} döneminde işlem kaydı yok`;
+            const emptyLabel = `${label || 'Bu dönemde'} işlem kaydı yok`;
             if (entries.length === 0) {
                 feedEl.innerHTML = `<div class="empty-state" style="padding:32px">
                     <div class="empty-state-icon">📭</div>
@@ -3800,7 +3782,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
             if (badgeEl) badgeEl.textContent = `${entries.length} kayıt`;
 
-            const emptyLabel = `${label || getActivityPeriodLabel()} giriş kaydı yok`;
+            const emptyLabel = `${label || 'Bu dönemde'} giriş kaydı yok`;
             if (entries.length === 0) {
                 el.innerHTML = `<div class="empty-state" style="padding:32px">
                     <div class="empty-state-icon">📭</div>
