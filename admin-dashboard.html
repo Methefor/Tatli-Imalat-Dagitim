@@ -1396,6 +1396,67 @@
         .feed-branch-group.collapsed .feed-branch-chev { transform: rotate(-90deg); }
         .feed-branch-items { }
         .feed-branch-group.collapsed .feed-branch-items { display: none; }
+
+        /* ── QUICK STATUS BAR ────────────────────────── */
+        .quick-status {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .qs-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .qs-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            white-space: nowrap;
+            min-width: 54px;
+        }
+        .qs-ratio {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+        .qs-ratio-ok      { background: rgba(16,185,129,0.14); color: #34d399; }
+        .qs-ratio-partial { background: rgba(245,158,11,0.14); color: var(--amber); }
+        .qs-ratio-none    { background: rgba(239,68,68,0.12);  color: var(--red); }
+        .qs-branch-pills  { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+        .qs-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px 4px 7px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: default;
+        }
+        .qs-pill--ok   { background: rgba(16,185,129,0.11); border: 1px solid rgba(16,185,129,0.24); color: #4ade80; }
+        .qs-pill--wait { background: rgba(239,68,68,0.08);  border: 1px solid rgba(239,68,68,0.18);  color: rgba(252,165,165,0.65); }
+        .qs-dot {
+            width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+        }
+        .qs-dot--ok   { background: #22c55e; box-shadow: 0 0 5px rgba(34,197,94,0.7); animation: qsPulse 2s ease-in-out infinite; }
+        .qs-dot--wait { background: rgba(239,68,68,0.45); }
+        @keyframes qsPulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+        .qs-time  { font-size: 10px; font-weight: 400; opacity: .7; }
+        .qs-sep   { height: 1px; background: var(--border); margin: 2px 0; }
+        .qs-top-items { display: flex; flex-wrap: wrap; gap: 10px; flex: 1; }
+        .qs-top-item  { font-size: 13px; color: var(--text-2); }
+        .qs-top-item strong { color: var(--amber); font-weight: 800; }
     </style>
 </head>
 <body>
@@ -1524,6 +1585,14 @@
             </div>
         </div>
 
+        <!-- Anlık Durum Çubuğu -->
+        <div class="quick-status fade-up" id="quickStatus" style="animation-delay:0.22s">
+            <div class="qs-row">
+                <span class="qs-label">Şubeler</span>
+                <span style="font-size:13px;color:var(--text-3)">⏳ Yükleniyor...</span>
+            </div>
+        </div>
+
         <!-- Aktivite Akışı + Giriş Detayları (KPI'ların hemen altında) -->
         <div class="detail-grid-wrap">
 
@@ -1592,7 +1661,7 @@
             <!-- Tatlı × Şube Satış Haritası (content-grid içinde) -->
             <div class="panel fade-up" style="animation-delay:0.32s">
                 <div class="panel-header">
-                    <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
+                    <h2 class="panel-title">📊 Şube × Tatlı Satış Matrisi</h2>
                     <span class="panel-badge" id="heatmapBadge">—</span>
                 </div>
                 <div class="heatmap-wrap">
@@ -1773,6 +1842,7 @@
         // ── State ────────────────────────────────────────
         let currentFilter    = 'today';
         let allData          = [];
+        let allBranchList    = []; // tüm aktif şubeler (init'te bir kez çekilir)
         let prevMonthData    = [];
         let zayiatData       = [];
         let openingStockMap  = {}; // "branchId|dessertId" → dönem öncesi son kalan
@@ -1820,7 +1890,10 @@
             setInterval(updateClock, 1000);
             updateDateDisplay();
             updateMonthLabel();
-            await loadData();
+            // Şube listesini loadData ile paralel çek (anlık durum için)
+            const [branches] = await Promise.all([getBranches(), loadData()]);
+            allBranchList = branches || [];
+            updateQuickStatus(); // allBranchList geldikten sonra tekrar render et
             startAutoRefresh();
             startRealtimeSync();
             initPullToRefresh(() => loadData());
@@ -2063,6 +2136,7 @@
 
             if (!allData || allData.length === 0) {
                 showNoData();
+                updateQuickStatus();
                 updateComparison([]);
                 updateLiveStatus();
                 if (gen === loadGeneration) loadActivityFeed([]);
@@ -2070,6 +2144,7 @@
             }
 
             updateStats();
+            updateQuickStatus();
             updateComparison(comparisonActive ? comparisonData : prevMonthData);
             updateBranchTable();
             updateCharts();
@@ -3642,6 +3717,108 @@ _Mutlukent Tatlı Takip Sistemi_`;
             document.getElementById('turnoverBadge').textContent = list.length + ' tatlı';
         }
 
+        // ── Şube Kısaltma Yardımcıları ───────────────────
+        function abbrevBranch(name) {
+            return name.trim().split(/\s+/).map(w => w.charAt(0)).join('');
+        }
+
+        function buildBranchAbbrevs(branches) {
+            // branches: [{ id, name }]
+            const abbrevMap = {};
+            const countOf = {};
+            branches.forEach(b => {
+                const a = abbrevBranch(b.name);
+                countOf[a] = (countOf[a] || 0) + 1;
+            });
+            const usedNth = {};
+            branches.forEach(b => {
+                const a = abbrevBranch(b.name);
+                if (countOf[a] > 1) {
+                    usedNth[a] = (usedNth[a] || 0) + 1;
+                    abbrevMap[b.id] = a + usedNth[a];
+                } else {
+                    abbrevMap[b.id] = a;
+                }
+            });
+            return abbrevMap;
+        }
+
+        // ── Anlık Durum Çubuğu ───────────────────────────
+        function updateQuickStatus() {
+            const el = document.getElementById('quickStatus');
+            if (!el) return;
+
+            // Mevcut allData'dan şube aktivitesi
+            const branchAct = {}; // id → { name, count, lastTime }
+            allData.forEach(e => {
+                if (!e.branches) return;
+                const bid = e.branches.id;
+                if (!branchAct[bid]) branchAct[bid] = { name: e.branches.name, count: 0, lastTime: null };
+                branchAct[bid].count++;
+                if (e.created_at && (!branchAct[bid].lastTime || e.created_at > branchAct[bid].lastTime))
+                    branchAct[bid].lastTime = e.created_at;
+            });
+
+            // Kısaltma haritası (allBranchList varsa oradan, yoksa allData'dan)
+            const src = allBranchList.length > 0 ? allBranchList
+                : Object.entries(branchAct).map(([id, v]) => ({ id, name: v.name }));
+            const abbrevMap = buildBranchAbbrevs(src);
+
+            const isToday = currentFilter === 'today';
+            const enteredCount = Object.keys(branchAct).length;
+            const totalCount   = allBranchList.length || enteredCount;
+
+            const ratioClass = enteredCount === totalCount ? 'qs-ratio-ok'
+                             : enteredCount > 0 ? 'qs-ratio-partial' : 'qs-ratio-none';
+
+            const pillsHtml = src.map(b => {
+                const act    = branchAct[b.id];
+                const abbrev = abbrevMap[b.id] || abbrevBranch(b.name);
+                if (act) {
+                    const timeStr = isToday && act.lastTime
+                        ? new Date(act.lastTime).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                        : (act.count + ' kayıt');
+                    return `<div class="qs-pill qs-pill--ok" title="${b.name}">
+                        <span class="qs-dot qs-dot--ok"></span>
+                        <span>${abbrev}</span>
+                        <span class="qs-time">${timeStr}</span>
+                    </div>`;
+                } else {
+                    return `<div class="qs-pill qs-pill--wait" title="${b.name} — Henüz giriş yok">
+                        <span class="qs-dot qs-dot--wait"></span>
+                        <span>${abbrev}</span>
+                    </div>`;
+                }
+            }).join('');
+
+            // En çok gelen 3 tatlı
+            const dessertTotals = {};
+            allData.forEach(e => {
+                if (!e.desserts) return;
+                if (!dessertTotals[e.dessert_id])
+                    dessertTotals[e.dessert_id] = { name: (e.desserts.emoji || '') + ' ' + e.desserts.name, total: 0 };
+                dessertTotals[e.dessert_id].total += e.received_amount || 0;
+            });
+            const topDesserts = Object.values(dessertTotals).sort((a, b) => b.total - a.total).slice(0, 3);
+            const medals = ['🥇','🥈','🥉'];
+            const topHtml = topDesserts.map((d, i) =>
+                `<span class="qs-top-item">${medals[i]} ${d.name} <strong>${d.total}</strong></span>`
+            ).join('');
+
+            el.innerHTML = `
+                <div class="qs-row">
+                    <span class="qs-label">Şubeler</span>
+                    <span class="qs-ratio ${ratioClass}">${enteredCount}/${totalCount} girdi</span>
+                    <div class="qs-branch-pills">${pillsHtml}</div>
+                </div>
+                ${topDesserts.length ? `<div class="qs-sep"></div>
+                <div class="qs-row">
+                    <span class="qs-label">En Çok</span>
+                    <div class="qs-top-items">${topHtml}</div>
+                </div>` : ''}
+            `;
+        }
+
         // ── Tatlı × Şube Heatmap ──────────────────────────
         function updateHeatmap() {
             const el    = document.getElementById('heatmapContent');
@@ -3694,10 +3871,13 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return;
             }
 
+            // Kısaltılmış şube isimleri (çakışma kontrolü dahil)
+            const abbrevs = buildBranchAbbrevs(branchIds.map(bid => ({ id: bid, name: branches[bid] })));
+
             let html = `<table class="heatmap-table"><thead><tr>
                 <th>Tatlı</th>
-                ${branchIds.map(bid => `<th>${branches[bid].split(' ')[0]}</th>`).join('')}
-                <th>Toplam</th>
+                ${branchIds.map(bid => `<th title="${branches[bid]}">${abbrevs[bid]}</th>`).join('')}
+                <th>Top</th>
             </tr></thead><tbody>`;
 
             dessertIds.forEach(did => {
