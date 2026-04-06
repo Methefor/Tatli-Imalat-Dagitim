@@ -692,6 +692,89 @@
         #updateBanner button:hover { background: rgba(255,255,255,0.35); }
 
         /* ── CHANGELOG ─────────────────────── */
+        .changelog-content {
+            max-width: 520px;
+            padding: 0 !important;
+            overflow: hidden;
+        }
+        .cl-modal-head {
+            padding: 24px 28px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cl-modal-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .cl-modal-ver {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.35);
+            color: #34d399;
+        }
+        .cl-modal-close {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: none; color: var(--text-secondary);
+            font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .cl-modal-close:hover { background: rgba(255,255,255,0.12); }
+        .cl-modal-body {
+            padding: 8px 0 16px;
+            overflow-y: auto;
+            max-height: calc(85vh - 80px);
+        }
+        .cl-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 11px 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.12s;
+        }
+        .cl-entry:last-child { border-bottom: none; }
+        .cl-entry:hover { background: rgba(255,255,255,0.03); }
+        .cl-badge {
+            flex-shrink: 0;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            padding: 3px 8px;
+            border-radius: 6px;
+            width: 60px;
+            text-align: center;
+            margin-top: 1px;
+        }
+        .cl-badge-new  { background: rgba(16,185,129,0.13); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+        .cl-badge-fix  { background: rgba(245,158,11,0.13); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+        .cl-badge-perf { background: rgba(59,130,246,0.13); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+        .cl-badge-warn { background: rgba(239,68,68,0.13);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+        .cl-text {
+            font-size: 13px;
+            color: rgba(255,255,255,0.78);
+            line-height: 1.5;
+        }
+        .cl-section-sep {
+            padding: 10px 28px 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.2);
+            text-transform: uppercase;
+        }
+
         .changelog-btn {
             background: rgba(245,158,11,0.12);
             border: 1px solid rgba(245,158,11,0.35);
@@ -839,77 +922,72 @@
     <!-- CHANGELOG MODAL -->
     <div class="modal" id="changelogModal">
         <div class="modal-content changelog-content">
-            <h3 class="modal-title" style="margin-bottom:20px;">📋 Güncelleme Notları</h3>
 
-            <div class="cl-version">
-                <span class="cl-version-badge" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.4);color:#34d399">v2.8</span>
-                <span class="cl-date">Nisan 2026 — Güncel sürüm</span>
+            <div class="cl-modal-head">
+                <div class="cl-modal-title">📋 Güncelleme Notları</div>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <span class="cl-modal-ver">v2.8</span>
+                    <button class="cl-modal-close" onclick="document.getElementById('changelogModal').classList.remove('active')">✕</button>
+                </div>
             </div>
-            <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici paneli açılışında anlık özet harita: şubeler satır, tatlılar sütun — renkli şube emojileri ile tek bakışta durum.</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Haritada şube ve tatlı isimleri kısaltıldı, ekrana tam sığıyor; üzerine gelince tam isim görünüyor.</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Filtre değişince tüm tablolar ve harita doğru güncelleniyor.</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Satılan hesabı: kalan girilmeden satış gösterilmiyor.</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Son İşlemler şube bazında gruplandı, accordion.</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Personel paneli yalnızca kritik uyarıları (gelen azaltma) gösteriyor.</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Şube müdürü veri girince yönetici paneli anında güncelleniyor.</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Yeni sürümler çerez silmeden otomatik yükleniyor.</li>
-            </ul>
 
-            <div class="cl-version">
-                <span class="cl-version-badge" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:rgba(52,211,153,0.6)">v2.6</span>
-                <span class="cl-date">Nisan 2026</span>
+            <div class="cl-modal-body">
+
+                <div class="cl-section-sep">Nisan 2026 — Güncel Sürüm</div>
+
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text">Yönetici paneli dashboard daha anlaşılır hale getirildi — şube × tatlı satış haritası ilk açılışta gösterilir.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-fix">DÜZELTME</span>
+                    <span class="cl-text">Filtreleme sistemi tamamen yenilendi; Bugün, Dün, Bu Hafta, Aylık seçimlerinde tüm paneller doğru senkronize çalışıyor.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text">Satış hesaplamalarında önceki dönemden devreden stok doğru dikkate alınıyor.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-perf">HIZ</span>
+                    <span class="cl-text">Yeni sürümler çerez silmeden otomatik yükleniyor — hiçbir işlem gerektirmeden tüm cihazlarda güncellenir.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text">Günlük giriş detayları şube bazında gruplandı; şubeye tıklayarak açılıp kapatılabiliyor.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-warn">ÖNEMLİ</span>
+                    <span class="cl-text">Zayiat girişinde açıklama alanı zorunlu hale getirildi — neden bilgisi olmadan kayıt yapılamıyor.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text">Şube arası transfer ekranına hızlı miktar seçimi (+5 / +10) butonları eklendi.</span>
+                </div>
+
+                <div class="cl-section-sep">Mart 2026</div>
+
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text">Personel Yönetimi — müdür bazlı aktivite takibi, düzeltme geçmişi ve şüpheli giriş tespiti.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text">Tatlıcılar paneline haftalık üretim planı takvimi eklendi.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text">Yönetici paneline satış, stok ve zayiat analizlerini içeren detaylı bölümler eklendi.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-fix">DÜZELTME</span>
+                    <span class="cl-text">Veri girişi yalnızca güncel tarih ve bir önceki gün için yapılabilecek şekilde sınırlandırıldı.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-perf">HIZ</span>
+                    <span class="cl-text">Ana sayfa ilk açılış süresi önemli ölçüde kısaltıldı; şifre girişindeki performans sorunu giderildi.</span>
+                </div>
+
             </div>
-            <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Günlük giriş detayları şube bazında, tıklayarak açılıp kapanır hale getirildi.</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Bugün / Dün / Hafta filtreleri tüm kartlara ve listelere doğru yansıyor.</li>
-            </ul>
-
-            <div class="cl-version">
-                <span class="cl-version-badge" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:rgba(52,211,153,0.6)">v2.5</span>
-                <span class="cl-date">Nisan 2026</span>
-            </div>
-            <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Satış hesaplamalarında önceki dönemden devreden stok doğru dikkate alınıyor.</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat kayıtları seçilen döneme göre filtreleniyor; tarih, şube, tatlı ve açıklama bilgileriyle listeleniyor.</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat girişinde açıklama alanı zorunlu hale getirildi.</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Rapor penceresi mobil ve masaüstünde doğru konumda açılıyor.</li>
-            </ul>
-
-            <div class="cl-version">
-                <span class="cl-version-badge" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:rgba(52,211,153,0.6)">v2.4</span>
-                <span class="cl-date">Mart 2026</span>
-            </div>
-            <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Personel Yönetimi sayfasına müdür bazlı aktivite takibi, düzeltme geçmişi ve tekrarlı giriş tespiti eklendi.</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Zayiat girişlerinde açıklama (neden) alanı zorunlu hale getirildi. Kayıtlar yönetici panelinde açıklamalarıyla birlikte görüntülenebiliyor.</li>
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Şube arası transfer ekranına hızlı miktar seçimi (+5 / +10) butonları eklendi.</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Sistem yönetimi ekranında şifre ve müdür adı güncellemeleri sorunsuz çalışıyor.</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Veri girişi yalnızca güncel tarih ve bir önceki gün için yapılabilecek şekilde sınırlandırıldı.</li>
-            </ul>
-
-            <div class="cl-version">
-                <span class="cl-version-badge">v2.3</span>
-                <span class="cl-date">Mart 2026</span>
-            </div>
-            <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Tatlıcılar paneline haftalık üretim planı takvimi eklendi.</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Yönetici panelindeki aylık karşılaştırma bölümü daha doğru sonuçlar gösteriyor.</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Ana sayfa ilk açılış süresi önemli ölçüde kısaltıldı.</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Şifre girişi sırasında yaşanan performans sorunu giderildi.</li>
-            </ul>
-
-            <div class="cl-version">
-                <span class="cl-version-badge">v2.2</span>
-                <span class="cl-date">Mart 2026</span>
-            </div>
-            <ul class="cl-items">
-                <li><span class="cl-tag cl-tag-feat">YENİ</span>Yönetici paneline satış, stok ve zayiat analizlerini içeren 5 yeni bölüm eklendi.</li>
-                <li><span class="cl-tag cl-tag-perf">HIZ</span>Paneller arası geçişte yaşanan takılma sorunu çözüldü.</li>
-                <li><span class="cl-tag cl-tag-fix">DÜZELTİ</span>Mobil cihazlarda ekran kaydırma ve yakınlaştırma davranışları düzeltildi.</li>
-            </ul>
-
-            <button class="modal-close" onclick="document.getElementById('changelogModal').classList.remove('active')">Kapat</button>
         </div>
     </div>
 
