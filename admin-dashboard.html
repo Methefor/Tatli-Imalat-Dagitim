@@ -1823,7 +1823,6 @@
         // ── State ────────────────────────────────────────
         let currentFilter    = 'today';
         let allData          = [];
-        let miniHeatmapData  = []; // üst heatmap için bağımsız 30 günlük veri
         let prevMonthData    = [];
         let zayiatData       = [];
         let openingStockMap  = {}; // "branchId|dessertId" → dönem öncesi son kalan
@@ -2085,16 +2084,10 @@
 
             const fetchComp = comparisonActive ? fetchCompPeriodData() : Promise.resolve(comparisonData);
 
-            // Mini heatmap için son 30 günün tüm verisi (filtreden bağımsız)
-            const broad30From = new Date(); broad30From.setDate(broad30From.getDate() - 30);
-            const broad30Str  = `${broad30From.getFullYear()}-${String(broad30From.getMonth()+1).padStart(2,'0')}-${String(broad30From.getDate()).padStart(2,'0')}`;
-            const todayStr2   = getTRDateStr(new Date());
-
-            [allData, prevMonthData, comparisonData, miniHeatmapData] = await Promise.all([
+            [allData, prevMonthData, comparisonData] = await Promise.all([
                 getDailyEntriesDateRange(startDate, endDate),
                 fetchPrev,
-                fetchComp,
-                getDailyEntriesDateRange(broad30Str, todayStr2)
+                fetchComp
             ]);
 
             // Dönem öncesi devir stok: period başından önceki son kalan değerleri
@@ -3733,8 +3726,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
             const el    = document.getElementById('miniHeatmapContent');
             const badge = document.getElementById('miniHeatmapBadge');
             if (!el) return;
-            const src = (miniHeatmapData && miniHeatmapData.length) ? miniHeatmapData
-                      : (allData && allData.length) ? allData : null;
+            const src = (allData && allData.length) ? allData : null;
             if (!src) {
                 el.innerHTML = '<div style="padding:14px;color:var(--text-3);text-align:center;font-size:12px">Veri yok</div>';
                 return;
