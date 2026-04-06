@@ -3721,70 +3721,72 @@ _Mutlukent Tatlı Takip Sistemi_`;
             return abbrevMap;
         }
 
-        // ── Mini Heatmap (üst özet, kısaltılmış isimler) ─
+        // ── Mini Heatmap (üst özet — şube↓ × tatlı→) ────
+        const BRANCH_EMOJIS = ['🔵','🟢','🟡','🔴','🟣','🟠','🟤','⚪'];
+
         function updateMiniHeatmap() {
             const el    = document.getElementById('miniHeatmapContent');
             const badge = document.getElementById('miniHeatmapBadge');
             if (!el) return;
-            const src = (allData && allData.length) ? allData : null;
-            if (!src) {
+            if (!allData || !allData.length) {
                 el.innerHTML = '<div style="padding:14px;color:var(--text-3);text-align:center;font-size:12px">Veri yok</div>';
                 return;
             }
 
-            const matrix   = {}; // dessertId → branchId → received
+            // matrix[branchId][dessertId] = received
+            const matrix   = {};
             const desserts = {}; // id → { name, emoji }
             const branches = {}; // id → name
 
-            src.forEach(e => {
+            allData.forEach(e => {
                 if (!e.branches || !e.desserts) return;
                 const did = e.dessert_id;
                 const bid = e.branches.id;
                 desserts[did] = { name: e.desserts.name, emoji: e.desserts.emoji || '' };
                 branches[bid] = e.branches.name;
-                if (!matrix[did]) matrix[did] = {};
-                matrix[did][bid] = (matrix[did][bid] || 0) + (e.received_amount || 0);
+                if (!matrix[bid]) matrix[bid] = {};
+                matrix[bid][did] = (matrix[bid][did] || 0) + (e.received_amount || 0);
             });
 
+            // Tatlılar: toplam gelene göre azalan sıra
             const dessertIds = Object.keys(desserts).sort((a, b) => {
-                const ta = Object.values(matrix[a] || {}).reduce((s, v) => s + v, 0);
-                const tb = Object.values(matrix[b] || {}).reduce((s, v) => s + v, 0);
+                const ta = Object.values(matrix).reduce((s, bm) => s + (bm[a] || 0), 0);
+                const tb = Object.values(matrix).reduce((s, bm) => s + (bm[b] || 0), 0);
                 return tb - ta;
             });
-            const branchIds = Object.keys(branches);
+            // Şubeler: isme göre sabit sıra
+            const branchIds = Object.keys(branches).sort((a, b) =>
+                branches[a].localeCompare(branches[b], 'tr'));
+            const branchAbbrevs = buildBranchAbbrevs(branchIds.map(bid => ({ id: bid, name: branches[bid] })));
+            const branchEmoji   = Object.fromEntries(
+                branchIds.map((bid, i) => [bid, BRANCH_EMOJIS[i % BRANCH_EMOJIS.length]])
+            );
 
             if (!dessertIds.length || !branchIds.length) {
                 el.innerHTML = '<div style="padding:14px;color:var(--text-3);text-align:center">Veri yok</div>';
                 return;
             }
 
-            // Kısaltmalar
-            const branchAbbrevs = buildBranchAbbrevs(branchIds.map(bid => ({ id: bid, name: branches[bid] })));
-            // Tatlı kısaltması: emoji varsa emoji, yoksa ilk 4 harf
-            const dessertLabel = did => {
-                const d = desserts[did];
-                return d.emoji ? d.emoji : d.name.substring(0, 4);
-            };
-
             let globalMax = 0;
-            dessertIds.forEach(did => {
-                branchIds.forEach(bid => { const v = matrix[did]?.[bid] || 0; if (v > globalMax) globalMax = v; });
-            });
+            branchIds.forEach(bid => dessertIds.forEach(did => {
+                const v = matrix[bid]?.[did] || 0;
+                if (v > globalMax) globalMax = v;
+            }));
+
+            // Sütun başlığı: tatlı emojisi (varsa) yoksa ilk 3 harf
+            const dHead = did => desserts[did].emoji || desserts[did].name.substring(0, 3);
 
             let html = `<table><thead><tr>
-                <th>Tatlı</th>
-                ${branchIds.map(bid => `<th title="${branches[bid]}">${branchAbbrevs[bid]}</th>`).join('')}
+                <th>Şube</th>
+                ${dessertIds.map(did => `<th title="${desserts[did].name}">${dHead(did)}</th>`).join('')}
                 <th>Top</th>
             </tr></thead><tbody>`;
 
-            dessertIds.forEach(did => {
-                const rowTotal = branchIds.reduce((s, bid) => s + (matrix[did]?.[bid] || 0), 0);
-                const dlabel = desserts[did].emoji
-                    ? `${desserts[did].emoji} ${desserts[did].name.split(' ')[0].substring(0,6)}`
-                    : desserts[did].name.substring(0,6);
-                html += `<tr><td title="${desserts[did].name}">${dlabel}</td>`;
-                branchIds.forEach(bid => {
-                    const v = matrix[did]?.[bid] || 0;
+            branchIds.forEach(bid => {
+                const rowTotal = dessertIds.reduce((s, did) => s + (matrix[bid]?.[did] || 0), 0);
+                html += `<tr><td title="${branches[bid]}">${branchEmoji[bid]} ${branchAbbrevs[bid]}</td>`;
+                dessertIds.forEach(did => {
+                    const v = matrix[bid]?.[did] || 0;
                     const opacity = globalMax > 0 ? Math.max(0.06, v / globalMax) : 0.06;
                     const txtCol  = opacity > 0.55 ? 'color:#000;font-weight:800' : 'color:var(--text)';
                     html += `<td style="background:rgba(245,158,11,${opacity.toFixed(2)});${txtCol}">${v || '—'}</td>`;
@@ -3794,7 +3796,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
             html += '</tbody></table>';
             el.innerHTML = html;
-            if (badge) badge.textContent = `${dessertIds.length} × ${branchIds.length}`;
+            if (badge) badge.textContent = `${branchIds.length} şube · ${dessertIds.length} tatlı`;
         }
 
         // ── Tatlı × Şube Heatmap ──────────────────────────
