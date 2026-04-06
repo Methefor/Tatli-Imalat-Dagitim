@@ -3757,12 +3757,12 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 matrix[bid][did] = (matrix[bid][did] || 0) + (e.received_amount || 0);
             });
 
-            // Tatlılar: toplam gelene göre azalan sıra
-            const dessertIds = Object.keys(desserts).sort((a, b) => {
-                const ta = Object.values(matrix).reduce((s, bm) => s + (bm[a] || 0), 0);
-                const tb = Object.values(matrix).reduce((s, bm) => s + (bm[b] || 0), 0);
-                return tb - ta;
-            });
+            // Tatlılar: sadece bu dönemde giriş olanlar, toplam gelene göre azalan sıra
+            const dessertIds = Object.keys(desserts)
+                .map(did => ({ did, total: Object.values(matrix).reduce((s, bm) => s + (bm[did] || 0), 0) }))
+                .filter(d => d.total > 0)
+                .sort((a, b) => b.total - a.total)
+                .map(d => d.did);
             // Şubeler: isme göre sabit sıra
             const branchIds = Object.keys(branches).sort((a, b) =>
                 branches[a].localeCompare(branches[b], 'tr'));
