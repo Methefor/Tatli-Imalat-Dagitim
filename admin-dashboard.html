@@ -1411,15 +1411,17 @@
             width: 100%;
         }
         .mini-heatmap-wrap th {
-            padding: 5px 7px;
+            padding: 5px 4px;
             font-size: 10px;
             font-weight: 700;
             color: var(--text-3);
             text-align: center;
+            vertical-align: bottom;
             border-bottom: 1px solid var(--border);
             background: var(--surface);
         }
-        .mini-heatmap-wrap th:first-child { text-align: left; min-width: 56px; }
+        .mini-heatmap-wrap th:first-child { text-align: left; min-width: 72px; padding-left: 10px; }
+        .mini-heatmap-wrap th:last-child  { min-width: 36px; }
         .mini-heatmap-wrap td {
             padding: 5px 7px;
             text-align: center;
@@ -3722,7 +3724,14 @@ _Mutlukent Tatlı Takip Sistemi_`;
         }
 
         // ── Mini Heatmap (üst özet — şube↓ × tatlı→) ────
-        const BRANCH_EMOJIS = ['🔵','🟢','🟡','🔴','🟣','🟠','🟤','⚪'];
+        const BRANCH_EMOJI_MAP = {
+            'Rumeli İskelesi': '🌊',
+            'Millet Bahçesi':  '🌳',
+            'Sahil':           '🏖️',
+            'Vagon':           '🚂',
+            'Yahya Kemal':     '📚',
+            'TunaBoyu':        '🏞️',
+        };
 
         function updateMiniHeatmap() {
             const el    = document.getElementById('miniHeatmapContent');
@@ -3757,11 +3766,6 @@ _Mutlukent Tatlı Takip Sistemi_`;
             // Şubeler: isme göre sabit sıra
             const branchIds = Object.keys(branches).sort((a, b) =>
                 branches[a].localeCompare(branches[b], 'tr'));
-            const branchAbbrevs = buildBranchAbbrevs(branchIds.map(bid => ({ id: bid, name: branches[bid] })));
-            const branchEmoji   = Object.fromEntries(
-                branchIds.map((bid, i) => [bid, BRANCH_EMOJIS[i % BRANCH_EMOJIS.length]])
-            );
-
             if (!dessertIds.length || !branchIds.length) {
                 el.innerHTML = '<div style="padding:14px;color:var(--text-3);text-align:center">Veri yok</div>';
                 return;
@@ -3773,18 +3777,32 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 if (v > globalMax) globalMax = v;
             }));
 
-            // Sütun başlığı: tatlı emojisi (varsa) yoksa ilk 3 harf
-            const dHead = did => desserts[did].emoji || desserts[did].name.substring(0, 3);
+            // Tatlı sütun başlığı: emoji + ismin ilk kelimesi (max 6 harf)
+            const dHead = did => {
+                const d = desserts[did];
+                const short = d.name.split(' ')[0].substring(0, 6);
+                return d.emoji
+                    ? `<span style="font-size:14px">${d.emoji}</span><br><span style="font-size:9px;opacity:.8">${short}</span>`
+                    : `<span style="font-size:9px">${short}</span>`;
+            };
+
+            // Şube satır etiketi: gerçek emoji + ilk kelime
+            const bLabel = bid => {
+                const name = branches[bid];
+                const em   = BRANCH_EMOJI_MAP[name] || '🏪';
+                const short = name.split(' ')[0].substring(0, 7);
+                return `${em} <span style="font-size:11px">${short}</span>`;
+            };
 
             let html = `<table><thead><tr>
-                <th>Şube</th>
-                ${dessertIds.map(did => `<th title="${desserts[did].name}">${dHead(did)}</th>`).join('')}
+                <th style="text-align:left">Şube</th>
+                ${dessertIds.map(did => `<th style="text-align:center;line-height:1.2;padding:4px 5px" title="${desserts[did].name}">${dHead(did)}</th>`).join('')}
                 <th>Top</th>
             </tr></thead><tbody>`;
 
             branchIds.forEach(bid => {
                 const rowTotal = dessertIds.reduce((s, did) => s + (matrix[bid]?.[did] || 0), 0);
-                html += `<tr><td title="${branches[bid]}">${branchEmoji[bid]} ${branchAbbrevs[bid]}</td>`;
+                html += `<tr><td title="${branches[bid]}" style="white-space:nowrap">${bLabel(bid)}</td>`;
                 dessertIds.forEach(did => {
                     const v = matrix[bid]?.[did] || 0;
                     const opacity = globalMax > 0 ? Math.max(0.06, v / globalMax) : 0.06;
