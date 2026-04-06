@@ -3812,6 +3812,17 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 html += `<td>${rowTotal}</td></tr>`;
             });
 
+            // Tatlı sütun toplamları (tüm şubeler)
+            const grandTotal = dessertIds.reduce((s, did) =>
+                s + branchIds.reduce((ss, bid) => ss + (matrix[bid]?.[did] || 0), 0), 0);
+            html += `<tr style="border-top:1px solid var(--border);background:var(--surface)">
+                <td style="font-size:10px;font-weight:700;color:var(--text-3);padding-left:10px;white-space:nowrap">Toplam</td>`;
+            dessertIds.forEach(did => {
+                const colTotal = branchIds.reduce((s, bid) => s + (matrix[bid]?.[did] || 0), 0);
+                html += `<td style="font-weight:800;color:var(--amber);font-size:11px">${colTotal || '—'}</td>`;
+            });
+            html += `<td style="font-weight:800;color:var(--amber)">${grandTotal}</td></tr>`;
+
             html += '</tbody></table>';
             el.innerHTML = html;
             if (badge) badge.textContent = `${branchIds.length} şube · ${dessertIds.length} tatlı`;
