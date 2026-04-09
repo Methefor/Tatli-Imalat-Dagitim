@@ -1514,7 +1514,7 @@
         <!-- Mini Heatmap — üst özet -->
         <div class="panel fade-up mini-heatmap-panel" style="animation-delay:0.05s">
             <div class="panel-header" style="padding:10px 16px 8px">
-                <h2 class="panel-title" style="font-size:13px">🗺️ Tatlı × Şube Satış Haritası</h2>
+                <h2 class="panel-title" style="font-size:13px">🗺️ Tatlı × Şube — Satılan Haritası</h2>
                 <span class="panel-badge" id="miniHeatmapBadge">—</span>
             </div>
             <div class="mini-heatmap-wrap">
@@ -3724,22 +3724,52 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return;
             }
 
-            // matrix[branchId][dessertId] = received
-            const matrix   = {};
+            // matrix[branchId][dessertId] = satılan (devir + gelen - kalan - zayiat)
+            const gelenM  = {}; // toplam gelen
+            const kalanM  = {}; // en son kalan (her entry_date için en son)
+            const zayiatM = {}; // toplam zayiat
+            const latestDateM = {}; // en son entry_date
             const desserts = {}; // id → { name, emoji }
             const branches = {}; // id → name
 
             allData.forEach(e => {
                 if (!e.branches || !e.desserts) return;
                 const did = e.dessert_id;
-                const bid = e.branches.id;
+                const bid = String(e.branches.id);
+                const key = `${bid}|${did}`;
                 desserts[did] = { name: e.desserts.name, emoji: e.desserts.emoji || '' };
                 branches[bid] = e.branches.name;
-                if (!matrix[bid]) matrix[bid] = {};
-                matrix[bid][did] = (matrix[bid][did] || 0) + (e.received_amount || 0);
+                if (!gelenM[key])  gelenM[key]  = 0;
+                if (!zayiatM[key]) zayiatM[key] = 0;
+                gelenM[key]  += (e.received_amount || 0);
+                zayiatM[key] += (e.waste_amount    || 0);
+                // En son remaining_amount
+                if (e.remaining_amount !== null && e.remaining_amount !== undefined) {
+                    if (!latestDateM[key] || e.entry_date > latestDateM[key] ||
+                        (e.entry_date === latestDateM[key] && (!e.entry_time || e.entry_time >= (kalanM[key+'_t'] || '')))) {
+                        latestDateM[key] = e.entry_date;
+                        kalanM[key+'_t'] = e.entry_time || '';
+                        kalanM[key] = e.remaining_amount;
+                    }
+                }
             });
 
-            // Tatlılar: sadece bu dönemde giriş olanlar, toplam gelene göre azalan sıra
+            // Satılan = devir + gelen - kalan - zayiat (per branch/dessert)
+            const matrix = {};
+            const allKeys = new Set([...Object.keys(gelenM), ...Object.keys(openingStockMap)]);
+            allKeys.forEach(key => {
+                const [bid, did] = key.split('|');
+                if (!branches[bid] || !desserts[did]) return;
+                const devir  = openingStockMap[key]  || 0;
+                const gelen  = gelenM[key]            || 0;
+                const kalan  = kalanM[key]            ?? (devir + gelen); // kalan girilmemişse sat=0
+                const zayiat = zayiatM[key]           || 0;
+                const satilan = Math.max(0, devir + gelen - kalan - zayiat);
+                if (!matrix[bid]) matrix[bid] = {};
+                matrix[bid][did] = satilan;
+            });
+
+            // Tatlılar: toplam satılana göre azalan sıra
             const dessertIds = Object.keys(desserts)
                 .map(did => ({ did, total: Object.values(matrix).reduce((s, bm) => s + (bm[did] || 0), 0) }))
                 .filter(d => d.total > 0)
@@ -3779,7 +3809,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
             let html = `<table><thead><tr>
                 <th style="text-align:left">Şube</th>
                 ${dessertIds.map(did => `<th style="text-align:center;line-height:1.2;padding:4px 5px" title="${desserts[did].name}">${dHead(did)}</th>`).join('')}
-                <th>Top</th>
+                <th title="Toplam satılan">Sat.</th>
             </tr></thead><tbody>`;
 
             // 3 duraklı renk skalası: mavi → amber → kırmızı
