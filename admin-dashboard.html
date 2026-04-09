@@ -1589,16 +1589,6 @@
                 </div>
             </div>
 
-            <div class="panel fade-up feed-panel" id="feedPanel" style="animation-delay:0.25s">
-                <div class="panel-header feed-panel-header" onclick="document.getElementById('feedPanel').classList.toggle('collapsed')">
-                    <h2 class="panel-title" id="activityPanelTitle">⚡ Son İşlemler</h2>
-                    <span class="panel-badge" id="activityBadge">—</span>
-                    <span class="feed-panel-chevron">▼</span>
-                </div>
-                <div class="feed-panel-body" id="activityFeed">
-                    <div style="padding:32px;text-align:center;color:var(--text-3);font-size:13px">⏳ Yükleniyor...</div>
-                </div>
-            </div>
 
         </div>
 
@@ -1639,6 +1629,31 @@
                 <!-- Performans Skorları -->
                 <div class="score-section-title">🏆 Şube Performans Skoru</div>
                 <div class="score-grid" id="branchScoresGrid"></div>
+
+                <!-- Zayiat Raporu -->
+                <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
+                    <div class="panel-header" style="padding:0 0 12px">
+                        <h2 class="panel-title">Zayiat Raporu</h2>
+                        <span class="panel-badge panel-badge--red" id="zayiatTotal">—</span>
+                    </div>
+                    <div id="zayiatContent">
+                        <div class="empty-state" style="padding:32px">
+                            <div class="empty-state-icon">⏳</div>
+                            <div class="empty-state-title">Yükleniyor</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zayiat Kayıtları -->
+                <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
+                    <div class="panel-header" style="padding:0 0 12px">
+                        <h2 class="panel-title" id="wasteReasonsTitle">⚠️ Zayiat Kayıtları</h2>
+                        <span class="panel-badge panel-badge--red" id="wasteReasonsBadge">—</span>
+                    </div>
+                    <div id="wasteReasonsContent" style="min-height:60px">
+                        <div style="text-align:center;padding:28px;color:rgba(255,255,255,0.25);font-size:13px">Yükleniyor…</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Tatlı × Şube Satış Haritası (content-grid içinde) -->
@@ -1664,30 +1679,6 @@
             </div>
         </div>
 
-        <!-- Zayiat Raporu -->
-        <div class="panel fade-up" style="animation-delay:0.35s">
-            <div class="panel-header">
-                <h2 class="panel-title">Zayiat Raporu</h2>
-                <span class="panel-badge panel-badge--red" id="zayiatTotal">—</span>
-            </div>
-            <div id="zayiatContent">
-                <div class="empty-state" style="padding:32px">
-                    <div class="empty-state-icon">⏳</div>
-                    <div class="empty-state-title">Yükleniyor</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Zayiat Kayıtları — hangi şube, hangi tatlı, neden (detaylı) -->
-        <div class="panel fade-up" style="animation-delay:0.4s">
-            <div class="panel-header">
-                <h2 class="panel-title" id="wasteReasonsTitle">⚠️ Zayiat Kayıtları</h2>
-                <span class="panel-badge panel-badge--red" id="wasteReasonsBadge">—</span>
-            </div>
-            <div id="wasteReasonsContent" style="min-height:60px">
-                <div style="text-align:center;padding:28px;color:rgba(255,255,255,0.25);font-size:13px">Yükleniyor…</div>
-            </div>
-        </div>
 
         <!-- Satış Trendi -->
         <div class="panel fade-up" style="animation-delay:0.45s">
