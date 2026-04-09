@@ -2431,6 +2431,13 @@ _Mutlukent Tatlı Takip Sistemi_`;
 
         // ── Branch Table ──────────────────────────────────
         function aggregateBranchData(data) {
+            // Hangi (şube|tatlı) çiftlerinde kalan girilmiş?
+            const keysWithKalan = new Set();
+            data.forEach(e => {
+                if (e.remaining_amount !== null && e.remaining_amount !== undefined)
+                    keysWithKalan.add(`${e.branches?.id}|${e.dessert_id}`);
+            });
+
             const latestMap = buildCurrentStockMap(data);
             const bd = {};
             data.forEach(entry => {
@@ -2445,9 +2452,17 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 const branchId = key.split('|')[0];
                 if (bd[branchId]) bd[branchId].opening += rem;
             });
-            Object.entries(latestMap).forEach(([key, rem]) => {
+            // Kalan: KPI ile aynı mantık — kalan girilmemişse devir+gelen stokta say (satış bilinmiyor)
+            const allKeys = new Set([...Object.keys(latestMap), ...Object.keys(openingStockMap)]);
+            allKeys.forEach(key => {
                 const branchId = key.split('|')[0];
-                if (bd[branchId]) bd[branchId].remaining += rem;
+                if (!bd[branchId]) return;
+                if (keysWithKalan.has(key)) {
+                    bd[branchId].remaining += latestMap[key] || 0;
+                } else {
+                    // Kalan girilmemiş: devir + gelen'i stokta say → satılan = 0 bu çift için
+                    bd[branchId].remaining += (openingStockMap[key] || 0) + (latestMap[key] || 0);
+                }
             });
             Object.values(bd).forEach(b => {
                 b.sold = Math.max(0, b.opening + b.received - b.remaining - b.waste);
