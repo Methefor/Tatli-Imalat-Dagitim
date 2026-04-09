@@ -442,11 +442,21 @@
     async function loadAll(btn) {
         if (btn) { btn.classList.add('spin'); btn.disabled = true; }
         try {
-            const [activity, corrections] = await Promise.all([
+            const past7 = new Date(); past7.setDate(past7.getDate() - 7);
+            const past7str = localDate(past7);
+
+            const [activity, corrections, stockEntries] = await Promise.all([
                 getBranchLastActivity(),
-                getCorrectionEntries(30)
+                getCorrectionEntries(30),
+                window.supabaseInstance
+                    .from('daily_entries')
+                    .select('branch_id, dessert_id, entry_date, received_amount, remaining_amount, branches(name, manager_name), desserts(name, emoji)')
+                    .gte('entry_date', past7str)
+                    .not('remaining_amount', 'is', null)
+                    .order('entry_date', { ascending: true })
+                    .then(r => r.data || [])
             ]);
-            renderAll(activity, corrections);
+            renderAll(activity, corrections, stockEntries);
             document.getElementById('lastUpdated').textContent =
                 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'});
         } catch(e) {
@@ -456,7 +466,7 @@
         }
     }
 
-    function renderAll(activity, corrections) {
+    function renderAll(activity, corrections, stockEntries) {
         // Düzeltmeleri şube bazında grupla
         const corrByBranch = {};
         corrections.forEach(c => {
@@ -472,8 +482,9 @@
         });
 
         // Şüpheli davranış analizi
-        const suspects = analyzeAlerts(corrections);
-        const flaggedIds = new Set(suspects.map(s => s.id));
+        const stockAlerts = analyzeStockAlerts(stockEntries || []);
+        const suspects = [...analyzeAlerts(corrections), ...stockAlerts];
+        const flaggedIds = new Set(suspects.filter(s => s.id).map(s => s.id));
 
         renderMgrSummary(activity, corrByBranch, suspects);
         renderActivity(activity);
@@ -523,6 +534,50 @@
         return results;
     }
 
+    // ── Stok Artışı Analizi (teslimat olmadan kalan arttı) ─
+    function analyzeStockAlerts(entries) {
+        // Her (şube, tatlı) çifti için ardışık günleri karşılaştır
+        // key → [{ date, remaining, received }] tarih sıralı
+        const byKey = {};
+        entries.forEach(e => {
+            if (!e.branches) return;
+            const key = `${e.branch_id}|${e.dessert_id}`;
+            if (!byKey[key]) byKey[key] = { branch: e.branches.name, mgr: e.branches.manager_name || '—', dessert: (e.desserts?.emoji||'') + ' ' + (e.desserts?.name||'?'), days: [] };
+            byKey[key].days.push({ date: e.entry_date, remaining: e.remaining_amount, received: e.received_amount || 0 });
+        });
+
+        const results = [];
+        Object.values(byKey).forEach(({ branch, mgr, dessert, days }) => {
+            // Gün bazında birleştir: aynı günde received topla, remaining son değer
+            const byDate = {};
+            days.forEach(d => {
+                if (!byDate[d.date]) byDate[d.date] = { received: 0, remaining: d.remaining };
+                byDate[d.date].received += d.received;
+                byDate[d.date].remaining = d.remaining; // son girilen
+            });
+            const sorted = Object.entries(byDate).sort((a,b) => a[0].localeCompare(b[0]));
+            for (let i = 1; i < sorted.length; i++) {
+                const [prevDate, prev] = sorted[i-1];
+                const [currDate, curr] = sorted[i];
+                // Gelen 0 ama kalan arttı
+                if (curr.received === 0 && curr.remaining > prev.remaining) {
+                    const fark = curr.remaining - prev.remaining;
+                    results.push({
+                        id: null, // stok kaydına direkt ID yok
+                        branch, mgr, dessert,
+                        entryDate: currDate,
+                        alerts: [{
+                            level: 'critical',
+                            label: 'Teslimat olmadan kalan arttı',
+                            detail: `${formatTR(prevDate)} ${prev.remaining} adet → ${formatTR(currDate)} ${curr.remaining} adet (+${fark}), gelen: 0`
+                        }]
+                    });
+                }
+            }
+        });
+        return results;
+    }
+
     function renderSuspects(suspects) {
         const el    = document.getElementById('suspectList');
         const badge = document.getElementById('badgeSuspect');
@@ -536,7 +591,11 @@
             return;
         }
 
-        badge.textContent = suspects.length + ' kritik';
+        const critCount = suspects.filter(s => s.alerts.some(a => a.level === 'critical')).length;
+        const warnCount = suspects.length - critCount;
+        badge.textContent = critCount > 0
+            ? `${critCount} kritik` + (warnCount > 0 ? ` · ${warnCount} uyarı` : '')
+            : `${warnCount} uyarı`;
 
         // Kritik olanlar önce
         suspects.sort((a, b) => {
