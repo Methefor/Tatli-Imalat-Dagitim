@@ -1423,11 +1423,13 @@
         .mini-heatmap-wrap th:first-child { text-align: left; min-width: 72px; padding-left: 10px; }
         .mini-heatmap-wrap th:last-child  { min-width: 36px; }
         .mini-heatmap-wrap td {
-            padding: 5px 7px;
+            padding: 6px 5px;
             text-align: center;
             font-size: 11px;
             font-weight: 600;
             border-bottom: 1px solid rgba(255,255,255,0.03);
+            border-radius: 4px;
+            transition: filter 0.15s;
         }
         .mini-heatmap-wrap td:first-child {
             text-align: left;
@@ -1656,16 +1658,6 @@
                 </div>
             </div>
 
-            <!-- Tatlı × Şube Satış Haritası (content-grid içinde) -->
-            <div class="panel fade-up" style="animation-delay:0.32s">
-                <div class="panel-header">
-                    <h2 class="panel-title">🗺️ Tatlı × Şube Satış Haritası</h2>
-                    <span class="panel-badge" id="heatmapBadge">—</span>
-                </div>
-                <div class="heatmap-wrap">
-                    <div id="heatmapContent"><div style="padding:24px;color:var(--text-3);text-align:center;font-size:13px">⏳ Yükleniyor...</div></div>
-                </div>
-            </div>
 
         </div>
 
@@ -2127,7 +2119,6 @@
             updateCompareChart();
             updateStockTurnover();
             updateMiniHeatmap();
-            updateHeatmap();
             updatePrintHeader();
             updateLiveStatus();
             if (gen === loadGeneration) loadActivityFeed(allData);
@@ -3791,14 +3782,36 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 <th>Top</th>
             </tr></thead><tbody>`;
 
+            // 3 duraklı renk skalası: mavi → amber → kırmızı
+            const heatColor = (v) => {
+                if (!v || globalMax === 0) return { bg: 'rgba(255,255,255,0.05)', fg: 'rgba(255,255,255,0.2)', bold: false };
+                const t = v / globalMax; // 0..1
+                let r, g, b;
+                if (t <= 0.5) {
+                    // mavi (59,130,246) → amber (245,158,11)
+                    const u = t * 2;
+                    r = Math.round(59  + (245 - 59)  * u);
+                    g = Math.round(130 + (158 - 130) * u);
+                    b = Math.round(246 + (11  - 246) * u);
+                } else {
+                    // amber (245,158,11) → kırmızı (239,68,68)
+                    const u = (t - 0.5) * 2;
+                    r = Math.round(245 + (239 - 245) * u);
+                    g = Math.round(158 + (68  - 158) * u);
+                    b = Math.round(11  + (68  - 11)  * u);
+                }
+                const alpha = 0.25 + t * 0.7; // 0.25..0.95
+                const fg = alpha > 0.65 ? '#fff' : 'var(--text)';
+                return { bg: `rgba(${r},${g},${b},${alpha.toFixed(2)})`, fg, bold: t > 0.35 };
+            };
+
             branchIds.forEach(bid => {
                 const rowTotal = dessertIds.reduce((s, did) => s + (matrix[bid]?.[did] || 0), 0);
                 html += `<tr><td title="${branches[bid]}" style="white-space:nowrap">${bLabel(bid)}</td>`;
                 dessertIds.forEach(did => {
                     const v = matrix[bid]?.[did] || 0;
-                    const opacity = globalMax > 0 ? Math.max(0.06, v / globalMax) : 0.06;
-                    const txtCol  = opacity > 0.55 ? 'color:#000;font-weight:800' : 'color:var(--text)';
-                    html += `<td style="background:rgba(245,158,11,${opacity.toFixed(2)});${txtCol}">${v || '—'}</td>`;
+                    const { bg, fg, bold } = heatColor(v);
+                    html += `<td style="background:${bg};color:${fg};${bold ? 'font-weight:700' : ''}">${v || '<span style="opacity:.3">—</span>'}</td>`;
                 });
                 html += `<td>${rowTotal}</td></tr>`;
             });
