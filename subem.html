@@ -380,19 +380,15 @@
         [data-theme="light"] .dessert-row { border-bottom-color: rgba(0,0,0,0.06); }
 
         /* ── Görsel Özet (Gauge) ── */
-        .gauge-toggle-wrap {
-            display: flex; justify-content: center;
-            margin-top: 16px;
-        }
-
         .gauge-toggle-btn {
-            padding: 10px 26px;
-            background: var(--glass);
+            background: transparent;
             border: 1px solid var(--border);
-            border-radius: 50px;
+            border-radius: 8px;
             color: var(--muted);
-            font-size: 13px; font-weight: 600;
+            font-size: 16px;
             cursor: pointer; transition: all 0.2s;
+            padding: 5px 9px; line-height: 1;
+            flex-shrink: 0;
             touch-action: manipulation;
         }
 
@@ -403,13 +399,13 @@
         }
 
         .gauge-toggle-btn.active {
-            background: rgba(245,158,11,0.12);
-            border-color: rgba(245,158,11,0.35);
+            background: rgba(245,158,11,0.15);
+            border-color: rgba(245,158,11,0.4);
             color: var(--amber);
         }
 
         .gauge-panel {
-            margin-top: 16px;
+            margin-bottom: 16px;
             background: var(--glass);
             border: 1px solid var(--border);
             border-radius: 20px;
@@ -535,10 +531,43 @@
             <span class="refresh-icon">↻</span>
             <span>Yenile</span>
         </button>
+        <button class="gauge-toggle-btn" id="gaugeToggleBtn" onclick="toggleGauge()" title="Görsel Özet">📊</button>
         <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
     </nav>
 
     <div class="content">
+
+        <!-- Gauge Panel -->
+        <div class="gauge-panel" id="gaugePanel" style="display:none">
+            <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 200 200" width="200" height="200">
+                    <circle class="gauge-track" cx="100" cy="100" r="80"/>
+                    <circle class="gauge-fill"  cx="100" cy="100" r="80" id="gaugeFill"/>
+                </svg>
+                <div class="gauge-center">
+                    <div class="gauge-pct" id="gaugePct">—</div>
+                    <div class="gauge-label">satış oranı</div>
+                </div>
+            </div>
+            <div class="gauge-stats">
+                <div class="gstat gstat-amber">
+                    <div class="gstat-val" id="gGelen">—</div>
+                    <div class="gstat-lbl">Gelen</div>
+                </div>
+                <div class="gstat gstat-green">
+                    <div class="gstat-val" id="gSatilan">—</div>
+                    <div class="gstat-lbl">Satılan</div>
+                </div>
+                <div class="gstat gstat-blue">
+                    <div class="gstat-val" id="gKalan">—</div>
+                    <div class="gstat-lbl">Kalan</div>
+                </div>
+                <div class="gstat gstat-red">
+                    <div class="gstat-val" id="gZayiat">—</div>
+                    <div class="gstat-lbl">Zayiat</div>
+                </div>
+            </div>
+        </div>
 
         <!-- Ay Navigatörü -->
         <div class="month-nav">
@@ -610,42 +639,6 @@
             </div>
         </div>
 
-        <!-- Görsel Özet Toggle -->
-        <div class="gauge-toggle-wrap">
-            <button class="gauge-toggle-btn" id="gaugeToggleBtn" onclick="toggleGauge()">📊 Görsel Özet</button>
-        </div>
-
-        <!-- Gauge Panel -->
-        <div class="gauge-panel" id="gaugePanel" style="display:none">
-            <div class="gauge-wrap">
-                <svg class="gauge-svg" viewBox="0 0 200 200" width="200" height="200">
-                    <circle class="gauge-track" cx="100" cy="100" r="80"/>
-                    <circle class="gauge-fill"  cx="100" cy="100" r="80" id="gaugeFill"/>
-                </svg>
-                <div class="gauge-center">
-                    <div class="gauge-pct" id="gaugePct">—</div>
-                    <div class="gauge-label">satış oranı</div>
-                </div>
-            </div>
-            <div class="gauge-stats">
-                <div class="gstat gstat-amber">
-                    <div class="gstat-val" id="gGelen">—</div>
-                    <div class="gstat-lbl">Gelen</div>
-                </div>
-                <div class="gstat gstat-green">
-                    <div class="gstat-val" id="gSatilan">—</div>
-                    <div class="gstat-lbl">Satılan</div>
-                </div>
-                <div class="gstat gstat-blue">
-                    <div class="gstat-val" id="gKalan">—</div>
-                    <div class="gstat-lbl">Kalan</div>
-                </div>
-                <div class="gstat gstat-red">
-                    <div class="gstat-val" id="gZayiat">—</div>
-                    <div class="gstat-lbl">Zayiat</div>
-                </div>
-            </div>
-        </div>
 
     </div>
 
