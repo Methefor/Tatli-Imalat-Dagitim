@@ -1,5 +1,5 @@
 // Tatlı Takip — Service Worker
-const CACHE = 'tatli-takip-v41';
+const CACHE = 'tatli-takip-v42';
 
 // Sadece resimler/ikonlar cache-first; HTML ve JS her zaman ağdan gelir
 const CACHE_ONLY_ASSETS = [
