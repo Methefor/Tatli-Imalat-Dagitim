@@ -340,22 +340,6 @@
         </div>
     </div>
 
-    <!-- Müdür Özeti -->
-    <div class="section" id="secMgr">
-        <div class="section-header" onclick="toggleSection('secMgr')">
-            <span class="section-icon">👤</span>
-            <div class="section-title-wrap">
-                <div class="section-title">Müdür Özeti</div>
-                <div class="section-sub">Bu ay aktivite ve düzeltmeler</div>
-            </div>
-            <span class="section-badge" id="badgeMgr">—</span>
-            <span class="section-chevron">▼</span>
-        </div>
-        <div class="section-body">
-            <div id="mgrSummaryList"><div class="empty-msg">Yükleniyor…</div></div>
-        </div>
-    </div>
-
     <!-- Şüpheli Davranışlar — varsayılan KAPALI -->
     <div class="section collapsed" id="secSuspect">
         <div class="section-header" onclick="toggleSection('secSuspect')" style="border-left: 3px solid rgba(239,68,68,0.6)">
@@ -428,7 +412,7 @@
 
     // sessionStorage'dan collapsed durumunu yükle
     function initSectionStates() {
-        ['secMgr','secSuspect','secMissing','secCorr'].forEach(id => {
+        ['secSuspect','secMissing','secCorr'].forEach(id => {
             const saved = sessionStorage.getItem('personel_' + id);
             const sec = document.getElementById(id);
             if (!sec) return;
