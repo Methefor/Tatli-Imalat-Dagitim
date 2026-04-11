@@ -378,6 +378,140 @@
         [data-theme="light"] .bg-orb { background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%); }
         [data-theme="light"] .num-input { background: #f8fafc; color: #0f172a; border-color: rgba(0,0,0,0.12); }
         [data-theme="light"] .dessert-row { border-bottom-color: rgba(0,0,0,0.06); }
+
+        /* ── Görsel Özet (Gauge) ── */
+        .gauge-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: 16px;
+            cursor: pointer; transition: all 0.2s;
+            padding: 5px 9px; line-height: 1;
+            flex-shrink: 0;
+            touch-action: manipulation;
+        }
+
+        .gauge-toggle-btn:hover {
+            background: rgba(245,158,11,0.1);
+            border-color: rgba(245,158,11,0.3);
+            color: var(--amber);
+        }
+
+        .gauge-toggle-btn.active {
+            background: rgba(245,158,11,0.15);
+            border-color: rgba(245,158,11,0.4);
+            color: var(--amber);
+        }
+
+        .gauge-panel {
+            margin-bottom: 16px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px 20px 24px;
+            animation: fadeUp 0.42s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .gauge-wrap {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 22px;
+            height: 200px;
+        }
+
+        .gauge-svg {
+            display: block;
+            transform: rotate(135deg);
+            transform-origin: center;
+        }
+
+        .gauge-track {
+            fill: none;
+            stroke: rgba(255,255,255,0.07);
+            stroke-width: 14;
+            stroke-dasharray: 376.99 502.65;
+            stroke-linecap: round;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: var(--green);
+            stroke-width: 14;
+            stroke-dasharray: 0 502.65;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.9s cubic-bezier(0.16,1,0.3,1),
+                        stroke 0.5s ease;
+        }
+
+        .gauge-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .gauge-pct {
+            font-size: 44px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+
+        .gauge-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 5px;
+        }
+
+        .gauge-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        @media (max-width: 420px) {
+            .gauge-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .gstat {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 8px 10px;
+            text-align: center;
+        }
+
+        .gstat-val {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .gstat-lbl {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-top: 5px;
+        }
+
+        .gstat-amber .gstat-val { color: var(--amber); }
+        .gstat-green .gstat-val { color: var(--green); }
+        .gstat-blue  .gstat-val { color: var(--blue);  }
+        .gstat-red   .gstat-val { color: var(--red);   }
+
+        [data-theme="light"] .gauge-track { stroke: rgba(0,0,0,0.08); }
+        [data-theme="light"] .gstat { background: rgba(0,0,0,0.03); }
     </style>
 </head>
 <body>
@@ -397,10 +531,43 @@
             <span class="refresh-icon">↻</span>
             <span>Yenile</span>
         </button>
+        <button class="gauge-toggle-btn" id="gaugeToggleBtn" onclick="toggleGauge()" title="Görsel Özet">📊</button>
         <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
     </nav>
 
     <div class="content">
+
+        <!-- Gauge Panel -->
+        <div class="gauge-panel" id="gaugePanel" style="display:none">
+            <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 200 200" width="200" height="200">
+                    <circle class="gauge-track" cx="100" cy="100" r="80"/>
+                    <circle class="gauge-fill"  cx="100" cy="100" r="80" id="gaugeFill"/>
+                </svg>
+                <div class="gauge-center">
+                    <div class="gauge-pct" id="gaugePct">—</div>
+                    <div class="gauge-label">satış oranı</div>
+                </div>
+            </div>
+            <div class="gauge-stats">
+                <div class="gstat gstat-amber">
+                    <div class="gstat-val" id="gGelen">—</div>
+                    <div class="gstat-lbl">Gelen</div>
+                </div>
+                <div class="gstat gstat-green">
+                    <div class="gstat-val" id="gSatilan">—</div>
+                    <div class="gstat-lbl">Satılan</div>
+                </div>
+                <div class="gstat gstat-blue">
+                    <div class="gstat-val" id="gKalan">—</div>
+                    <div class="gstat-lbl">Kalan</div>
+                </div>
+                <div class="gstat gstat-red">
+                    <div class="gstat-val" id="gZayiat">—</div>
+                    <div class="gstat-lbl">Zayiat</div>
+                </div>
+            </div>
+        </div>
 
         <!-- Ay Navigatörü -->
         <div class="month-nav">
@@ -471,6 +638,7 @@
                 <div class="skel" style="height:18px;border-radius:6px;"></div>
             </div>
         </div>
+
 
     </div>
 
@@ -604,6 +772,12 @@
             if (subSatilan) subSatilan.textContent = `% ${satisOrani} satış oranı`;
             if (subZayiat)  subZayiat.textContent  = totalZ > 0 ? `% ${fireOrani} fire oranı` : 'fire yok';
 
+            // Gauge güncelle
+            _gaugeData = { satisOrani: +satisOrani, totalG, totalS, totalK, totalZ };
+            if (document.getElementById('gaugePanel').style.display !== 'none') {
+                _renderGauge(_gaugeData);
+            }
+
             const panel = document.getElementById('summaryPanel');
             panel.innerHTML = `
                 <div class="summary-head">
@@ -660,6 +834,46 @@
                 else delete _animRAF[id];
             }
             _animRAF[id] = requestAnimationFrame(tick);
+        }
+
+        let _gaugeData = null;
+
+        function toggleGauge() {
+            const panel = document.getElementById('gaugePanel');
+            const btn   = document.getElementById('gaugeToggleBtn');
+            const show  = panel.style.display === 'none';
+            panel.style.display = show ? 'block' : 'none';
+            btn.classList.toggle('active', show);
+            if (show && _gaugeData) {
+                // rAF ensures transition fires after display:block reflow
+                requestAnimationFrame(() => _renderGauge(_gaugeData));
+            }
+        }
+
+        function _renderGauge({ satisOrani, totalG, totalS, totalK, totalZ }) {
+            const CIRC = 502.65;
+            const ARC  = 376.99; // 270° arc
+            const pct  = Math.min(Math.max(satisOrani, 0), 100);
+            const fill = +(ARC * pct / 100).toFixed(2);
+
+            // Arc color: green ≥ 65%, amber ≥ 35%, else red
+            const color = pct >= 65 ? 'var(--green)' : pct >= 35 ? 'var(--amber)' : 'var(--red)';
+
+            const arcEl = document.getElementById('gaugeFill');
+            if (arcEl) {
+                arcEl.style.stroke = color;
+                arcEl.style.strokeDasharray = `${fill} ${+(CIRC - fill).toFixed(2)}`;
+            }
+
+            const pctEl = document.getElementById('gaugePct');
+            if (pctEl) { pctEl.textContent = pct + '%'; pctEl.style.color = color; }
+
+            const ids  = ['gGelen','gSatilan','gKalan','gZayiat'];
+            const vals = [totalG, totalS, totalK, totalZ];
+            ids.forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = vals[i].toLocaleString('tr-TR');
+            });
         }
 
         function showEmpty(msg) {
