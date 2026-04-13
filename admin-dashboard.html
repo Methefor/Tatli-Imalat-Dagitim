@@ -4003,15 +4003,17 @@ _Mutlukent Tatlı Takip Sistemi_`;
             if (actTitleEl) actTitleEl.textContent = `⚡ ${label} İşlemleri`;
             if (titleEl)    titleEl.textContent    = `📋 ${label} Giriş Detayları`;
 
-            // allData'yı entry_time'a göre sırala (yeniden eskiye), max 100
+            // allData'yı entry_time'a göre sırala (yeniden eskiye)
+            const isDaily = (currentFilter === 'today' || currentFilter === 'yesterday');
             const sorted = [...(data || [])].sort((a, b) => {
                 const ta = a.entry_time || '';
                 const tb = b.entry_time || '';
                 return tb.localeCompare(ta);
-            }).slice(0, 100);
+            }).slice(0, 100);  // Aktivite akışı için max 100
 
             renderActivityFeed(sorted, label);
-            renderTodayDetails(sorted, label);
+            // Giriş Detayları: günlük → bireysel satırlar, aylık/haftalık → tatlı bazı özet
+            renderTodayDetails(isDaily ? sorted : (data || []), label, isDaily);
         }
 
         function hasActivityData(e) {
@@ -4108,7 +4110,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
             header.closest('.detail-branch-group').classList.toggle('collapsed');
         }
 
-        function renderTodayDetails(entries, label) {
+        function renderTodayDetails(entries, label, isDaily) {
             const el      = document.getElementById('todayDetail');
             const badgeEl = document.getElementById('detailBadge');
             if (!el) return;
@@ -4132,73 +4134,140 @@ _Mutlukent Tatlı Takip Sistemi_`;
             });
 
             // Şube adına göre sırala
-            const sorted = Object.values(groups).sort((a, b) =>
+            const sortedGroups = Object.values(groups).sort((a, b) =>
                 (a.branch?.name || '').localeCompare(b.branch?.name || '', 'tr')
             );
 
             let totalMeaningful = 0;
 
-            const html = sorted.map((g, gi) => {
+            const html = sortedGroups.map((g, gi) => {
                 const branchName = g.branch?.name || '?';
                 const manager    = g.branch?.manager_name || '—';
+                const meaningful = g.rows.filter(hasActivityData);
+                if (meaningful.length === 0) return '';
 
-                // Sıfır kayıtları filtrele, zamana göre sırala
-                const rows = [...g.rows]
-                    .filter(hasActivityData)
-                    .sort((a, b) => (b.entry_time || '').localeCompare(a.entry_time || ''));
+                const collapsed = gi > 0 ? ' collapsed' : '';
+                const sep = gi > 0 ? '<div class="detail-separator"></div>' : '';
 
-                if (rows.length === 0) return ''; // bu şubede anlamlı veri yok
-                totalMeaningful += rows.length;
-
-                const rowsHtml = rows.map(e => {
-                    const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
-                    const recv    = e.received_amount;
-                    const rem     = e.remaining_amount;
-                    const wst     = e.waste_amount;
-
-                    let timeStr = '—';
-                    if (e.entry_time) {
-                        const t = new Date(e.entry_time);
-                        timeStr = t.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
-                    }
+                if (isDaily) {
+                    // ── Günlük: bireysel satırlar, saatli ──────────────────
+                    const rows = [...meaningful].sort((a, b) =>
+                        (b.entry_time || '').localeCompare(a.entry_time || ''));
+                    totalMeaningful += rows.length;
 
                     const fmtVal = (val, cls) =>
                         val > 0 ? `<span class="detail-val ${cls}">${val}</span>`
                                 : `<span class="detail-val empty">—</span>`;
 
-                    return `<div class="detail-entry-row">
-                        <span class="detail-dessert-name">${dessert}</span>
-                        ${fmtVal(recv, 'gelen')}
-                        ${fmtVal(rem,  'kalan')}
-                        ${fmtVal(wst,  'zayiat')}
-                        <span class="detail-time">${timeStr}</span>
-                    </div>`;
-                }).join('');
+                    const rowsHtml = rows.map(e => {
+                        const dessert = `${e.desserts?.emoji || ''} ${e.desserts?.name || '?'}`;
+                        let timeStr = '—';
+                        if (e.entry_time) {
+                            timeStr = new Date(e.entry_time).toLocaleTimeString('tr-TR',
+                                { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
+                        }
+                        return `<div class="detail-entry-row">
+                            <span class="detail-dessert-name">${dessert}</span>
+                            ${fmtVal(e.received_amount, 'gelen')}
+                            ${fmtVal(e.remaining_amount, 'kalan')}
+                            ${fmtVal(e.waste_amount, 'zayiat')}
+                            <span class="detail-time">${timeStr}</span>
+                        </div>`;
+                    }).join('');
 
-                // İlk şube açık, diğerleri kapalı
-                const collapsed = gi > 0 ? ' collapsed' : '';
-                const sep = gi > 0 ? '<div class="detail-separator"></div>' : '';
-                return `${sep}<div class="detail-branch-group${collapsed}">
-                    <div class="detail-branch-header" onclick="toggleBranchDetail(this)">
-                        <span class="detail-branch-name">🏪 ${branchName}</span>
-                        <span class="detail-branch-count">${rows.length} kayıt</span>
-                        <span class="detail-branch-manager">${manager}</span>
-                        <span class="detail-branch-chevron">▼</span>
-                    </div>
-                    <div class="detail-branch-content">
-                        <div class="detail-entry-header">
-                            <span>Tatlı</span>
-                            <span>Gelen</span>
-                            <span>Kalan</span>
-                            <span>Zayiat</span>
-                            <span>Saat</span>
+                    return `${sep}<div class="detail-branch-group${collapsed}">
+                        <div class="detail-branch-header" onclick="toggleBranchDetail(this)">
+                            <span class="detail-branch-name">🏪 ${branchName}</span>
+                            <span class="detail-branch-count">${rows.length} kayıt</span>
+                            <span class="detail-branch-manager">${manager}</span>
+                            <span class="detail-branch-chevron">▼</span>
                         </div>
-                        ${rowsHtml}
-                    </div>
-                </div>`;
+                        <div class="detail-branch-content">
+                            <div class="detail-entry-header">
+                                <span>Tatlı</span><span>Gelen</span><span>Kalan</span><span>Zayiat</span><span>Saat</span>
+                            </div>
+                            ${rowsHtml}
+                        </div>
+                    </div>`;
+
+                } else {
+                    // ── Aylık/haftalık: tatlı bazlı özet (toplam gelen, toplam zayiat, son kalan) ──
+                    const dessertMap = {};
+                    meaningful.forEach(e => {
+                        const did = e.desserts?.id || 'unknown';
+                        if (!dessertMap[did]) {
+                            dessertMap[did] = {
+                                dessert: e.desserts,
+                                totalGelen:  0,
+                                totalZayiat: 0,
+                                sonKalan:    null,
+                                sonKalanDate: '',
+                            };
+                        }
+                        const d = dessertMap[did];
+                        if (e.received_amount  > 0) d.totalGelen  += e.received_amount;
+                        if (e.waste_amount     > 0) d.totalZayiat += e.waste_amount;
+                        // En son tarihteki kalan değerini al
+                        if (e.remaining_amount !== null && e.remaining_amount !== undefined) {
+                            if (!d.sonKalanDate || (e.entry_date || '') >= d.sonKalanDate) {
+                                d.sonKalan     = e.remaining_amount;
+                                d.sonKalanDate = e.entry_date || '';
+                            }
+                        }
+                    });
+
+                    const dessertRows = Object.values(dessertMap)
+                        .filter(d => d.totalGelen > 0 || d.totalZayiat > 0 || d.sonKalan > 0)
+                        .sort((a, b) => (a.dessert?.name || '').localeCompare(b.dessert?.name || '', 'tr'));
+
+                    if (dessertRows.length === 0) return '';
+                    totalMeaningful += dessertRows.length;
+
+                    const uniqueDays = new Set(meaningful.map(e => e.entry_date)).size;
+
+                    const fmtVal = (val, cls) =>
+                        val > 0 ? `<span class="detail-val ${cls}">${val}</span>`
+                                : `<span class="detail-val empty">—</span>`;
+
+                    const rowsHtml = dessertRows.map(d => {
+                        const name = `${d.dessert?.emoji || ''} ${d.dessert?.name || '?'}`;
+                        return `<div class="detail-entry-row">
+                            <span class="detail-dessert-name">${name}</span>
+                            ${fmtVal(d.totalGelen,  'gelen')}
+                            ${fmtVal(d.sonKalan,    'kalan')}
+                            ${fmtVal(d.totalZayiat, 'zayiat')}
+                        </div>`;
+                    }).join('');
+
+                    // Şube toplamları (footer satırı)
+                    const grandGelen  = dessertRows.reduce((s, d) => s + d.totalGelen, 0);
+                    const grandZayiat = dessertRows.reduce((s, d) => s + d.totalZayiat, 0);
+                    const footerHtml  = `<div class="detail-entry-row" style="border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:6px;font-weight:600">
+                        <span class="detail-dessert-name" style="color:var(--text-2);font-size:11px">TOPLAM</span>
+                        <span class="detail-val gelen">${grandGelen || '—'}</span>
+                        <span class="detail-val empty">—</span>
+                        <span class="detail-val ${grandZayiat > 0 ? 'zayiat' : 'empty'}">${grandZayiat || '—'}</span>
+                    </div>`;
+
+                    return `${sep}<div class="detail-branch-group${collapsed}">
+                        <div class="detail-branch-header" onclick="toggleBranchDetail(this)">
+                            <span class="detail-branch-name">🏪 ${branchName}</span>
+                            <span class="detail-branch-count">${uniqueDays} gün</span>
+                            <span class="detail-branch-manager">${manager}</span>
+                            <span class="detail-branch-chevron">▼</span>
+                        </div>
+                        <div class="detail-branch-content">
+                            <div class="detail-entry-header">
+                                <span>Tatlı</span><span>Top. Gelen</span><span>Son Kalan</span><span>Top. Zayiat</span>
+                            </div>
+                            ${rowsHtml}
+                            ${footerHtml}
+                        </div>
+                    </div>`;
+                }
             }).join('');
 
-            if (badgeEl) badgeEl.textContent = `${totalMeaningful} kayıt`;
+            if (badgeEl) badgeEl.textContent = isDaily ? `${totalMeaningful} kayıt` : `${label} özeti`;
             el.innerHTML = html || `<div class="empty-state" style="padding:32px">
                 <div class="empty-state-icon">📭</div>
                 <div class="empty-state-title">${emptyLabel}</div>
