@@ -2172,8 +2172,11 @@
                 const received = e.received_amount || 0;
                 const prev = new Date(d); prev.setDate(prev.getDate() - 1);
                 const prevDate = prev.toISOString().split('T')[0];
-                const prevRem = remMap[`${e.branches.id}|${e.dessert_id}|${prevDate}`] ?? 0;
-                byDate[d] += Math.max(0, prevRem + received - e.remaining_amount);
+                // Bug7-fix: devir stok yoksa openingStockMap'e düş (dönem ilk günü)
+                const prevRem = remMap[`${e.branches.id}|${e.dessert_id}|${prevDate}`]
+                    ?? (openingStockMap[`${e.branches.id}|${e.dessert_id}`] || 0);
+                // Bug1-fix: zayiat satılan değil, formülden çıkar
+                byDate[d] += Math.max(0, prevRem + received - e.remaining_amount - (e.waste_amount || 0));
             });
             return byDate;
         }
@@ -2198,13 +2201,17 @@
         }
 
         // ── Metrik hesapla (karşılaştırma için) ──────────
-        function buildMetrics(data) {
+        // Bug6-fix: openingMap parametresi eklendi — mevcut dönem KPI ile tutarlı formül:
+        // sold = opening + dist - stock - waste
+        // Önceki dönem için openingMap bilinmediğinden 0 kalır (yaklaşık değer)
+        function buildMetrics(data, openingMap = {}) {
             if (!data || data.length === 0) return { dist: 0, sold: 0, waste: 0 };
-            const latestMap = buildCurrentStockMap(data);
-            const dist  = data.reduce((s, e) => s + (e.received_amount || 0), 0);
-            const stock = Object.values(latestMap).reduce((s, v) => s + v, 0);
-            const waste = data.reduce((s, e) => s + (e.waste_amount    || 0), 0);
-            const sold  = Math.max(0, dist - stock - waste);
+            const latestMap    = buildCurrentStockMap(data);
+            const dist         = data.reduce((s, e) => s + (e.received_amount || 0), 0);
+            const stock        = Object.values(latestMap).reduce((s, v) => s + v, 0);
+            const waste        = data.reduce((s, e) => s + (e.waste_amount    || 0), 0);
+            const openingTotal = Object.values(openingMap).reduce((s, v) => s + v, 0);
+            const sold         = Math.max(0, openingTotal + dist - stock - waste);
             return { dist, sold, waste };
         }
 
@@ -2220,7 +2227,7 @@
                 return;
             }
 
-            const curr = buildMetrics(allData);
+            const curr = buildMetrics(allData, openingStockMap); // Bug6-fix: KPI ile aynı formül
             const prev = buildMetrics(prevData);
 
             // Karşılaştırılan dönemin etiketi
@@ -2588,7 +2595,15 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 if (dd[dessertId]) dd[dessertId].remaining += rem;
             });
 
-            Object.values(dd).forEach(d => { d.sold = Math.max(0, d.received - d.remaining); });
+            // Bug3-fix: devir stok (opening) tatlı bazında topla ve satılana ekle
+            const openingByDessert = {};
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const did = key.split('|')[1];
+                openingByDessert[did] = (openingByDessert[did] || 0) + rem;
+            });
+            Object.entries(dd).forEach(([did, d]) => {
+                d.sold = Math.max(0, (openingByDessert[did] || 0) + d.received - d.remaining);
+            });
 
             const labels = Object.values(dd).map(d => d.name);
             const data   = Object.values(dd).map(d => d.sold);
@@ -3505,29 +3520,16 @@ _Mutlukent Tatlı Takip Sistemi_`;
             const el = document.getElementById('branchScoresGrid');
             if (!el || !allData || !allData.length) { if (el) el.innerHTML = ''; return; }
 
-            // Şube bazında aggregate
-            const brMap = {};
-            allData.forEach(e => {
-                if (!e.branches) return;
-                const id = e.branches.id;
-                if (!brMap[id]) brMap[id] = { name: e.branches.name, received: 0, waste: 0, remaining: [], sold: 0 };
-                const r = e.received_amount || 0;
-                const k = e.remaining_amount;
-                const w = e.waste_amount || 0;
-                brMap[id].received += r;
-                brMap[id].waste    += w;
-                if (k !== null && k !== undefined) brMap[id].remaining.push(k);
+            // Bug2-fix: avgRem yerine aggregateBranchData kullan —
+            // doğru formül: opening + received - lastRemaining - waste
+            // keysWithKalan mantığı ve devir stok dahil, KPI ile tutarlı
+            const bd = aggregateBranchData(allData);
+            const branches = Object.values(bd).map(br => {
+                const base = br.opening + br.received;
+                br.wasteRatio = base > 0 ? br.waste / base : 0;
+                br.stockRatio = base > 0 ? br.remaining / base : 0;
+                return br;
             });
-
-            // Sold hesapla (basit: received - waste - avg_remaining)
-            Object.values(brMap).forEach(br => {
-                const avgRem = br.remaining.length ? br.remaining.reduce((a, b) => a + b, 0) / br.remaining.length : 0;
-                br.sold = Math.max(0, br.received - br.waste - avgRem);
-                br.wasteRatio = br.received > 0 ? br.waste / br.received : 0;
-                br.stockRatio = br.received > 0 ? avgRem / br.received : 0;
-            });
-
-            const branches = Object.values(brMap);
             const maxSold  = Math.max(...branches.map(b => b.sold), 1);
 
             branches.forEach(br => {
