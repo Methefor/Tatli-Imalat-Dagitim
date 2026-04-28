@@ -299,6 +299,7 @@ async function getDailyEntriesDateRange(startDate, endDate) {
             .gte('entry_date', startDate)
             .lte('entry_date', endDate)
             .order('entry_date', { ascending: false })
+            .limit(5000)
 
         if (error) throw error
         return data || []
