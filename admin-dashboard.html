@@ -1538,7 +1538,7 @@
                     <div class="kpi-progress-track">
                         <div class="kpi-progress-fill" id="distProgress"></div>
                     </div>
-                    <span class="kpi-target">Hedef: 5.000</span>
+                    <span class="kpi-target" id="kpiTargetLabel">Hedef: —</span>
                 </div>
             </div>
 
@@ -2409,6 +2409,8 @@ _Mutlukent Tatlı Takip Sistemi_`;
                         : DAILY_TARGET;
             const pct = Math.min((dist / periodTarget) * 100, 100);
             document.getElementById('distProgress').style.width = `${pct}%`;
+            const targetEl = document.getElementById('kpiTargetLabel');
+            if (targetEl) targetEl.textContent = `Hedef: ${periodTarget.toLocaleString('tr-TR')}`;
 
             const base = openingTotal + dist;
             const salesRatio = base > 0 ? ((sold / base) * 100).toFixed(1) : 0;
