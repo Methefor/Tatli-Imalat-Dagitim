@@ -1821,7 +1821,8 @@
         let yearlyChart      = null;
         let compareChart     = null;
         let currentYear      = new Date().getFullYear();
-        const DAILY_TARGET   = 5000;
+        const MONTHLY_TARGET = 12000;
+        const DAILY_TARGET   = Math.round(MONTHLY_TARGET / 30); // ~400
         let autoRefreshTimer = null;
         let loadGeneration   = 0; // her loadData çağrısında artar; eskiler sonucu yoksayar
 
@@ -2398,7 +2399,15 @@ _Mutlukent Tatlı Takip Sistemi_`;
             animateCounter('totalStock',        stock);
             animateCounter('totalWaste',        waste);
 
-            const pct = Math.min((dist / DAILY_TARGET) * 100, 100);
+            // Filtre tipine göre doğru hedefi kullan
+            const periodTarget = (currentFilter === 'month' || currentFilter === 'month-specific')
+                ? MONTHLY_TARGET
+                : currentFilter === 'week'
+                    ? DAILY_TARGET * 7
+                    : currentFilter === 'all'
+                        ? MONTHLY_TARGET
+                        : DAILY_TARGET;
+            const pct = Math.min((dist / periodTarget) * 100, 100);
             document.getElementById('distProgress').style.width = `${pct}%`;
 
             const base = openingTotal + dist;
