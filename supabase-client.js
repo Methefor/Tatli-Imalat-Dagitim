@@ -280,29 +280,36 @@ async function getAllDailyEntriesByDate(date) {
  */
 async function getDailyEntriesDateRange(startDate, endDate) {
     try {
-        const { data, error } = await supabaseClient
-            .from('daily_entries')
-            .select(`
-                *,
-                branches (
-                    id,
-                    name,
-                    manager_name
-                ),
-                desserts (
-                    id,
-                    name,
-                    emoji,
-                    display_order
-                )
-            `)
-            .gte('entry_date', startDate)
-            .lte('entry_date', endDate)
-            .order('entry_date', { ascending: false })
-            .limit(5000)
+        const PAGE = 1000;
+        let all = [], from = 0;
+        while (true) {
+            const { data, error } = await supabaseClient
+                .from('daily_entries')
+                .select(`
+                    *,
+                    branches (
+                        id,
+                        name,
+                        manager_name
+                    ),
+                    desserts (
+                        id,
+                        name,
+                        emoji,
+                        display_order
+                    )
+                `)
+                .gte('entry_date', startDate)
+                .lte('entry_date', endDate)
+                .order('entry_date', { ascending: false })
+                .range(from, from + PAGE - 1)
 
-        if (error) throw error
-        return data || []
+            if (error) throw error
+            all = all.concat(data || [])
+            if (!data || data.length < PAGE) break
+            from += PAGE
+        }
+        return all
     } catch (err) {
         console.error('Veri çekme hatası:', err)
         return []
