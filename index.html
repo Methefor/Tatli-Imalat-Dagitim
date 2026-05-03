@@ -933,7 +933,14 @@
 
             <div class="cl-modal-body">
 
-                <div class="cl-section-sep">Nisan 2026 — Güncel Sürüm</div>
+                <div class="cl-section-sep">Mayıs 2026 — Güncel Sürüm</div>
+
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text">2 yeni şube eklendi: <strong>🪨 Alkaya</strong> ve <strong>🌅 Kumbağ</strong> — sistem geneline entegre edildi.</span>
+                </div>
+
+                <div class="cl-section-sep">Nisan 2026</div>
 
                 <div class="cl-entry">
                     <span class="cl-badge cl-badge-new">YENİ</span>
@@ -1124,8 +1131,14 @@
             if (branchesCache.length === 0) {
                 grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-tertiary);">Şube bilgileri alınamadı.</div>';
             } else {
+                const BRANCH_ORDER = ['Rumeli İskelesi','Millet Bahçesi','Vagon','Sahil','Yahya Kemal','TunaBoyu','Alkaya','Kumbağ'];
+                const sortedBranches = [...branchesCache].sort((a, b) => {
+                    const ai = BRANCH_ORDER.indexOf(a.name);
+                    const bi = BRANCH_ORDER.indexOf(b.name);
+                    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+                });
                 grid.innerHTML = '';
-                branchesCache.forEach(branch => {
+                sortedBranches.forEach(branch => {
                     const emoji = branchEmojis[branch.name] || '🏪';
                     const card = document.createElement('div');
                     card.className = 'branch-card';
