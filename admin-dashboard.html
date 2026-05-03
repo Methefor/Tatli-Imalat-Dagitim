@@ -3186,22 +3186,28 @@ _Mutlukent Tatlı Takip Sistemi_`;
             });
 
             // Şube × tatlı tablosu için şube bazlı hesap
-            const branchData = {}; // branchName → { dessertId → sold }
+            const branchIdToName = {};
+            allData.forEach(e => { if (e.branches?.id) branchIdToName[String(e.branches.id)] = e.branches.name; });
+
+            const branchData = {}; // branchName → { dessertId → { received, waste, opening, remaining } }
             allData.forEach(e => {
                 const bName = e.branches?.name;
                 const did   = String(e.desserts?.id);
                 if (!bName) return;
                 if (!branchData[bName]) branchData[bName] = {};
-                if (!branchData[bName][did]) branchData[bName][did] = { received: 0, remaining: 0 };
+                if (!branchData[bName][did]) branchData[bName][did] = { received: 0, waste: 0, opening: 0, remaining: 0 };
                 branchData[bName][did].received += e.received_amount || 0;
+                branchData[bName][did].waste    += e.waste_amount    || 0;
+            });
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const [bid, did] = key.split('|');
+                const bName = branchIdToName[bid];
+                if (bName && branchData[bName]?.[did]) branchData[bName][did].opening += rem;
             });
             Object.entries(latestMap).forEach(([key, rem]) => {
                 const [bid, did] = key.split('|');
-                // Find branch name
-                const entry = allData.find(e => String(e.branches?.id) === bid);
-                if (!entry) return;
-                const bName = entry.branches.name;
-                if (branchData[bName]?.[did]) branchData[bName][did].remaining += rem;
+                const bName = branchIdToName[bid];
+                if (bName && branchData[bName]?.[did]) branchData[bName][did].remaining += rem;
             });
 
             const branchNames = [...branches].sort();
@@ -3218,7 +3224,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 dessertList.forEach(([did]) => {
                     const d = branchData[b]?.[did];
                     if (d) {
-                        const sold = Math.max(0, d.received - d.remaining);
+                        const sold = Math.max(0, d.opening + d.received - d.waste - d.remaining);
                         const avg  = (sold / dayCount).toFixed(1);
                         allVals.push(Number(avg));
                     }
@@ -3236,7 +3242,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 dessertList.forEach(([did]) => {
                     const d = branchData[b]?.[did];
                     if (!d) { row += `<td class="fc-val" style="color:var(--text-3)">—</td>`; return; }
-                    const sold = Math.max(0, d.received - d.remaining);
+                    const sold = Math.max(0, d.opening + d.received - d.waste - d.remaining);
                     const avg  = (sold / dayCount).toFixed(1);
                     const ratio = Number(avg) / maxAvg;
                     const cls = ratio >= 0.6 ? 'fc-high' : ratio >= 0.25 ? 'fc-mid' : 'fc-low';
@@ -3483,23 +3489,29 @@ _Mutlukent Tatlı Takip Sistemi_`;
             allData.forEach(e => {
                 if (!e.branches) return;
                 const bn = e.branches.id;
-                if (!brMap[bn]) brMap[bn] = { name: e.branches.name, received: 0, waste: 0 };
+                if (!brMap[bn]) brMap[bn] = { name: e.branches.name, received: 0, waste: 0, opening: 0 };
                 brMap[bn].received += e.received_amount || 0;
                 brMap[bn].waste    += e.waste_amount    || 0;
             });
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const bid = key.split('|')[0];
+                if (brMap[bid]) brMap[bid].opening += rem;
+            });
 
-            // 1. Yüksek zayiat oranı (tatlı×şube bazında)
-            Object.values(bdMap).forEach(bd => {
-                if (bd.received >= 10 && bd.waste / bd.received > 0.10) {
-                    const pct = Math.round(bd.waste / bd.received * 100);
+            // 1. Yüksek zayiat oranı (tatlı×şube bazında) — devir stok dahil denominator
+            Object.entries(bdMap).forEach(([key, bd]) => {
+                const bdBase = (openingStockMap[key] || 0) + bd.received;
+                if (bdBase >= 10 && bd.waste / bdBase > 0.10) {
+                    const pct = Math.round(bd.waste / bdBase * 100);
                     alerts.push({ type: 'warn', icon: '⚠️', text: `<b>${bd.branch}</b> — <b>${bd.dessert}</b> zayi oranı %${pct}` });
                 }
             });
 
-            // 2. Kritik zayiat oranı şube geneli
+            // 2. Kritik zayiat oranı şube geneli — devir stok dahil denominator
             Object.values(brMap).forEach(br => {
-                if (br.received >= 20 && br.waste / br.received > 0.15) {
-                    const pct = Math.round(br.waste / br.received * 100);
+                const brBase = br.opening + br.received;
+                if (brBase >= 20 && br.waste / brBase > 0.15) {
+                    const pct = Math.round(br.waste / brBase * 100);
                     if (!alerts.find(a => a.text.includes(br.name) && a.type === 'danger')) {
                         alerts.push({ type: 'danger', icon: '🚨', text: `<b>${br.name}</b> genelinde zayiat oranı kritik: %${pct}` });
                     }
