@@ -2828,7 +2828,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return;
             }
 
-            // Satılan = gelen - kalan (mevcut stok haritası)
+            // Satılan = devir + gelen - zayiat - mevcut_kalan
             const latestMap = buildCurrentStockMap(allData);
             const bySold = {}, byName = {}, byEmoji = {};
             allData.forEach(e => {
@@ -2839,6 +2839,11 @@ _Mutlukent Tatlı Takip Sistemi_`;
                     byEmoji[id] = e.desserts?.emoji || '🍰';
                 }
                 bySold[id] += e.received_amount || 0;
+                bySold[id] -= e.waste_amount    || 0;
+            });
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const did = String(key.split('|')[1]);
+                bySold[did] = (bySold[did] || 0) + rem;
             });
             Object.entries(latestMap).forEach(([key, rem]) => {
                 const did = String(key.split('|')[1]);
@@ -3028,13 +3033,18 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return;
             }
 
-            // Tatlı bazlı satılan hesapla (aynı mantık ciro ile)
+            // Satılan = devir + gelen - zayiat - mevcut_kalan (ciro ile aynı formül)
             const ciroLatestMap = buildCurrentStockMap(allData);
             const bySold = {}, byName = {};
             allData.forEach(e => {
                 const id = String(e.desserts?.id);
                 if (!bySold[id]) { bySold[id] = 0; byName[id] = `${e.desserts?.emoji || ''} ${e.desserts?.name || id}`; }
                 bySold[id] += e.received_amount || 0;
+                bySold[id] -= e.waste_amount    || 0;
+            });
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const did = String(key.split('|')[1]);
+                bySold[did] = (bySold[did] || 0) + rem;
             });
             Object.entries(ciroLatestMap).forEach(([key, rem]) => {
                 const dessertId = String(key.split('|')[1]);
@@ -3668,24 +3678,34 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 return;
             }
 
-            // Tatlı bazında toplam sold ve ortalama kalan
+            // Tatlı bazında: devir + gelen - zayiat - mevcut_kalan = satılan
+            const latestRemMapTO = buildCurrentStockMap(allData);
+            const openingByDessertTO = {};
+            Object.entries(openingStockMap).forEach(([key, rem]) => {
+                const did = key.split('|')[1];
+                openingByDessertTO[did] = (openingByDessertTO[did] || 0) + rem;
+            });
+            const curRemByDessert = {};
+            Object.entries(latestRemMapTO).forEach(([key, rem]) => {
+                const did = key.split('|')[1];
+                curRemByDessert[did] = (curRemByDessert[did] || 0) + rem;
+            });
+
             const dessertMap = {};
             allData.forEach(e => {
                 if (!e.desserts) return;
                 const id = e.dessert_id;
-                if (!dessertMap[id]) dessertMap[id] = { name: e.desserts.name, emoji: e.desserts.emoji || '🍰', received: 0, waste: 0, remainings: [] };
+                if (!dessertMap[id]) dessertMap[id] = { name: e.desserts.name, emoji: e.desserts.emoji || '🍰', received: 0, waste: 0 };
                 dessertMap[id].received += e.received_amount || 0;
                 dessertMap[id].waste    += e.waste_amount    || 0;
-                if (e.remaining_amount !== null && e.remaining_amount !== undefined) {
-                    dessertMap[id].remainings.push(e.remaining_amount);
-                }
             });
 
-            const list = Object.values(dessertMap).map(d => {
-                const avgRem = d.remainings.length ? d.remainings.reduce((a, b) => a + b, 0) / d.remainings.length : 0;
-                const sold   = Math.max(0, d.received - d.waste - avgRem);
-                const ratio  = avgRem > 0 ? sold / avgRem : (sold > 0 ? 99 : 0);
-                return { name: d.name, emoji: d.emoji, sold: Math.round(sold), avgRem: Math.round(avgRem), ratio };
+            const list = Object.entries(dessertMap).map(([did, d]) => {
+                const opening = openingByDessertTO[did] || 0;
+                const curRem  = curRemByDessert[did]    || 0;
+                const sold    = Math.max(0, opening + d.received - d.waste - curRem);
+                const ratio   = curRem > 0 ? sold / curRem : (sold > 0 ? 99 : 0);
+                return { name: d.name, emoji: d.emoji, sold: Math.round(sold), curRem: Math.round(curRem), ratio };
             }).sort((a, b) => b.ratio - a.ratio);
 
             const maxRatio = Math.max(...list.map(d => d.ratio), 1);
@@ -3876,6 +3896,8 @@ _Mutlukent Tatlı Takip Sistemi_`;
             const desserts = {}; // id → { name, emoji }
             const branches = {}; // id → name
 
+            const latestRemMapHM = buildCurrentStockMap(allData);
+
             allData.forEach(e => {
                 if (!e.branches || !e.desserts) return;
                 const did = e.dessert_id;
@@ -3883,20 +3905,21 @@ _Mutlukent Tatlı Takip Sistemi_`;
                 desserts[did] = { name: e.desserts.name, emoji: e.desserts.emoji || '' };
                 branches[bid] = e.branches.name;
                 if (!matrix[did]) matrix[did] = {};
-                if (!matrix[did][bid]) matrix[did][bid] = { received: 0, waste: 0, remaining: [] };
+                if (!matrix[did][bid]) matrix[did][bid] = { received: 0, waste: 0 };
                 matrix[did][bid].received += e.received_amount || 0;
                 matrix[did][bid].waste    += e.waste_amount    || 0;
-                if (e.remaining_amount !== null) matrix[did][bid].remaining.push(e.remaining_amount);
             });
 
-            // Satılan hesapla
+            // Satılan: devir + gelen - zayiat - mevcut_kalan (şube×tatlı bazında)
             const sold = {}; // dessertId → branchId → soldAmt
             let globalMax = 0;
             Object.entries(matrix).forEach(([did, bmap]) => {
                 sold[did] = {};
                 Object.entries(bmap).forEach(([bid, vals]) => {
-                    const avgRem = vals.remaining.length ? vals.remaining.reduce((a, b) => a + b, 0) / vals.remaining.length : 0;
-                    const s = Math.max(0, Math.round(vals.received - vals.waste - avgRem));
+                    const key     = `${bid}|${did}`;
+                    const lastRem = latestRemMapHM[key] ?? 0;
+                    const opening = openingStockMap[key] || 0;
+                    const s = Math.max(0, Math.round(opening + vals.received - vals.waste - lastRem));
                     sold[did][bid] = s;
                     if (s > globalMax) globalMax = s;
                 });
