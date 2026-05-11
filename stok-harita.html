@@ -406,7 +406,10 @@
 
     <!-- ── Sıralama ── -->
     <div class="section-hd" style="margin-top:8px">
-        <span class="section-title">🏆 Bu Ay Şube Sıralaması</span>
+        <div>
+            <div class="section-title">🏆 Bu Ay Şube Sıralaması</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:3px">En çok satılan tatlı adedine göre</div>
+        </div>
         <span class="section-badge" id="rankBadge">—</span>
     </div>
 
@@ -476,7 +479,13 @@
         const el = document.getElementById('stockMap');
         let totalStockAll = 0;
 
-        const cards = branches.map(branch => {
+        // Toplam stok hesapla, sonra büyükten küçüğe sırala (kendi şube sabite çıkmaz, sıralamaya dahil)
+        const branchesWithTotal = branches.map(b => ({
+            ...b,
+            _total: desserts.reduce((s, d) => s + (( stockMap[String(b.id)] || {})[String(d.id)] || 0), 0)
+        })).sort((a, b) => b._total - a._total);
+
+        const cards = branchesWithTotal.map(branch => {
             const bid    = String(branch.id);
             const bStock = stockMap[bid] || {};
             const isMe   = bid === String(myBranchId);
@@ -592,7 +601,7 @@
             }
         });
 
-        // Satış hesabı
+        // Satış hesabı — satılan adet (mutlak sayı) üzerinden sırala
         const ranked = Object.entries(stats)
             .map(([bid, s]) => {
                 const sold = Math.max(0, s.gelen - s.remaining - s.waste);
@@ -600,7 +609,7 @@
                 return { bid, ...s, sold, pct };
             })
             .filter(s => s.gelen > 0)
-            .sort((a, b) => b.pct - a.pct);
+            .sort((a, b) => b.sold - a.sold);
 
         document.getElementById('rankBadge').textContent = monthLabel;
 
@@ -612,9 +621,9 @@
         const medals = ['🥇','🥈','🥉'];
 
         const rows = ranked.map((s, i) => {
-            const isMe = s.bid === String(myBranchId);
-            const pctStr = s.pct.toFixed(1);
-            const pctCls = s.pct >= 80 ? 'pct-high' : s.pct >= 50 ? 'pct-medium' : 'pct-low';
+            const isMe    = s.bid === String(myBranchId);
+            const pctStr  = s.pct.toFixed(1);
+            const soldCls = s.sold >= 1000 ? 'pct-high' : s.sold >= 300 ? 'pct-medium' : 'pct-low';
             const medalOrNum = i < 3
                 ? `<span class="rank-medal">${medals[i]}</span>`
                 : `<span class="rank-num">#${i+1}</span>`;
@@ -623,11 +632,11 @@
                 <span style="font-size:20px;flex-shrink:0">${branchEmoji(s.name)}</span>
                 <div class="rank-branch">
                     <div class="rank-branch-name">${s.name}${isMe ? ' <span style="font-size:10px;color:rgba(245,158,11,0.8);font-weight:700">BENİM</span>' : ''}</div>
-                    <div class="rank-branch-sub">${s.gelen.toLocaleString('tr-TR')} gelen · ${s.waste} zayiat</div>
+                    <div class="rank-branch-sub">${s.gelen.toLocaleString('tr-TR')} gelen · %${pctStr} satıldı · ${s.waste} zayiat</div>
                 </div>
                 <div class="rank-stats">
-                    <span class="rank-pct ${pctCls}">%${pctStr}</span>
-                    <span class="rank-detail">${s.sold.toLocaleString('tr-TR')} satıldı</span>
+                    <span class="rank-pct ${soldCls}">${s.sold.toLocaleString('tr-TR')}</span>
+                    <span class="rank-detail">satılan adet</span>
                 </div>
             </div>`;
         }).join('');
