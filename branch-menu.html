@@ -17,6 +17,7 @@
     <link rel="prefetch" href="zayiat.html">
     <link rel="prefetch" href="transfer.html">
     <link rel="prefetch" href="subem.html">
+    <link rel="prefetch" href="stok-harita.html">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
     <style>
@@ -428,6 +429,12 @@
         .action-card:nth-child(2) { animation: slideIn 0.65s cubic-bezier(0.16,1,0.3,1) 0.68s forwards; }
         .action-card:nth-child(3) { animation: slideIn 0.65s cubic-bezier(0.16,1,0.3,1) 0.81s forwards; }
         .action-card:nth-child(4) { animation: slideIn 0.65s cubic-bezier(0.16,1,0.3,1) 0.94s forwards; }
+        .action-card:nth-child(5) { animation: slideIn 0.65s cubic-bezier(0.16,1,0.3,1) 1.07s forwards; }
+
+        .card-teal::before  { background: #2dd4bf; }
+        .card-teal::after   { background: linear-gradient(120deg, rgba(45,212,191,0.07), transparent 60%); }
+        .card-teal .card-icon { background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.15); }
+        .card-teal:hover { box-shadow: 0 8px 32px rgba(45,212,191,0.12), inset 0 1px 0 rgba(255,255,255,0.06); }
 
         /* Sol renk çizgisi */
         .action-card::before {
@@ -888,6 +895,15 @@
                 <div class="card-body">
                     <div class="card-title">Zayiat Girişi</div>
                     <div class="card-desc">Fire, bozulma ve kayıpları kaydet</div>
+                </div>
+                <span class="card-arrow">›</span>
+            </button>
+
+            <button class="action-card card-teal" onclick="window.location.href='stok-harita.html'">
+                <div class="card-icon">📍</div>
+                <div class="card-body">
+                    <div class="card-title">Stok Haritası & Sıralama</div>
+                    <div class="card-desc">Tüm şubelerin anlık stoğu · Bu ay sıralaması</div>
                 </div>
                 <span class="card-arrow">›</span>
             </button>

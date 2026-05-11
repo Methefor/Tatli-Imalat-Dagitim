@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>Stok Haritası</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>!function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}()</script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --gold:   #f59e0b;
+            --gold-2: #fbbf24;
+            --bg:     #070d1a;
+            --glass:  rgba(255,255,255,0.035);
+            --border: rgba(255,255,255,0.07);
+            --text:   #f0f4ff;
+            --muted:  rgba(255,255,255,0.35);
+            --green:  #34d399;
+            --amber:  #fbbf24;
+            --red:    #f87171;
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ── Topbar ── */
+        .topbar {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px;
+            background: rgba(7,13,26,0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+        }
+
+        .back-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: 13px; font-weight: 600;
+            padding: 6px 12px; cursor: pointer;
+            transition: all 0.2s; touch-action: manipulation;
+        }
+        .back-btn:hover { border-color: rgba(255,255,255,0.18); color: var(--text); }
+
+        .topbar-title {
+            font-size: 14px; font-weight: 700;
+            letter-spacing: 0.04em; color: var(--text);
+        }
+
+        .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+        .refresh-btn {
+            background: transparent; border: 1px solid var(--border);
+            border-radius: 8px; color: var(--muted);
+            font-size: 14px; padding: 5px 9px;
+            cursor: pointer; transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .refresh-btn:hover { border-color: rgba(245,158,11,0.35); color: var(--gold); }
+        .refresh-btn.spinning { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .clock {
+            font-size: 13px; font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: rgba(255,255,255,0.35);
+        }
+
+        /* ── Content ── */
+        .content {
+            position: relative; z-index: 1;
+            padding: 20px 16px 40px;
+            max-width: 600px; margin: 0 auto;
+        }
+
+        /* ── Section header ── */
+        .section-hd {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .section-title {
+            font-size: 15px; font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+        .section-badge {
+            font-size: 11px; font-weight: 700;
+            padding: 3px 9px; border-radius: 20px;
+            background: rgba(255,255,255,0.06);
+            color: var(--muted);
+        }
+        .live-dot {
+            display: inline-block; width: 6px; height: 6px;
+            border-radius: 50%; background: var(--green);
+            margin-right: 5px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        /* ── Branch Card ── */
+        .branch-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .branch-card.my-branch {
+            border-color: rgba(245,158,11,0.35);
+            background: rgba(245,158,11,0.03);
+        }
+
+        .branch-card-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .branch-emoji-box {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .my-branch .branch-emoji-box {
+            background: rgba(245,158,11,0.1);
+            border-color: rgba(245,158,11,0.2);
+        }
+
+        .branch-info { flex: 1; min-width: 0; }
+        .branch-card-name {
+            font-size: 14px; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .branch-card-manager {
+            font-size: 11px; color: var(--muted); margin-top: 1px;
+        }
+
+        .branch-stock-chip {
+            display: flex; align-items: center; gap: 6px;
+            flex-shrink: 0;
+        }
+        .stock-total {
+            font-size: 20px; font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+        .stock-total.high   { color: var(--green); }
+        .stock-total.medium { color: var(--amber); }
+        .stock-total.low    { color: var(--red); }
+        .stock-total.empty  { color: rgba(255,255,255,0.2); }
+
+        .stock-label {
+            font-size: 10px; font-weight: 600;
+            color: var(--muted); letter-spacing: 0.06em;
+        }
+
+        .chevron {
+            font-size: 12px; color: var(--muted);
+            transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+            margin-left: 4px;
+        }
+        .branch-card.open .chevron { transform: rotate(180deg); }
+
+        /* ── Dessert rows ── */
+        .dessert-rows {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.35s cubic-bezier(0.16,1,0.3,1);
+        }
+        .branch-card.open .dessert-rows { max-height: 600px; }
+
+        .dessert-rows-inner {
+            padding: 0 16px 14px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dessert-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .dessert-row:last-child { border-bottom: none; }
+
+        .dessert-emoji { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+
+        .dessert-name {
+            font-size: 12px; font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            flex: 1; min-width: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .dessert-bar-wrap {
+            width: 70px; height: 4px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 2px; flex-shrink: 0;
+        }
+        .dessert-bar {
+            height: 100%; border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+        .bar-green  { background: var(--green); }
+        .bar-amber  { background: var(--amber); }
+        .bar-red    { background: var(--red); }
+        .bar-empty  { background: rgba(255,255,255,0.1); width: 100% !important; }
+
+        .dessert-count {
+            font-size: 13px; font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            width: 32px; text-align: right; flex-shrink: 0;
+        }
+        .count-green  { color: var(--green); }
+        .count-amber  { color: var(--amber); }
+        .count-red    { color: var(--red); }
+        .count-empty  { color: rgba(255,255,255,0.2); }
+
+        .stock-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dot-green { background: var(--green); }
+        .dot-amber { background: var(--amber); box-shadow: 0 0 6px rgba(251,191,36,0.5); }
+        .dot-red   { background: var(--red);   box-shadow: 0 0 6px rgba(248,113,113,0.5); animation: redPulse 1.5s ease-in-out infinite; }
+        .dot-empty { background: rgba(255,255,255,0.12); }
+        @keyframes redPulse {
+            0%,100% { opacity:1; } 50% { opacity:0.4; }
+        }
+
+        /* ── Sıralama ── */
+        .rank-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .rank-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 16px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            transition: border-color 0.2s;
+        }
+        .rank-row.my-rank {
+            border-color: rgba(245,158,11,0.35);
+            background: rgba(245,158,11,0.04);
+        }
+
+        .rank-medal { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; }
+        .rank-num {
+            font-size: 14px; font-weight: 800;
+            color: rgba(255,255,255,0.3); width: 26px;
+            text-align: center; flex-shrink: 0;
+        }
+
+        .rank-branch { flex: 1; min-width: 0; }
+        .rank-branch-name {
+            font-size: 13px; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .rank-branch-sub {
+            font-size: 11px; color: var(--muted); margin-top: 2px;
+        }
+
+        .rank-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+
+        .rank-pct {
+            font-size: 16px; font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+        .pct-high   { color: var(--green); }
+        .pct-medium { color: var(--amber); }
+        .pct-low    { color: var(--red); }
+
+        .rank-detail {
+            font-size: 10px; color: var(--muted); font-weight: 600;
+            text-align: right;
+        }
+
+        /* ── Loading ── */
+        .loading-wrap {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 60px 20px; gap: 16px;
+        }
+        .loading-spinner {
+            width: 36px; height: 36px;
+            border: 3px solid rgba(255,255,255,0.08);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .loading-text { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+        /* ── Last updated ── */
+        .updated-label {
+            font-size: 11px; color: rgba(255,255,255,0.2);
+            text-align: center; margin: 16px 0 24px;
+        }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center; padding: 40px 20px;
+            color: var(--muted); font-size: 13px;
+        }
+        .empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+        /* ── Legend ── */
+        .legend {
+            display: flex; gap: 14px; flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 11px; color: var(--muted); font-weight: 600;
+        }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        /* ── Light theme ── */
+        [data-theme="light"] {
+            --bg: #eef2fa; --glass: #ffffff;
+            --border: rgba(15,23,42,0.1);
+            --text: #0f172a; --muted: #64748b;
+        }
+        [data-theme="light"] body { background: #eef2fa; }
+        [data-theme="light"] .topbar { background: rgba(238,242,250,0.95); }
+        [data-theme="light"] .bg-grid {
+            background-image:
+                linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+        }
+
+        @media (max-width: 380px) {
+            .dessert-bar-wrap { width: 50px; }
+            .topbar-title { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<nav class="topbar">
+    <button class="back-btn" onclick="history.back()">‹ Geri</button>
+    <span class="topbar-title">📍 Stok & Sıralama</span>
+    <div class="topbar-right">
+        <button class="refresh-btn" id="refreshBtn" onclick="loadAll()" title="Yenile">↻</button>
+        <span class="clock" id="clock">--:--</span>
+    </div>
+</nav>
+
+<div class="content">
+
+    <!-- ── Stok Haritası ── -->
+    <div class="section-hd">
+        <span class="section-title">
+            <span class="live-dot"></span>Tüm Şubeler — Anlık Stok
+        </span>
+        <span class="section-badge" id="stockBadge">—</span>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> &gt;20 bol</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> 5–20 az</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> 1–4 kritik</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.15)"></div> 0 tükendi</div>
+    </div>
+
+    <div id="stockMap">
+        <div class="loading-wrap">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Stok verileri yükleniyor…</div>
+        </div>
+    </div>
+
+    <div class="updated-label" id="updatedLabel"></div>
+
+    <!-- ── Sıralama ── -->
+    <div class="section-hd" style="margin-top:8px">
+        <span class="section-title">🏆 Bu Ay Şube Sıralaması</span>
+        <span class="section-badge" id="rankBadge">—</span>
+    </div>
+
+    <div id="rankList">
+        <div class="loading-wrap">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Sıralama hesaplanıyor…</div>
+        </div>
+    </div>
+
+</div>
+
+<script src="supabase-client.js"></script>
+<script>
+    const myBranchId   = localStorage.getItem('branchId');
+    const myBranchName = localStorage.getItem('branchName');
+    if (!myBranchId) window.location.href = 'branch-menu.html';
+
+    const EMOJI_MAP = {
+        'Rumeli İskelesi': '🌊',
+        'Millet Bahçesi':  '🌳',
+        'Sahil':           '🏖️',
+        'Vagon':           '🚂',
+        'Yahya Kemal':     '📚',
+        'TunaBoyu':        '🏞️',
+        'Alkaya':          '🪨',
+        'Kumbağ':          '🌅',
+    };
+
+    function branchEmoji(name) { return EMOJI_MAP[name] || '🏪'; }
+
+    // Saat
+    function tick() {
+        document.getElementById('clock').textContent =
+            new Date().toLocaleTimeString('tr-TR', { hour:'2-digit', minute:'2-digit' });
+    }
+    tick(); setInterval(tick, 1000);
+
+    // Stok renk sınıfı
+    function stockClass(n) {
+        if (n > 20) return 'high';
+        if (n >= 5)  return 'medium';
+        if (n >= 1)  return 'low';
+        return 'empty';
+    }
+    function dotClass(n) {
+        if (n > 20) return 'dot-green';
+        if (n >= 5)  return 'dot-amber';
+        if (n >= 1)  return 'dot-red';
+        return 'dot-empty';
+    }
+    function countClass(n) {
+        if (n > 20) return 'count-green';
+        if (n >= 5)  return 'count-amber';
+        if (n >= 1)  return 'count-red';
+        return 'count-empty';
+    }
+    function barClass(n) {
+        if (n > 20) return 'bar-green';
+        if (n >= 5)  return 'bar-amber';
+        if (n >= 1)  return 'bar-red';
+        return 'bar-empty';
+    }
+
+    // Stok haritasını render et
+    function renderStockMap(branches, desserts, stockMap) {
+        const el = document.getElementById('stockMap');
+        let totalStockAll = 0;
+
+        const cards = branches.map(branch => {
+            const bid    = String(branch.id);
+            const bStock = stockMap[bid] || {};
+            const isMe   = bid === String(myBranchId);
+
+            // Bu şubedeki aktif tatlılar (stok > 0 olsun ya da olmasın, tümünü göster)
+            const total  = desserts.reduce((s, d) => s + (bStock[String(d.id)] || 0), 0);
+            totalStockAll += total;
+
+            const cls     = stockClass(total);
+            const dessertRows = desserts.map(d => {
+                const qty  = bStock[String(d.id)] || 0;
+                const max  = Math.max(...desserts.map(dd => bStock[String(dd.id)] || 0), 1);
+                const pct  = Math.round((qty / max) * 100);
+                const bc   = barClass(qty);
+                const isEmpty = qty === 0;
+                return `<div class="dessert-row">
+                    <span class="dessert-emoji">${d.emoji || '🍰'}</span>
+                    <span class="dessert-name">${d.name}</span>
+                    <div class="dessert-bar-wrap">
+                        <div class="dessert-bar ${bc}" style="width:${isEmpty ? '100' : pct}%"></div>
+                    </div>
+                    <span class="dessert-count ${countClass(qty)}">${qty}</span>
+                    <span class="stock-dot ${dotClass(qty)}"></span>
+                </div>`;
+            }).join('');
+
+            const myBadge = isMe ? ' <span style="font-size:10px;color:rgba(245,158,11,0.8);font-weight:700;margin-left:4px">BENİM</span>' : '';
+
+            return `<div class="branch-card${isMe ? ' my-branch' : ''}" id="card-${bid}">
+                <div class="branch-card-header" onclick="toggleCard('${bid}')">
+                    <div class="branch-emoji-box">${branchEmoji(branch.name)}</div>
+                    <div class="branch-info">
+                        <div class="branch-card-name">${branch.name}${myBadge}</div>
+                        <div class="branch-card-manager">${branch.manager_name || '—'}</div>
+                    </div>
+                    <div class="branch-stock-chip">
+                        <div>
+                            <div class="stock-total ${cls}">${total}</div>
+                            <div class="stock-label">ADET</div>
+                        </div>
+                        <span class="chevron">▾</span>
+                    </div>
+                </div>
+                <div class="dessert-rows">
+                    <div class="dessert-rows-inner">${dessertRows}</div>
+                </div>
+            </div>`;
+        });
+
+        el.innerHTML = cards.join('');
+        document.getElementById('stockBadge').textContent = `Toplam ${totalStockAll.toLocaleString('tr-TR')} adet`;
+
+        // Kendi şubeyi otomatik aç
+        const myCard = document.getElementById(`card-${myBranchId}`);
+        if (myCard) myCard.classList.add('open');
+    }
+
+    function toggleCard(bid) {
+        const card = document.getElementById(`card-${bid}`);
+        if (card) card.classList.toggle('open');
+    }
+
+    // Sıralama render
+    function renderRanking(branches, monthData) {
+        const el = document.getElementById('rankList');
+        const now = new Date();
+        const monthLabel = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+
+        // Şube bazlı toplamlar
+        const stats = {};
+        branches.forEach(b => {
+            stats[String(b.id)] = { name: b.name, gelen: 0, waste: 0, remaining: 0, hasRemaining: false };
+        });
+
+        monthData.forEach(e => {
+            const bid = String(e.branch_id);
+            if (!stats[bid]) return;
+            stats[bid].gelen += e.received_amount || 0;
+            stats[bid].waste += e.waste_amount    || 0;
+        });
+
+        // Son kalan (en güncel remaining_amount per branch)
+        const latestRemDate = {};
+        monthData.forEach(e => {
+            const bid = String(e.branch_id);
+            if (e.remaining_amount === null || e.remaining_amount === undefined) return;
+            if (!latestRemDate[bid] || e.entry_date > latestRemDate[bid]) {
+                latestRemDate[bid] = e.entry_date;
+                if (stats[bid]) {
+                    stats[bid].remaining   = e.remaining_amount;
+                    stats[bid].hasRemaining = true;
+                }
+            }
+        });
+        // remaining: branch bazlı tüm tatlıların toplamı için aynı mantık
+        const remByBranch = {};
+        const remLatestDate = {};
+        monthData.forEach(e => {
+            if (e.remaining_amount === null || e.remaining_amount === undefined) return;
+            const bid = String(e.branch_id);
+            const did = e.dessert_id;
+            const key = `${bid}||${did}`;
+            if (!remLatestDate[key] || e.entry_date > remLatestDate[key]) {
+                remLatestDate[key] = e.entry_date;
+                if (!remByBranch[bid]) remByBranch[bid] = {};
+                remByBranch[bid][did] = e.remaining_amount;
+            }
+        });
+        Object.keys(remByBranch).forEach(bid => {
+            if (stats[bid]) {
+                stats[bid].remaining = Object.values(remByBranch[bid]).reduce((s,v)=>s+v,0);
+                stats[bid].hasRemaining = true;
+            }
+        });
+
+        // Satış hesabı
+        const ranked = Object.entries(stats)
+            .map(([bid, s]) => {
+                const sold = Math.max(0, s.gelen - s.remaining - s.waste);
+                const pct  = s.gelen > 0 ? (sold / s.gelen * 100) : 0;
+                return { bid, ...s, sold, pct };
+            })
+            .filter(s => s.gelen > 0)
+            .sort((a, b) => b.pct - a.pct);
+
+        document.getElementById('rankBadge').textContent = monthLabel;
+
+        if (ranked.length === 0) {
+            el.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div>Bu ay henüz veri yok</div>`;
+            return;
+        }
+
+        const medals = ['🥇','🥈','🥉'];
+
+        const rows = ranked.map((s, i) => {
+            const isMe = s.bid === String(myBranchId);
+            const pctStr = s.pct.toFixed(1);
+            const pctCls = s.pct >= 80 ? 'pct-high' : s.pct >= 50 ? 'pct-medium' : 'pct-low';
+            const medalOrNum = i < 3
+                ? `<span class="rank-medal">${medals[i]}</span>`
+                : `<span class="rank-num">#${i+1}</span>`;
+            return `<div class="rank-row${isMe ? ' my-rank' : ''}">
+                ${medalOrNum}
+                <span style="font-size:20px;flex-shrink:0">${branchEmoji(s.name)}</span>
+                <div class="rank-branch">
+                    <div class="rank-branch-name">${s.name}${isMe ? ' <span style="font-size:10px;color:rgba(245,158,11,0.8);font-weight:700">BENİM</span>' : ''}</div>
+                    <div class="rank-branch-sub">${s.gelen.toLocaleString('tr-TR')} gelen · ${s.waste} zayiat</div>
+                </div>
+                <div class="rank-stats">
+                    <span class="rank-pct ${pctCls}">%${pctStr}</span>
+                    <span class="rank-detail">${s.sold.toLocaleString('tr-TR')} satıldı</span>
+                </div>
+            </div>`;
+        }).join('');
+
+        el.innerHTML = `<div class="rank-list">${rows}</div>`;
+    }
+
+    // Ay başlangıcı
+    function getMonthRange() {
+        const now = new Date();
+        const y   = now.getFullYear();
+        const m   = String(now.getMonth() + 1).padStart(2, '0');
+        const last = new Date(y, now.getMonth() + 1, 0).getDate();
+        return {
+            start: `${y}-${m}-01`,
+            end:   `${y}-${m}-${String(last).padStart(2, '0')}`
+        };
+    }
+
+    function get60DaysAgo() {
+        const d = new Date();
+        d.setDate(d.getDate() - 60);
+        return d.toISOString().split('T')[0];
+    }
+
+    let isLoading = false;
+
+    async function loadAll() {
+        if (isLoading) return;
+        isLoading = true;
+
+        const btn = document.getElementById('refreshBtn');
+        btn.classList.add('spinning');
+
+        try {
+            const today    = new Date().toISOString().split('T')[0];
+            const ago60    = get60DaysAgo();
+            const { start: mStart, end: mEnd } = getMonthRange();
+
+            const [branches, desserts, stockData, monthData] = await Promise.all([
+                getBranches(),
+                getActiveDesserts(),
+                getDailyEntriesDateRange(ago60, today),
+                getDailyEntriesDateRange(mStart, mEnd),
+            ]);
+
+            // Stok haritası için stockMap { branchId: { dessertId: qty } }
+            const lastRemDate  = {};
+            const lastRemVal   = {};
+            const addRecv      = {};
+
+            stockData.forEach(e => {
+                if (e.remaining_amount === null || e.remaining_amount === undefined) return;
+                const key = `${e.branch_id}||${e.dessert_id}`;
+                if (!lastRemDate[key] || e.entry_date > lastRemDate[key]) {
+                    lastRemDate[key] = e.entry_date;
+                    lastRemVal[key]  = e.remaining_amount;
+                }
+            });
+            stockData.forEach(e => {
+                if (!e.received_amount || e.received_amount <= 0) return;
+                const key = `${e.branch_id}||${e.dessert_id}`;
+                if (lastRemDate[key] && e.entry_date > lastRemDate[key]) {
+                    addRecv[key] = (addRecv[key] || 0) + e.received_amount;
+                }
+            });
+
+            const stockMap = {};
+            const allKeys  = new Set([...Object.keys(lastRemDate), ...Object.keys(addRecv)]);
+            allKeys.forEach(key => {
+                const [bid, did] = key.split('||');
+                if (!stockMap[bid]) stockMap[bid] = {};
+                stockMap[bid][did] = (lastRemVal[key] || 0) + (addRecv[key] || 0);
+            });
+
+            renderStockMap(branches, desserts, stockMap);
+            renderRanking(branches, monthData);
+
+            const now = new Date().toLocaleTimeString('tr-TR', { hour:'2-digit', minute:'2-digit' });
+            document.getElementById('updatedLabel').textContent = `Son güncelleme: ${now}`;
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById('stockMap').innerHTML =
+                `<div class="empty-state"><div class="empty-icon">⚠️</div>Veri yüklenemedi. Yenile butonuna bas.</div>`;
+        } finally {
+            isLoading = false;
+            btn.classList.remove('spinning');
+        }
+    }
+
+    // Başlat
+    initTheme();
+    loadAll();
+
+    // 90 saniyede bir otomatik yenile
+    setInterval(loadAll, 90000);
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js");navigator.serviceWorker.addEventListener("message",e=>{if(e.data?.type==="SW_UPDATED")window.location.reload();});}</script>
+</body>
+</html>
