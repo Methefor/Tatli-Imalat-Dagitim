@@ -3559,7 +3559,8 @@ _Mutlukent Tatlı Takip Sistemi_`;
             const bd = aggregateBranchData(allData);
             const branches = Object.values(bd).map(br => {
                 const base = br.opening + br.received;
-                br.wasteRatio = base > 0 ? br.waste / base : 0;
+                // Zayiat oranı: aldığımız tatlı bazında (devir stok değil)
+                br.wasteRatio = br.received > 0 ? br.waste / br.received : 0;
                 br.stockRatio = base > 0 ? br.remaining / base : 0;
                 return br;
             });
@@ -3579,8 +3580,9 @@ _Mutlukent Tatlı Takip Sistemi_`;
             branches.sort((a, b) => b.score - a.score);
 
             el.innerHTML = branches.map(br => {
-                const cls = br.score >= 70 ? 'green' : br.score >= 40 ? 'amber' : 'red';
-                const wastePct = Math.round(br.wasteRatio * 100);
+                const cls      = br.score >= 70 ? 'green' : br.score >= 40 ? 'amber' : 'red';
+                const wastePct = br.received > 0 ? (br.waste / br.received * 100) : 0;
+                const wastePctStr = wastePct === 0 ? '0' : wastePct < 1 ? wastePct.toFixed(1) : Math.round(wastePct);
                 return `<div class="score-card">
                     <div class="score-card-top">
                         <div class="score-name" title="${br.name}">${br.name}</div>
@@ -3589,7 +3591,7 @@ _Mutlukent Tatlı Takip Sistemi_`;
                     <div class="score-bar-track">
                         <div class="score-bar-fill ${cls}" style="width:${br.score}%"></div>
                     </div>
-                    <div class="score-sub">Zayiat: %${wastePct} · Satış: ${Math.round(br.sold)} adet</div>
+                    <div class="score-sub">Zayiat: ${br.waste} adet (%${wastePctStr}) · Satış: ${Math.round(br.sold)}</div>
                 </div>`;
             }).join('');
         }
