@@ -340,6 +340,38 @@
             .form-row-label { width: 70px; font-size: 12px; }
         }
 
+        /* ── Transfer Türü Toggle ── */
+        .tt-toggle {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+            margin-top: 4px;
+        }
+        .tt-btn {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 13px;
+            background: var(--glass); border: 1.5px solid var(--border);
+            border-radius: 12px; cursor: pointer;
+            transition: all 0.18s; text-align: left;
+            touch-action: manipulation; width: 100%;
+        }
+        .tt-btn:active { transform: scale(0.96); }
+        .tt-btn.active-normal { background: var(--acc-dim); border-color: var(--acc-brd); }
+        .tt-btn.active-iade   { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); }
+        .tt-btn-icon  { font-size: 20px; flex-shrink: 0; line-height: 1; }
+        .tt-btn-title { font-size: 13px; font-weight: 700; color: var(--text); }
+        .tt-btn-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.3; }
+        .tt-btn.active-normal .tt-btn-title { color: var(--accent); }
+        .tt-btn.active-iade   .tt-btn-title { color: #f59e0b; }
+
+        .tt-info {
+            padding: 11px 14px; border-radius: 12px; margin-bottom: 12px;
+            font-size: 12px; line-height: 1.65; border: 1px solid;
+        }
+        .tt-info-normal { background: var(--acc-dim); border-color: var(--acc-brd); color: rgba(255,255,255,0.8); }
+        .tt-info-iade   { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); color: rgba(255,255,255,0.8); }
+        .tt-info strong { color: var(--text); }
+        [data-theme="light"] .tt-info-normal { color: #334155; }
+        [data-theme="light"] .tt-info-iade   { color: #7c5b00; }
+
         /* ── TEMA ─────────────────────────── */
         .theme-toggle-btn { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:16px; cursor:pointer; padding:5px 9px; line-height:1; flex-shrink:0; }
         [data-theme="light"] {
@@ -416,6 +448,32 @@
                 </select>
             </div>
 
+            <!-- Transfer Türü -->
+            <div class="form-row" style="flex-direction:column;align-items:stretch;gap:6px;padding-top:14px;padding-bottom:14px;">
+                <span class="form-row-label" style="width:auto;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;">Transfer Türü</span>
+                <div class="tt-toggle">
+                    <button class="tt-btn active-normal" id="ttNormal" onclick="setTransferType('normal')" type="button">
+                        <span class="tt-btn-icon">📦</span>
+                        <div>
+                            <div class="tt-btn-title">Normal</div>
+                            <div class="tt-btn-sub">Gelen sayısına eklenir</div>
+                        </div>
+                    </button>
+                    <button class="tt-btn" id="ttIade" onclick="setTransferType('iade')" type="button">
+                        <span class="tt-btn-icon">↩️</span>
+                        <div>
+                            <div class="tt-btn-title">İade</div>
+                            <div class="tt-btn-sub">Sadece stok güncellenir</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Transfer türü açıklaması -->
+        <div class="tt-info tt-info-normal" id="ttInfo">
+            <strong>📦 Normal Transfer</strong> — Şubeler arasında destek veya fazla stok paylaşımı için kullanın. Alan şubenin <strong>Gelen</strong> sayısına eklenir, satış istatistiklerine yansır.
         </div>
 
         <!-- Tatlı seçici -->
@@ -458,6 +516,23 @@
         dateInput.max   = getTodayDate();
 
         let _allDesserts = [];
+
+        let transferType = 'normal';
+
+        function setTransferType(type) {
+            transferType = type;
+            document.getElementById('ttNormal').className = 'tt-btn' + (type === 'normal' ? ' active-normal' : '');
+            document.getElementById('ttIade').className   = 'tt-btn' + (type === 'iade'   ? ' active-iade'   : '');
+            const info = document.getElementById('ttInfo');
+            if (type === 'normal') {
+                info.className = 'tt-info tt-info-normal';
+                info.innerHTML = '<strong>📦 Normal Transfer</strong> — Şubeler arasında destek veya fazla stok paylaşımı için kullanın. Alan şubenin <strong>Gelen</strong> sayısına eklenir, satış istatistiklerine yansır.';
+            } else {
+                info.className = 'tt-info tt-info-iade';
+                info.innerHTML = '<strong>↩️ İade Transferi</strong> — Yanlışlıkla fazla gönderilen tatlıları geri iade ederken seçin. Alan şubenin <strong>Gelen sayısını değiştirmez</strong>; sadece stok hareketi olarak kaydedilir, istatistiklere <strong>yansımaz</strong>.';
+            }
+            document.getElementById('saveBtn').textContent = type === 'iade' ? 'İadeyi Kaydet' : 'Transferi Kaydet';
+        }
 
         // Şube ve tatlıları yükle
         async function loadSelects() {
@@ -561,9 +636,9 @@
                 `)
                 .eq('branch_id', branchId)
                 .gte('entry_date', pastDate)
-                .like('notes', 'Transfer:%')
+                .like('notes', '%Transfer%')
                 .order('entry_date', { ascending: false })
-                .limit(10);
+                .limit(15);
 
             const list = document.getElementById('historyList');
             if (!data || data.length === 0) {
@@ -571,15 +646,31 @@
                 return;
             }
 
+            // Sadece alınan transferleri göster (gönderilen çıkışlar değil)
+            const received = (data || []).filter(item => {
+                const n = item.notes || '';
+                return n.startsWith('Transfer: ') || n.startsWith('İade Transfer: ');
+            });
+
+            if (received.length === 0) {
+                list.innerHTML = emptyStateHTML('🔄', 'Henüz transfer alınmamış', 'Başka şubeler size transfer yaptığında burada görünür');
+                return;
+            }
+
             list.innerHTML = '';
-            data.forEach(item => {
-                const fromName = item.notes.replace('Transfer: ', '').replace(' → ' + branchName, '');
+            received.forEach(item => {
+                const noteText   = (item.notes || '').split('[DÜZ')[0].split('[ZAY')[0].trim();
+                const isIadeItem = noteText.startsWith('İade Transfer:');
+                const qtyDisplay = item.received_amount != null
+                    ? `+${item.received_amount}`
+                    : (isIadeItem ? '↩️ iade' : '—');
+                const qtyStyle = isIadeItem ? 'color:#f59e0b' : '';
                 const div = document.createElement('div');
                 div.className = 'history-item';
                 div.innerHTML = `
                     <span class="history-emoji">${item.desserts?.emoji || '🍰'}</span>
-                    <div class="history-text">${item.notes}</div>
-                    <span class="history-qty">+${item.received_amount}</span>
+                    <div class="history-text">${noteText}</div>
+                    <span class="history-qty" style="${qtyStyle}">${qtyDisplay}</span>
                     <span class="history-date">${formatDateTurkish(item.entry_date)}</span>
                 `;
                 list.appendChild(div);
@@ -645,12 +736,14 @@
                 }
 
                 const newSrcRemaining = Math.max(0, srcRemaining - t.qty);
-                const note = `Transfer: ${branchName} → ${toBranchName}`;
+                const isIade  = transferType === 'iade';
+                const note    = isIade ? `İade Transfer: ${branchName} → ${toBranchName}` : `Transfer: ${branchName} → ${toBranchName}`;
+                const srcNote = isIade ? `İade çıkış: → ${toBranchName}` : `Transfer çıkış: → ${toBranchName}`;
 
                 const prevReceived = destEntry?.received_amount ?? 0;
                 const destResult = await saveDailyEntry(
                     toBranchId, t.dessertId, date,
-                    prevReceived + t.qty,
+                    isIade ? null : prevReceived + t.qty,  // iade ise gelen sayısını değiştirme
                     destEntry?.remaining_amount ?? null,
                     null, note
                 );
@@ -660,7 +753,7 @@
                     branchId, t.dessertId, date,
                     srcReceived || null,
                     newSrcRemaining,
-                    null, `Transfer çıkış: → ${toBranchName}`
+                    null, srcNote
                 );
 
                 if (destResult.success && srcResult.success) {
@@ -674,7 +767,10 @@
             toggleLoading(false);
 
             if (errorCount === 0) {
-                showToast(`✅ ${successCount} çeşit tatlı, toplam ${totalQty} adet → ${toBranchName}`, 'success');
+                const toastMsg = transferType === 'iade'
+                    ? `✅ ${successCount} çeşit, ${totalQty} adet iade → ${toBranchName} (stok güncellendi, gelen sayılmadı)`
+                    : `✅ ${successCount} çeşit tatlı, toplam ${totalQty} adet → ${toBranchName}`;
+                showToast(toastMsg, 'success');
                 // Seçili chip'leri temizle
                 document.querySelectorAll('#dessertPickerGrid .dp-chip.active').forEach(c => c.classList.remove('active'));
                 // Qty listesini sıfırla
