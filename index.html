@@ -1391,7 +1391,7 @@
             if (e.target.id === 'changelogModal') e.target.classList.remove('active');
         });
     </script>
-    <!-- ── 3B Pasta Logo (eklendi) — küçük, logonun yerinde döner ── -->
+    <!-- ── 3B Magnolya Logo (eklendi) — küçük, logonun yerinde döner ── -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
     (function () {
@@ -1404,31 +1404,42 @@
         var size = canvas.clientWidth || 124;
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-        camera.position.set(0, 0.5, 5.5); camera.lookAt(0, 0.5, 0);
+        camera.position.set(0, 1.2, 8.6); camera.lookAt(0, 0.3, 0);
         var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(size, size, false);
         renderer.setClearColor(0x000000, 0);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-        var key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3, 6, 4); scene.add(key);
-        var warm = new THREE.PointLight(0xffd9a0, 0.7, 30); warm.position.set(-3, 2, 3); scene.add(warm);
-        var cake = new THREE.Group();
-        function disc(r, h, color, rough) { return new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 48), new THREE.MeshStandardMaterial({ color: color, roughness: rough != null ? rough : 0.8, metalness: 0.0 })); }
-        var plate = disc(1.62, 0.12, 0xf3ece0, 0.4); plate.position.y = -0.02; cake.add(plate);
-        var s1 = disc(1.4, 0.4, 0xe3b98a); s1.position.y = 0.28; cake.add(s1);
-        var c1 = disc(1.43, 0.12, 0xfff3e0, 0.6); c1.position.y = 0.54; cake.add(c1);
-        var s2 = disc(1.4, 0.4, 0xe3b98a); s2.position.y = 0.8; cake.add(s2);
-        var top = disc(1.46, 0.22, 0xf6c6cf, 0.5); top.position.y = 1.07; cake.add(top);
-        var dripMat = new THREE.MeshStandardMaterial({ color: 0xf6c6cf, roughness: 0.5 });
-        for (var i = 0; i < 14; i++) { var a = (i / 14) * Math.PI * 2; var d = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 16), dripMat); d.position.set(Math.cos(a) * 1.45, 0.96, Math.sin(a) * 1.45); d.scale.y = 1.5; cake.add(d); }
-        var cherry = new THREE.Mesh(new THREE.SphereGeometry(0.2, 24, 24), new THREE.MeshStandardMaterial({ color: 0xd6303e, roughness: 0.25, metalness: 0.1 }));
-        cherry.position.set(0, 1.33, 0); cake.add(cherry);
-        var stem = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 8), new THREE.MeshStandardMaterial({ color: 0x6b4a2b }));
-        stem.position.set(0.05, 1.52, 0); stem.rotation.z = -0.3; cake.add(stem);
-        cake.rotation.x = 0; cake.position.y = -0.35; scene.add(cake);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+        var key = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(4, 7, 5); scene.add(key);
+        var rim = new THREE.PointLight(0xffe0c0, 0.6, 40); rim.position.set(-4, 3, 3); scene.add(rim);
+        var cup = new THREE.Group();
+        function cre(c) { return new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, metalness: 0 }); }
+        var red = new THREE.MeshStandardMaterial({ color: 0xe23b4e, roughness: 0.45 });
+        var crumb = new THREE.MeshStandardMaterial({ color: 0xd6a44e, roughness: 1.0 });
+        var glass = new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.16, shininess: 95, specular: 0xbfe0ff, depthWrite: false, side: THREE.DoubleSide });
+        function disc(rt, rb, h, m) { return new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, 40), m); }
+        var y = 0.05;
+        var l1 = disc(0.82, 0.72, 0.5, cre(0xfff2d6)); l1.position.y = y + 0.25; cup.add(l1); y += 0.5;
+        var r1 = disc(0.85, 0.82, 0.16, red); r1.position.y = y + 0.08; cup.add(r1); y += 0.16;
+        var l2 = disc(0.9, 0.85, 0.5, cre(0xfbe9c8)); l2.position.y = y + 0.25; cup.add(l2); y += 0.5;
+        var r2 = disc(0.93, 0.9, 0.16, red); r2.position.y = y + 0.08; cup.add(r2); y += 0.16;
+        var l3 = disc(0.97, 0.93, 0.42, cre(0xfff2d6)); l3.position.y = y + 0.21; cup.add(l3); y += 0.42;
+        var crm = new THREE.Mesh(new THREE.SphereGeometry(0.98, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5), crumb);
+        crm.scale.y = 0.45; crm.position.y = y + 0.02; cup.add(crm);
+        for (var i = 0; i < 5; i++) {
+            var a = (i / 5) * Math.PI * 2;
+            var s = new THREE.Mesh(new THREE.SphereGeometry(0.26, 20, 16), red); s.position.set(Math.cos(a) * 0.5, y + 0.16, Math.sin(a) * 0.5); s.scale.set(1, 0.8, 1); cup.add(s);
+            var lf = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.12, 5), new THREE.MeshStandardMaterial({ color: 0x4caf50, roughness: 0.7 })); lf.position.set(Math.cos(a) * 0.5, y + 0.34, Math.sin(a) * 0.5); cup.add(lf);
+        }
+        var rimY = y + 0.2;
+        var wall = new THREE.Mesh(new THREE.CylinderGeometry(1.02, 0.8, rimY + 0.05, 48, 1, true), glass); wall.position.y = (rimY + 0.05) / 2; cup.add(wall);
+        var base = disc(0.8, 0.72, 0.08, cre(0xf0e6d2)); base.position.y = 0.04; cup.add(base);
+        var dome = new THREE.Mesh(new THREE.SphereGeometry(1.04, 40, 24, 0, Math.PI * 2, 0, Math.PI * 0.5), glass); dome.scale.y = 0.6; dome.position.y = rimY + 0.06; cup.add(dome);
+        var lipRing = new THREE.Mesh(new THREE.TorusGeometry(1.02, 0.05, 12, 48), glass); lipRing.rotation.x = Math.PI / 2; lipRing.position.y = rimY + 0.05; cup.add(lipRing);
+        cup.position.y = -1.2; scene.add(cup);
         var running = true;
         document.addEventListener('visibilitychange', function () { running = !document.hidden; if (running) loop(); });
-        function render() { cake.rotation.y += 0.0085; renderer.render(scene, camera); }
+        function render() { cup.rotation.y += 0.0085; renderer.render(scene, camera); }
         function loop() { if (!running) return; render(); requestAnimationFrame(loop); }
         if (reduce) render(); else loop();
       } catch (e) { showEmoji(); }

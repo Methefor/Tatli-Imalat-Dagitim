@@ -458,6 +458,20 @@
         [data-theme="light"] .num-input { background: #f8fafc; color: #0f172a; border-color: rgba(0,0,0,0.12); }
         [data-theme="light"] .dessert-row { border-bottom-color: rgba(0,0,0,0.06); }
     </style>
+<style id="tt-touch">
+:root { --tap-acc: #f87171; }
+.quick-btn, .save-btn, .dessert-row, .tt-btn, .step-btn, .date-nav-btn, .back-btn, .refresh-btn, .mode-btn, .branch-card, .total-card, button { -webkit-tap-highlight-color: transparent; }
+.quick-btn { color: var(--tap-acc); border-color: color-mix(in srgb, var(--tap-acc) 35%, transparent); background: color-mix(in srgb, var(--tap-acc) 12%, transparent); transition: transform .08s ease, background .2s, border-color .2s; }
+.quick-btn:active { transform: scale(0.9); background: color-mix(in srgb, var(--tap-acc) 24%, transparent); }
+.save-btn { transition: transform .1s ease, filter .2s; }
+.save-btn:active { transform: scale(0.98); filter: brightness(1.06); }
+.dessert-row { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--tap-acc) 50%, transparent); transition: box-shadow .2s; }
+.dessert-row:focus-within { box-shadow: inset 3px 0 0 var(--tap-acc), 0 0 0 2px color-mix(in srgb, var(--tap-acc) 32%, transparent); }
+.tt-btn, .step-btn { transition: transform .1s ease, box-shadow .2s, border-color .2s; }
+.tt-btn:active, .step-btn:active { transform: scale(0.97); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tap-acc) 55%, transparent) inset; }
+.branch-card:active, .total-card:active { transform: scale(0.97); transition: transform .08s ease; }
+.date-nav-btn:active, .back-btn:active, .refresh-btn:active, .mode-btn:active { transform: scale(0.92); }
+</style>
 </head>
 <body>
 
