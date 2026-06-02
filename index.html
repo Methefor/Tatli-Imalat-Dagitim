@@ -1439,7 +1439,7 @@
         var size = canvas.clientWidth || 124;
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-        camera.position.set(0, 0.1, 5.8); camera.lookAt(0, 0.1, 0);
+        camera.position.set(0, 0.8, 5.8); camera.lookAt(0, 0.8, 0);
         var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(size, size, false);
