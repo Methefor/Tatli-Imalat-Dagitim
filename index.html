@@ -65,11 +65,11 @@
         }
 
         .cake-logo-canvas {
-            width: 124px; height: 124px; display: inline-block;
+            width: 172px; height: 172px; display: inline-block;
             will-change: transform; animation: cakeFloat 3.2s ease-in-out infinite;
         }
         @keyframes cakeFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-        @media (max-width: 480px) { .cake-logo-canvas { width: 100px; height: 100px; } }
+        @media (max-width: 480px) { .cake-logo-canvas { width: 135px; height: 135px; } }
 
         @keyframes logoBounce {
             0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -923,7 +923,7 @@
         <!-- Footer -->
         <div class="footer" style="display:flex;align-items:center;justify-content:center;gap:10px;">
             <span>© 2026 Mutlukent Esenlik Hizmetleri A.Ş</span>
-            <button class="changelog-btn" onclick="openChangelog()" title="Güncelleme notları">🆕 v3.0 — Yenilikler</button>
+            <button class="changelog-btn" onclick="openChangelog()" title="Güncelleme notları">🆕 v5.0 — Yenilikler</button>
         </div>
 
         <!-- VIP Yönetici Kartı -->
@@ -958,14 +958,49 @@
             <div class="cl-modal-head">
                 <div class="cl-modal-title">📋 Güncelleme Notları</div>
                 <div style="display:flex;align-items:center;gap:10px">
-                    <span class="cl-modal-ver">v3.0</span>
+                    <span class="cl-modal-ver">v5.0</span>
                     <button class="cl-modal-close" onclick="document.getElementById('changelogModal').classList.remove('active')">✕</button>
                 </div>
             </div>
 
             <div class="cl-modal-body">
 
-                <div class="cl-section-sep">Mayıs 2026 — Güncel Sürüm</div>
+                <div class="cl-section-sep">Haziran 2026 — v5.0 Güncel Sürüm</div>
+
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text"><strong>Kurumsal Kimlik Şeridi</strong> — Yönetim Kokpiti'nde Mutlukent ve Süleymanpaşa Belediyesi logosu ile kurumsal marka şeridi eklendi.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text"><strong>3B Magnolya Giriş Ekranı</strong> — Three.js ile dönen, kayan animasyonlu cam bardak tasarımı; giriş sayfasında görsel kimlik güçlendirildi.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text"><strong>Eşik Tabanlı Stok Rozetleri</strong> — Tatlıcılar panelinde her ürün için kritik / düşük / orta / iyi stok durumu renkli rozet ile gösteriliyor.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text"><strong>Dokunma Hissi &amp; Sayfa Aksanları</strong> — Gelen Tatlı, Kalan Tatlı, Zayiat, Transfer ve Stok Haritası sayfalarında sayfa rengine uyumlu dokunma animasyonları eklendi.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text"><strong>Müdür/Tatlıcılar/Şube Seçim Görsel Güncellemesi</strong> — Sayfa başlıklarına Mutlukent logosu entegre edildi; tüm paneller kurumsal görünüme kavuştu.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-new">YENİ</span>
+                    <span class="cl-text"><strong>Transfer — Normal / İade Türü</strong> — Transfer ekranına Normal ve İade seçeneği eklendi; iade transferler ayrı kategoride takip ediliyor.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-fix">DÜZELTME</span>
+                    <span class="cl-text">Stok Haritası aylık şube sıralama kriterleri düzeltildi; skor hesaplama daha doğru sonuç veriyor.</span>
+                </div>
+                <div class="cl-entry">
+                    <span class="cl-badge cl-badge-perf">HIZ</span>
+                    <span class="cl-text">Service Worker v58 — önbellek güncellendi, tüm yeni sayfalar ve görseller otomatik yükleniyor.</span>
+                </div>
+
+                <div class="cl-section-sep">Mayıs 2026</div>
 
                 <div class="cl-entry">
                     <span class="cl-badge cl-badge-new">YENİ</span>
@@ -1404,7 +1439,7 @@
         var size = canvas.clientWidth || 124;
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-        camera.position.set(0, 1.2, 8.6); camera.lookAt(0, 0.3, 0);
+        camera.position.set(0, 0.1, 5.8); camera.lookAt(0, 0.1, 0);
         var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(size, size, false);
@@ -1436,7 +1471,7 @@
         var base = disc(0.8, 0.72, 0.08, cre(0xf0e6d2)); base.position.y = 0.04; cup.add(base);
         var dome = new THREE.Mesh(new THREE.SphereGeometry(1.04, 40, 24, 0, Math.PI * 2, 0, Math.PI * 0.5), glass); dome.scale.y = 0.6; dome.position.y = rimY + 0.06; cup.add(dome);
         var lipRing = new THREE.Mesh(new THREE.TorusGeometry(1.02, 0.05, 12, 48), glass); lipRing.rotation.x = Math.PI / 2; lipRing.position.y = rimY + 0.05; cup.add(lipRing);
-        cup.position.y = -1.2; scene.add(cup);
+        cup.position.y = -0.5; scene.add(cup);
         var running = true;
         document.addEventListener('visibilitychange', function () { running = !document.hidden; if (running) loop(); });
         function render() { cup.rotation.y += 0.0085; renderer.render(scene, camera); }
