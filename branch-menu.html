@@ -812,6 +812,31 @@
         [data-theme="light"] .notif-desc { color: rgba(0,0,0,0.45); }
         [data-theme="light"] .notif-loading { color: rgba(0,0,0,0.3); }
     </style>
+<style id="tt-enhance-menu">
+/* Menü kartları — mobilde de görünür renk vurgusu + dokunma geri bildirimi */
+.card-amber  { background: linear-gradient(115deg, rgba(245,158,11,0.13), var(--glass) 58%); }
+.card-blue   { background: linear-gradient(115deg, rgba(96,165,250,0.13), var(--glass) 58%); }
+.card-purple { background: linear-gradient(115deg, rgba(167,139,250,0.13), var(--glass) 58%); }
+.card-red    { background: linear-gradient(115deg, rgba(239,68,68,0.13), var(--glass) 58%); }
+.card-green  { background: linear-gradient(115deg, rgba(52,211,153,0.13), var(--glass) 58%); }
+.card-teal   { background: linear-gradient(115deg, rgba(45,212,191,0.13), var(--glass) 58%); }
+.action-card::before { width: 4px; top: 12%; bottom: 12%; opacity: 1; border-radius: 0 4px 4px 0; }
+.card-icon { width: 50px; height: 50px; font-size: 25px; box-shadow: 0 4px 16px rgba(0,0,0,0.20); }
+.card-amber  .card-icon { background: linear-gradient(135deg, rgba(245,158,11,0.34), rgba(245,158,11,0.14)); border: 1px solid rgba(245,158,11,0.45); }
+.card-blue   .card-icon { background: linear-gradient(135deg, rgba(96,165,250,0.34), rgba(96,165,250,0.14)); border: 1px solid rgba(96,165,250,0.45); }
+.card-purple .card-icon { background: linear-gradient(135deg, rgba(167,139,250,0.34), rgba(167,139,250,0.14)); border: 1px solid rgba(167,139,250,0.45); }
+.card-red    .card-icon { background: linear-gradient(135deg, rgba(239,68,68,0.34), rgba(239,68,68,0.14)); border: 1px solid rgba(239,68,68,0.45); }
+.card-green  .card-icon { background: linear-gradient(135deg, rgba(52,211,153,0.34), rgba(52,211,153,0.14)); border: 1px solid rgba(52,211,153,0.45); }
+.card-teal   .card-icon { background: linear-gradient(135deg, rgba(45,212,191,0.34), rgba(45,212,191,0.14)); border: 1px solid rgba(45,212,191,0.45); }
+.action-card { transition: transform .12s cubic-bezier(.16,1,.3,1), box-shadow .2s, background .25s, border-color .25s; }
+.action-card:active { transform: scale(0.965); transition-duration: .05s; }
+.card-amber:active  { box-shadow: 0 0 0 2px rgba(245,158,11,0.5) inset, 0 6px 20px rgba(245,158,11,0.18); }
+.card-blue:active   { box-shadow: 0 0 0 2px rgba(96,165,250,0.5) inset, 0 6px 20px rgba(96,165,250,0.18); }
+.card-purple:active { box-shadow: 0 0 0 2px rgba(167,139,250,0.5) inset, 0 6px 20px rgba(167,139,250,0.18); }
+.card-red:active    { box-shadow: 0 0 0 2px rgba(239,68,68,0.5) inset, 0 6px 20px rgba(239,68,68,0.18); }
+.card-green:active  { box-shadow: 0 0 0 2px rgba(52,211,153,0.5) inset, 0 6px 20px rgba(52,211,153,0.18); }
+.card-teal:active   { box-shadow: 0 0 0 2px rgba(45,212,191,0.5) inset, 0 6px 20px rgba(45,212,191,0.18); }
+</style>
 </head>
 <body>
 
@@ -824,7 +849,7 @@
     <div class="page">
         <!-- Top Bar -->
         <nav class="topbar">
-            <span class="topbar-brand">Müdür Paneli</span>
+            <span class="topbar-brand" style="display:inline-flex;align-items:center;gap:8px;"><img src="assets/mutlukent-logo.png" alt="" style="height:26px;width:26px;border-radius:7px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none'">Müdür Paneli</span>
             <div class="topbar-right">
                 <span class="topbar-clock" id="clock">--:--</span>
                 <div class="notif-wrap" id="notifWrap">

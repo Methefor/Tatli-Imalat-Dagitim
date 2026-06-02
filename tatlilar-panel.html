@@ -595,6 +595,29 @@
         [data-theme="light"] .refresh-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: #0f172a; }
         [data-theme="light"] .refresh-btn:hover { background: rgba(0,0,0,0.08); }
     </style>
+<style id="tt-enhance-tatlici">
+/* Karşılama kartı — daha kompakt ve temiz */
+.greeting-overlay { padding-top: 64px; align-items: flex-start; }
+.greeting-card { padding: 26px 26px 22px; max-width: 290px; border-radius: 22px; }
+.greeting-emoji { font-size: 48px; margin-bottom: 10px; }
+.greeting-main { font-size: 19px; margin-bottom: 5px; }
+.greeting-sub { font-size: 12.5px; margin-bottom: 16px; }
+/* Stok kartı — eşik-tabanlı yeterlilik rozeti + okunabilirlik */
+.stock-card { position: relative; }
+.stock-status {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 2px 9px; border-radius: 999px; margin-top: 2px;
+}
+.st-ok   { color: #22c55e; background: rgba(34,197,94,0.14);  border: 1px solid rgba(34,197,94,0.3); }
+.st-low  { color: #f59e0b; background: rgba(245,158,11,0.14); border: 1px solid rgba(245,158,11,0.3); }
+.st-crit { color: #f87171; background: rgba(239,68,68,0.16);  border: 1px solid rgba(239,68,68,0.35); }
+.st-zero { color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.06); border: 1px solid var(--border); }
+.lvl-ok   { border-color: rgba(34,197,94,0.22); }
+.lvl-low  { border-color: rgba(245,158,11,0.28); }
+.lvl-crit { border-color: rgba(239,68,68,0.32); }
+.lvl-crit .stock-card-value { color: #f87171; }
+.lvl-low  .stock-card-value { color: #f6c66f; }
+</style>
 </head>
 <body>
 
@@ -621,7 +644,7 @@
 
         <div class="topbar">
             <button class="back-btn" onclick="window.location.href='index.html'">← Geri</button>
-            <span class="topbar-title">👨‍🍳 Tatlıcılar Paneli</span>
+            <span class="topbar-title" style="display:inline-flex;align-items:center;gap:8px;"><img src="assets/mutlukent-logo.png" alt="" style="height:24px;width:24px;border-radius:6px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none'">👨‍🍳 Tatlıcılar Paneli</span>
             <span class="topbar-date" id="todayBadge">—</span>
             <button class="refresh-btn" onclick="loadData()">🔄 Yenile</button>
             <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Tema">☀️</button>
@@ -846,19 +869,38 @@
             summaryEl.innerHTML = '';
             let grandTotal = 0;
 
+            // ── Eşik-tabanlı yeterlilik (dagitim.html ile aynı mantık) ──
+            const HIGH_VOL_BRANCHES = new Set(['Rumeli İskelesi', 'Millet Bahçesi', 'Yahya Kemal']);
+            const DESSERT_THRESHOLDS = {
+                'Magnolya':{high:40,other:20},'Tiramisu':{high:25,other:10},'İbiza':{high:10,other:5},
+                'Truff':{high:20,other:10},'Cheesecake':{high:20,other:10},'Mozaik':{high:20,other:10},
+                'Trileçe':{high:20,other:10},'Gökkuşağı':{high:10,other:0},'San Sebastian':{high:30,other:10}
+            };
+            const savedThresholds = (await getSetting('dessertThresholds')) || {};
+
             desserts.forEach(dessert => {
-                let total = 0;
+                let total = 0, totalTh = 0;
                 branches.forEach(branch => {
                     total += (allStock[branch.id]?.[dessert.id] ?? 0);
+                    const tiers = DESSERT_THRESHOLDS[dessert.name];
+                    const isHigh = HIGH_VOL_BRANCHES.has(branch.name);
+                    const defTh = tiers ? (isHigh ? tiers.high : tiers.other) : (isHigh ? 10 : 5);
+                    totalTh += savedThresholds[branch.id]?.[String(dessert.id)] ?? defTh;
                 });
                 grandTotal += total;
 
+                let lvl = 'ok', lbl = 'yeterli';
+                if (total === 0) { lvl = 'zero'; lbl = 'yok'; }
+                else if (total < totalTh) { lvl = 'crit'; lbl = 'kritik'; }
+                else if (total < totalTh * 1.5) { lvl = 'low'; lbl = 'az'; }
+
                 const card = document.createElement('div');
-                card.className = 'stock-card';
+                card.className = 'stock-card lvl-' + lvl;
                 card.innerHTML = `
                     <div class="stock-card-emoji">${dessert.emoji || '🍰'}</div>
                     <div class="stock-card-name">${dessert.name}</div>
                     <div class="stock-card-value ${total === 0 ? 'zero' : ''}">${total}</div>
+                    <span class="stock-status st-${lvl}">${lbl}</span>
                 `;
                 summaryEl.appendChild(card);
             });
